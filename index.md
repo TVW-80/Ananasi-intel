@@ -1,10 +1,3 @@
----
-canonical: https://TVW-80.github.io/Ananasi-intel/anansi/
-meta-description: A real-time geospatial intelligence dashboard for the Hampton Roads / Historic Triangle region, built on a self-hosted n8n ETL pipeline feeding a live CesiumJS 3D map. Covers automation engineering, data pipeline design, and full-stack integration.
-meta-theme-color: #151515
-title: Anansi — Real-Time Regional Intelligence Dashboard | Toure's Cybersecurity Mastery Portfolio
----
-
 # Anansi — Real-Time Regional Intelligence Dashboard
 
 # Overview
