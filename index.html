@@ -3,314 +3,265 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Toure — Cybersecurity & Systems Portfolio</title>
-<meta name="description" content="Cybersecurity and systems engineering portfolio: SOC deployment, threat intelligence, and self-hosted data pipeline projects.">
+<title>ANANSI</title>
+<meta name="description" content="Anansi — Real-Time Regional Intelligence Dashboard">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0f12;
-    --bg-raised: #14171c;
-    --text: #e8e6e1;
-    --text-dim: #8b93a1;
-    --line: rgba(232,230,225,0.09);
-    --green: #3ddc97;
-    --amber: #f2a65a;
+    --bg: #060606;
+    --red: #c81e1e;
+    --red-bright: #ff2b2b;
+    --gold: #d4af37;
+    --gold-bright: #f4cf5e;
+    --line: rgba(200,30,30,0.25);
+    --text: #eae7e2;
+    --text-dim: #7a7a7a;
     --mono: 'IBM Plex Mono', monospace;
     --display: 'Space Grotesk', sans-serif;
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+  }
 
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--display);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  a { color: inherit; }
-
-  .wrap {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
-
-  header {
-    border-bottom: 1px solid var(--line);
-    padding: 22px 0;
-  }
-  .header-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-  }
-  .wordmark {
-    font-family: var(--mono);
-    font-size: 14px;
-    letter-spacing: 0.02em;
+    justify-content: center;
+    font-family: var(--display);
     color: var(--text);
-    text-decoration: none;
-  }
-  .wordmark span { color: var(--green); }
-  nav a {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    text-decoration: none;
-    margin-left: 28px;
-  }
-  nav a:hover { color: var(--text); }
-
-  .hero {
-    position: relative;
-    padding: 90px 0 70px;
-    border-bottom: 1px solid var(--line);
+    -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 40px;
-    align-items: center;
-  }
-  .status-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--green);
-    border: 1px solid rgba(61,220,151,0.35);
-    background: rgba(61,220,151,0.06);
-    padding: 5px 11px;
-    border-radius: 3px;
-    margin-bottom: 22px;
-  }
-  .status-tag .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-    animation: pulse 2.2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
   }
 
-  h1 {
-    font-size: clamp(34px, 4.4vw, 52px);
-    line-height: 1.06;
-    margin: 0 0 20px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    max-width: 15ch;
-  }
-  .hero p {
-    color: var(--text-dim);
-    font-size: 17px;
-    max-width: 46ch;
-    margin: 0 0 30px;
-  }
-  .hero-links { display: flex; gap: 14px; flex-wrap: wrap; }
-  .btn {
-    font-family: var(--mono);
-    font-size: 13px;
-    text-decoration: none;
-    padding: 11px 18px;
-    border-radius: 3px;
-    display: inline-block;
-  }
-  .btn-primary { background: var(--green); color: #06110c; font-weight: 600; }
-  .btn-ghost { border: 1px solid var(--line); color: var(--text); }
-  .btn-ghost:hover { border-color: var(--text-dim); }
-
-  .radar {
+  .stage {
     position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    max-width: 340px;
-    margin: 0 auto;
-    border-radius: 50%;
-    border: 1px solid var(--line);
-    background:
-      radial-gradient(circle, transparent 0%, transparent 68%, rgba(61,220,151,0.03) 69%, transparent 70%),
-      var(--bg-raised);
+    text-align: center;
+    padding: 40px;
   }
-  .radar::before, .radar::after {
+
+  .logo-wrap {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 34px;
+  }
+
+  .logo-ring {
+    position: absolute;
+    inset: -18px;
+    border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.3);
+    animation: ringSpin 14s linear infinite;
+  }
+  .logo-ring::before {
     content: "";
     position: absolute;
+    top: -2px;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
     border-radius: 50%;
-    border: 1px solid var(--line);
+    background: var(--gold-bright);
+    box-shadow: 0 0 8px var(--gold-bright);
   }
-  .radar::before { inset: 16%; }
-  .radar::after { inset: 34%; }
-  .sweep {
+  @keyframes ringSpin { to { transform: rotate(360deg); } }
+
+  .logo-pulse {
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: conic-gradient(from 0deg, rgba(61,220,151,0.35), transparent 28%);
-    animation: spin 5s linear infinite;
-    mix-blend-mode: screen;
+    box-shadow: 0 0 40px 6px rgba(200,30,30,0.18);
+    animation: pulseGlow 2.6s ease-in-out infinite;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .blip {
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+
+  svg.mark { position: relative; width: 100%; height: 100%; }
+
+  .wordmark {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    margin: 0 0 10px;
+    color: var(--text);
+  }
+  .wordmark span { color: var(--gold-bright); }
+
+  .tagline {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin: 0 0 30px;
+    text-transform: uppercase;
+  }
+
+  .loadbar {
+    width: 220px;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    margin: 0 auto 14px;
+    overflow: hidden;
+    position: relative;
+  }
+  .loadbar-fill {
     position: absolute;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--amber);
-    box-shadow: 0 0 10px var(--amber);
+    left: -40%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--red-bright), var(--gold-bright), transparent);
+    animation: sweep 1.8s ease-in-out infinite;
   }
-  .blip:nth-child(3) { top: 30%; left: 62%; }
-  .blip:nth-child(4) { top: 60%; left: 40%; background: var(--green); box-shadow: 0 0 10px var(--green); }
-  .blip:nth-child(5) { top: 45%; left: 22%; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .sweep, .status-tag .dot { animation: none; }
+  @keyframes sweep {
+    0% { left: -40%; }
+    100% { left: 100%; }
   }
 
-  .section-label {
+  .status {
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
     color: var(--text-dim);
-    margin: 70px 0 24px;
+    margin: 0 0 36px;
   }
-
-  .case {
-    border-top: 1px solid var(--line);
-    padding: 34px 0;
-    display: grid;
-    grid-template-columns: 160px 1fr auto;
-    gap: 24px;
-    align-items: start;
-    text-decoration: none;
-    color: inherit;
-    transition: background 0.15s ease;
-  }
-  .case:last-child { border-bottom: 1px solid var(--line); }
-  .case:hover { background: rgba(232,230,225,0.02); }
-
-  .case-meta {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-  .case-tag {
+  .status .dot {
     display: inline-block;
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    margin-top: 10px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold-bright);
+    box-shadow: 0 0 6px var(--gold-bright);
+    margin-right: 7px;
+    animation: pulseGlow 1.6s ease-in-out infinite;
   }
-  .tag-deployed { color: var(--green); border: 1px solid rgba(61,220,151,0.35); background: rgba(61,220,151,0.06); }
-  .tag-active { color: var(--amber); border: 1px solid rgba(242,166,90,0.35); background: rgba(242,166,90,0.06); }
 
-  .case-title {
-    font-size: 21px;
-    font-weight: 600;
-    margin: 0 0 8px;
-  }
-  .case-desc {
-    color: var(--text-dim);
-    font-size: 14.5px;
-    max-width: 56ch;
-    margin: 0;
-  }
-  .case-stack {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 12px;
-  }
-  .case-arrow {
+  .enter {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-family: var(--mono);
     font-size: 13px;
-    color: var(--text-dim);
-    align-self: center;
+    letter-spacing: 0.06em;
+    color: var(--red-bright);
+    text-decoration: none;
+    border: 1px solid rgba(212,175,55,0.35);
+    padding: 13px 26px;
+    border-radius: 2px;
+    transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
-
-  @media (max-width: 640px) {
-    .hero-grid { grid-template-columns: 1fr; }
-    .radar { max-width: 220px; }
-    .case { grid-template-columns: 1fr; }
-    .case-arrow { display: none; }
+  .enter:hover {
+    background: rgba(212,175,55,0.06);
+    box-shadow: 0 0 18px rgba(212,175,55,0.3);
+    color: var(--gold-bright);
+    border-color: rgba(212,175,55,0.6);
   }
+  .enter .arrow { transition: transform 0.2s ease; }
+  .enter:hover .arrow { transform: translateX(4px); }
 
-  footer {
-    border-top: 1px solid var(--line);
-    padding: 30px 0 50px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 40px;
+  @media (prefers-reduced-motion: reduce) {
+    .logo-ring, .logo-pulse, .loadbar-fill, .status .dot { animation: none; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap header-row">
-    <a class="wordmark" href="#top">toure<span>@</span>portfolio</a>
-    <nav>
-      <a href="#work">Work</a>
-      <a href="https://github.com/TVW-80" target="_blank" rel="noopener">GitHub</a>
-    </nav>
+<div class="stage">
+  <div class="logo-wrap">
+    <div class="logo-pulse"></div>
+    <div class="logo-ring"></div>
+    <svg class="mark" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anansi spider mark">
+      <defs>
+        <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#2e2e2e"/>
+          <stop offset="55%" stop-color="#0a0a0a"/>
+          <stop offset="100%" stop-color="#000000"/>
+        </linearGradient>
+      </defs>
+      <circle cx="160" cy="160" r="150" fill="#020202" stroke="#7a0f0f" stroke-width="2"/>
+      <g transform="translate(160,160)">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="miter">
+          <path stroke="#c81e1e" stroke-width="6" d="M -12 -16 L -38 -26 L -50 -60 L -92 -90"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M -12 -16 L -38 -26 L -50 -60 L -92 -90"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M -16 -2 L -48 -6 L -80 -4 L -122 -14"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M -16 -2 L -48 -6 L -80 -4 L -122 -14"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M -14 14 L -40 24 L -66 40 L -112 58"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M -14 14 L -40 24 L -66 40 L -112 58"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M -8 30 L -22 52 L -28 84 L -58 122"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M -8 30 L -22 52 L -28 84 L -58 122"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M 12 -16 L 38 -26 L 50 -60 L 92 -90"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M 12 -16 L 38 -26 L 50 -60 L 92 -90"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M 16 -2 L 48 -6 L 80 -4 L 122 -14"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M 16 -2 L 48 -6 L 80 -4 L 122 -14"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M 14 14 L 40 24 L 66 40 L 112 58"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M 14 14 L 40 24 L 66 40 L 112 58"/>
+          <path stroke="#c81e1e" stroke-width="6" d="M 8 30 L 22 52 L 28 84 L 58 122"/>
+          <path stroke="#0a0a0a" stroke-width="3.5" d="M 8 30 L 22 52 L 28 84 L 58 122"/>
+        </g>
+        <g fill="#e83030">
+          <path d="M -92 -90 L -110 -108 L -98 -80 Z"/>
+          <path d="M -122 -14 L -144 -18 L -116 -2 Z"/>
+          <path d="M -112 58 L -132 70 L -104 66 Z"/>
+          <path d="M -58 122 L -70 144 L -46 122 Z"/>
+          <path d="M 92 -90 L 110 -108 L 98 -80 Z"/>
+          <path d="M 122 -14 L 144 -18 L 116 -2 Z"/>
+          <path d="M 112 58 L 132 70 L 104 66 Z"/>
+          <path d="M 58 122 L 70 144 L 46 122 Z"/>
+        </g>
+        <path fill="url(#bodyGrad)" stroke="#e83030" stroke-width="1.2"
+          d="M 0 -40 L 18 -32 L 24 -14 L 19 0 L 26 13 L 21 30 L 12 43 L 17 56 L 6 66 L -6 66 L -17 56 L -12 43 L -21 30 L -26 13 L -19 0 L -24 -14 L -18 -32 Z"/>
+        <g fill="none" stroke="#e83030" stroke-width="1" stroke-linecap="round" opacity="0.9">
+          <path d="M 0 -15 L 0 9"/>
+          <path d="M -15 0 L 15 0"/>
+          <path d="M 0 9 L -9 24 M 0 9 L 9 24"/>
+          <path d="M -9 24 L -7 40 M 9 24 L 7 40"/>
+        </g>
+        <g fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round" opacity="0.4">
+          <path d="M -9 24 L -7 40"/>
+          <path d="M 9 24 L 7 40"/>
+        </g>
+        <circle cx="-8" cy="-25" r="4.5" fill="#ff2020"/>
+        <circle cx="8" cy="-25" r="4.5" fill="#ff2020"/>
+        <circle cx="-8" cy="-25" r="8" fill="none" stroke="#c81e1e" stroke-width="2.5" opacity="0.4"/>
+        <circle cx="8" cy="-25" r="8" fill="none" stroke="#c81e1e" stroke-width="2.5" opacity="0.4"/>
+        <circle cx="-13" cy="-18" r="2" fill="#8b0000"/>
+        <circle cx="13" cy="-18" r="2" fill="#8b0000"/>
+      </g>
+    </svg>
   </div>
-</header>
 
-<section class="hero" id="top">
-  <div class="wrap hero-grid">
-    <div>
-      <div class="status-tag"><span class="dot"></span>1 system live</div>
-      <h1>Cybersecurity &amp; systems engineering, built and broken by hand.</h1>
-      <p>SOC deployment, threat intelligence pipelines, and self-hosted automation — documented end to end, including what went wrong along the way.</p>
-      <div class="hero-links">
-        <a class="btn btn-primary" href="#work">View projects</a>
-        <a class="btn btn-ghost" href="https://github.com/TVW-80" target="_blank" rel="noopener">GitHub profile</a>
-      </div>
-    </div>
-    <div class="radar" aria-hidden="true">
-      <div class="sweep"></div>
-      <div class="blip"></div>
-      <div class="blip"></div>
-      <div class="blip"></div>
-    </div>
-  </div>
-</section>
+  <h1 class="wordmark">ANAN<span>SI</span></h1>
+  <p class="tagline">Regional Intelligence System</p>
 
-<div class="wrap" id="work">
-  <div class="section-label">// case files</div>
+  <div class="loadbar"><div class="loadbar-fill"></div></div>
+  <p class="status"><span class="dot"></span>SYSTEM READY</p>
 
-  <a class="case" href="anansi/">
-    <div class="case-meta">
-      2026
-      <div class="case-tag tag-active">live</div>
-    </div>
-    <div>
-      <h2 class="case-title">Anansi — Real-Time Regional Intelligence Dashboard</h2>
-      <p class="case-desc">A self-hosted n8n automation layer feeding a live CesiumJS 3D globe — traffic, weather, and local news normalized into one schema and rendered as a real-time map, with a full custom rebrand. Built on <a href="https://github.com/bilawalsidhu/gods-eye-view" target="_blank" rel="noopener" style="color:var(--green); text-decoration:underline;">God's Eye View</a> by Bilawal Sidhu — <a href="https://youtu.be/rXvU7bPJ8n4" target="_blank" rel="noopener" style="color:var(--amber); text-decoration:underline;">watch the original demo</a>.</p>
-      <div class="case-stack">n8n · Docker · CesiumJS · TomTom API · NOAA API</div>
-    </div>
-    <div class="case-arrow">view →</div>
+  <a class="enter" href="https://tvw-80.github.io/Ananasi-intel/anansi/">
+    CLICK HERE TO ENTER <span class="arrow">→</span>
   </a>
 </div>
-
-<footer>
-  <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
-    <span>built &amp; maintained by Toure</span>
-    <span>last updated 2026</span>
-  </div>
-</footer>
 
 </body>
 </html>
