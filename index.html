@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toure — Cybersecurity & Systems Portfolio</title>
+<meta name="description" content="Cybersecurity and systems engineering portfolio: SOC deployment, threat intelligence, and self-hosted data pipeline projects.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f12;
+    --bg-raised: #14171c;
+    --text: #e8e6e1;
+    --text-dim: #8b93a1;
+    --line: rgba(232,230,225,0.09);
+    --green: #3ddc97;
+    --amber: #f2a65a;
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--display);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    padding: 22px 0;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wordmark {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .wordmark span { color: var(--green); }
+  nav a {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+    margin-left: 28px;
+  }
+  nav a:hover { color: var(--text); }
+
+  .hero {
+    position: relative;
+    padding: 90px 0 70px;
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+    border: 1px solid rgba(61,220,151,0.35);
+    background: rgba(61,220,151,0.06);
+    padding: 5px 11px;
+    border-radius: 3px;
+    margin-bottom: 22px;
+  }
+  .status-tag .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  h1 {
+    font-size: clamp(34px, 4.4vw, 52px);
+    line-height: 1.06;
+    margin: 0 0 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    max-width: 15ch;
+  }
+  .hero p {
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 46ch;
+    margin: 0 0 30px;
+  }
+  .hero-links { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .btn-primary { background: var(--green); color: #06110c; font-weight: 600; }
+  .btn-ghost { border: 1px solid var(--line); color: var(--text); }
+  .btn-ghost:hover { border-color: var(--text-dim); }
+
+  .radar {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 340px;
+    margin: 0 auto;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background:
+      radial-gradient(circle, transparent 0%, transparent 68%, rgba(61,220,151,0.03) 69%, transparent 70%),
+      var(--bg-raised);
+  }
+  .radar::before, .radar::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+  }
+  .radar::before { inset: 16%; }
+  .radar::after { inset: 34%; }
+  .sweep {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(61,220,151,0.35), transparent 28%);
+    animation: spin 5s linear infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .blip {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 10px var(--amber);
+  }
+  .blip:nth-child(3) { top: 30%; left: 62%; }
+  .blip:nth-child(4) { top: 60%; left: 40%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+  .blip:nth-child(5) { top: 45%; left: 22%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sweep, .status-tag .dot { animation: none; }
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 70px 0 24px;
+  }
+
+  .case {
+    border-top: 1px solid var(--line);
+    padding: 34px 0;
+    display: grid;
+    grid-template-columns: 160px 1fr auto;
+    gap: 24px;
+    align-items: start;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+  }
+  .case:last-child { border-bottom: 1px solid var(--line); }
+  .case:hover { background: rgba(232,230,225,0.02); }
+
+  .case-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .case-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-top: 10px;
+  }
+  .tag-deployed { color: var(--green); border: 1px solid rgba(61,220,151,0.35); background: rgba(61,220,151,0.06); }
+  .tag-active { color: var(--amber); border: 1px solid rgba(242,166,90,0.35); background: rgba(242,166,90,0.06); }
+
+  .case-title {
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .case-desc {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    max-width: 56ch;
+    margin: 0;
+  }
+  .case-stack {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 12px;
+  }
+  .case-arrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    align-self: center;
+  }
+
+  @media (max-width: 640px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .radar { max-width: 220px; }
+    .case { grid-template-columns: 1fr; }
+    .case-arrow { display: none; }
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 30px 0 50px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <a class="wordmark" href="#top">toure<span>@</span>portfolio</a>
+    <nav>
+      <a href="#work">Work</a>
+      <a href="https://github.com/TVW-80" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="status-tag"><span class="dot"></span>1 system live</div>
+      <h1>Cybersecurity &amp; systems engineering, built and broken by hand.</h1>
+      <p>SOC deployment, threat intelligence pipelines, and self-hosted automation — documented end to end, including what went wrong along the way.</p>
+      <div class="hero-links">
+        <a class="btn btn-primary" href="#work">View projects</a>
+        <a class="btn btn-ghost" href="https://github.com/TVW-80" target="_blank" rel="noopener">GitHub profile</a>
+      </div>
+    </div>
+    <div class="radar" aria-hidden="true">
+      <div class="sweep"></div>
+      <div class="blip"></div>
+      <div class="blip"></div>
+      <div class="blip"></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap" id="work">
+  <div class="section-label">// case files</div>
+
+  <a class="case" href="anansi/">
+    <div class="case-meta">
+      2026
+      <div class="case-tag tag-active">live</div>
+    </div>
+    <div>
+      <h2 class="case-title">Anansi — Real-Time Regional Intelligence Dashboard</h2>
+      <p class="case-desc">A self-hosted n8n automation layer feeding a live CesiumJS 3D globe — traffic, weather, and local news normalized into one schema and rendered as a real-time map, with a full custom rebrand. Built on <a href="https://github.com/bilawalsidhu/gods-eye-view" target="_blank" rel="noopener" style="color:var(--green); text-decoration:underline;">God's Eye View</a> by Bilawal Sidhu — <a href="https://youtu.be/0p8o7AeHDzg" target="_blank" rel="noopener" style="color:var(--amber); text-decoration:underline;">watch the original demo</a>.</p>
+      <div class="case-stack">n8n · Docker · CesiumJS · TomTom API · NOAA API</div>
+    </div>
+    <div class="case-arrow">view →</div>
+  </a>
+</div>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
+    <span>built &amp; maintained by Toure</span>
+    <span>last updated 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
