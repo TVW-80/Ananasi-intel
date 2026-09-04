@@ -175,7 +175,7 @@ requests fresh data, which keeps API usage proportional to actual viewing time.
 This project is built directly on top of **[God's Eye View](https://github.com/bilawalsidhu/gods-eye-view)**,
 an open-source CesiumJS geospatial visualization platform created by
 **[Bilawal Sidhu](https://github.com/bilawalsidhu)**. His original demo/walkthrough of
-the platform is available [on YouTube](https://youtu.be/0p8o7AeHDzg). Anansi extends that base platform
+the platform is available [on YouTube](https://youtu.be/rXvU7bPJ8n4). Anansi extends that base platform
 with a self-hosted n8n data pipeline, a custom regional data layer, and a full visual
 rebrand — but the underlying 3D globe engine, layer architecture, and original concept
 are his work. Full credit for the foundation this project builds on.
