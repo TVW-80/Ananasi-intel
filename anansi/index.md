@@ -108,3 +108,83 @@ theme variables throughout the codebase.*
 ---
 
 # Architecture
+
+```
+n8n workflows (Docker, self-hosted)
+  ├── Traffic  → TomTom API        ─┐
+  ├── Weather  → NOAA Alerts API    ├─→ normalized JSON via webhook
+  └── News     → Google News RSS   ─┘
+                                        │
+                                        ▼
+                        Custom Cesium data layer (polls every 45s)
+                                        │
+                                        ▼
+                         Anansi (CesiumJS 3D globe, in-browser)
+```
+
+Each n8n workflow is triggered by an incoming webhook request rather than a cron
+schedule — the automation layer only calls upstream APIs when the dashboard itself
+requests fresh data, which keeps API usage proportional to actual viewing time.
+
+---
+
+# Challenges & Troubleshooting
+
+- **NOAA's undocumented User-Agent requirement** — a silent 403 with no indication of
+  the cause until cross-referencing NOAA's own API documentation.
+- **Source-level bot blocking** — the original news source's Cloudflare-style protection
+  couldn't be bypassed with header spoofing, requiring a full pivot to a different feed.
+- **n8n's XML node output shape** — didn't match assumed conventions three separate
+  times; resolved by dumping the raw HTTP response and parsing the actual string
+  structure directly rather than relying on the intermediate conversion node.
+- **n8n's empty-array execution behavior** — a workflow returning zero results (a
+  perfectly valid state, e.g. "no active weather alerts") silently halted the execution
+  chain before reaching the response node, requiring the `Always Output Data` node
+  setting to be explicitly enabled.
+- **Google Cloud billing** — Google's Photorealistic 3D Tiles API requires a linked
+  payment method even within free-tier usage; this blocked enabling the optional
+  Google 3D imagery layer and remains a known limitation (see Future Work).
+
+---
+
+# Future Work
+
+- Enable the Google Photorealistic 3D Tiles imagery layer once billing is configured.
+- Persist historical snapshots of each layer (SQLite/Postgres) to support basic
+  before/after trend queries instead of only showing current state.
+- Add a lightweight alerting hook (Discord/Telegram webhook) for high-severity weather
+  or traffic events.
+
+---
+
+# Skills Demonstrated
+
+- **Automation / ETL engineering** — self-hosted n8n workflows normalizing three
+  independent, differently-shaped public APIs into one consistent schema.
+- **API integration & troubleshooting** — diagnosing auth/header requirements, bot
+  protection, and inconsistent response shapes across multiple third-party services.
+- **Full-stack extension of an existing platform** — writing and wiring new application
+  code (a custom CesiumJS data layer) into an open-source base project.
+- **Self-hosted infrastructure** — Docker-based deployment, container persistence, and
+  local network configuration on Windows.
+- **Product/UI work** — end-to-end rebrand including original logo design, color theming,
+  and consistent naming across a codebase.
+
+# Credit
+
+This project is built directly on top of **[God's Eye View](https://github.com/bilawalsidhu/gods-eye-view)**,
+an open-source CesiumJS geospatial visualization platform created by
+**[Bilawal Sidhu](https://github.com/bilawalsidhu)**. His original demo/walkthrough of
+the platform is available [on YouTube](https://youtu.be/0p8o7AeHDzg). Anansi extends that base platform
+with a self-hosted n8n data pipeline, a custom regional data layer, and a full visual
+rebrand — but the underlying 3D globe engine, layer architecture, and original concept
+are his work. Full credit for the foundation this project builds on.
+
+# Conclusion
+
+Anansi demonstrates the ability to take a public, general-purpose open-source
+visualization platform and turn it into a purpose-built, live regional intelligence
+tool — designing the ETL pipeline, debugging real API and infrastructure issues as they
+came up, extending the application's actual codebase with new functionality, and
+finishing with a fully custom brand identity. The result is a working, self-hosted,
+real-time dashboard built entirely on free-tier public data sources.
