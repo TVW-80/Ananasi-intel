@@ -34,7 +34,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* watermark stamp */
   body::before {
     content: "CLASSIFIED";
     position: fixed;
@@ -62,7 +61,6 @@
   a { color: var(--gold-bright); }
   img { max-width: 100%; display: block; border: 1px solid var(--line); }
 
-  /* classification banner */
   .classbar {
     background: var(--red);
     color: #0a0a0a;
@@ -109,7 +107,6 @@
   }
   .subject-line b { color: var(--text); font-weight: 500; }
 
-  /* sections */
   section { margin: 44px 0; }
   .sec-tag {
     display: inline-block;
@@ -151,7 +148,6 @@
   }
   figcaption::before { content: "FIG. — "; color: var(--red-bright); }
 
-  /* asset table */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -173,7 +169,6 @@
   }
   td { color: #cfcbc4; }
 
-  /* field log entries */
   .logentry {
     border-left: 2px solid var(--line);
     padding: 4px 0 4px 18px;
@@ -205,7 +200,6 @@
     display: inline-block;
   }
 
-  /* obstacle / debrief list */
   ul.debrief { list-style: none; padding: 0; margin: 0; }
   ul.debrief li {
     padding: 14px 0;
@@ -265,14 +259,14 @@
 </head>
 <body>
 
-<div class="classbar">TOP SECRET // SI-TK // NOFORN — AUTHORIZED PERSONNEL ONLY</div>
+<div class="classbar">TOP SECRET // SI-TK // CLASSIFIED — AUTHORIZED PERSONNEL ONLY</div>
 
 <div class="wrap">
 
 <header class="doc">
   <div class="doc-meta">
     <span>FILE: <b>OP-ANANSI-757</b></span>
-    <span>CLASSIFICATION: <b>SI-TK // NOFORN</b></span>
+    <span>CLASSIFICATION: <b>SI-TK // CLASSIFIED </b></span>
     <span>STATUS: <b>ACTIVE</b></span>
   </div>
   <h1 class="title">OPERATION <span>ANANSI</span></h1>
@@ -282,14 +276,14 @@
 <section>
   <div class="sec-tag">01 // MISSION BRIEF</div>
   <h2>Overview</h2>
-  <p>Anansi is a self-hosted, real-time geospatial dashboard covering the Hampton Roads / Historic
-  Triangle region of Virginia. It fuses a self-hosted <strong>n8n</strong> automation server as the
-  intelligence ingestion layer with <strong>God's Eye View</strong>, an open-source CesiumJS 3D
-  globe platform, to render live public data — traffic, weather, local news — as a single
-  operational picture.</p>
-  <p>Objective: build something closer to a lightweight SOC-style situational awareness tool than a
-  static map. Multiple independent feeds, normalized into one schema, polled continuously, rendered
-  without manual refresh.</p>
+  <p>Anansi is a self-hosted, real-time geospatial dashboard built for the Hampton Roads /
+  Historic Triangle region of Virginia. A self-hosted <strong>n8n</strong> automation server
+  handling intelligence ingestion, feeding into <strong>God's Eye View</strong>, an open-source
+  CesiumJS 3D globe platform, so live public data — traffic, weather, local news — renders as one
+  operational picture instead of five separate tabs.</p>
+  <p>The goal wasn't just a pretty map. It's closer to a lightweight SOC-style situational
+  awareness tool: multiple independent feeds, normalized into one schema, polled continuously,
+  rendered without a manual refresh.</p>
 
   <h2 style="margin-top:30px;">Assets &amp; Methods</h2>
   <table>
@@ -313,16 +307,18 @@
   <div class="logentry">
     <span class="tag">ENTRY 001 — INFRASTRUCTURE</span>
     <h3>Environment Setup</h3>
-    <p>Base platform deployed locally on Windows 11 (Node.js/Vite). Docker Desktop required for the
-    automation layer — required enabling virtualization in BIOS, disabled by default.</p>
+    <p>Base platform deployed locally on Windows 11 (Node.js/Vite). Docker Desktop wouldn't start
+    at first...turned out virtualization was disabled in the BIOS by default, so that had to get
+    flipped on before the automation layer would come up at all.</p>
   </div>
 
   <div class="logentry">
     <span class="tag">ENTRY 002 — AUTOMATION</span>
     <h3>Self-Hosted Automation Server (n8n)</h3>
-    <p>n8n deployed as a Docker container, persisting workflow data in a named volume. Each data
-    source runs its own workflow, triggered on-demand by webhook rather than a fixed schedule —
-    upstream APIs are only queried when the dashboard is actively being observed.</p>
+    <p>n8n runs as a Docker container with its workflow data persisted in a named volume, so
+    nothing gets wiped on restart. Each data source is its own workflow, triggered on-demand by
+    webhook rather than a fixed schedule. The intent being upstream APIs only get hit when the
+    dashboard's actually being viewed, not burning quota in the background for no reason.</p>
     <figure>
       <img src="../images/n8n-workflows.png" alt="n8n workflow canvas">
       <figcaption>n8n workflow canvas — traffic, weather, WJCC news pipelines</figcaption>
@@ -332,11 +328,13 @@
   <div class="logentry">
     <span class="tag">ENTRY 003 — TRAFFIC INTEL</span>
     <h3>Traffic Data Pipeline</h3>
-    <p>Live incident data pulled from TomTom's Traffic Incident Details API (v5), bounded to Norfolk,
-    Virginia Beach, Chesapeake, Portsmouth, Suffolk, Newport News, and Hampton. Normalized into a
-    consistent <code>{lat, lng, label, type, metadata}</code> schema. Beyond static incidents, the
-    TomTom flow API drives a live vehicle-tracking overlay — individual moving markers on real
-    Williamsburg-area streets, continuously updating.</p>
+    <p>Live incident data comes from TomTom's Traffic Incident Details API (v5), bounded to
+    Norfolk, Virginia Beach, Chesapeake, Portsmouth, Suffolk, Newport News, and Hampton, normalized
+    into a consistent <code>{lat, lng, label, type, metadata}</code> schema so it lines up with
+    everything else in the pipeline. Static incidents were the starting point — getting the TomTom
+    flow API working came later, and that's what actually drives the live vehicle tracking
+    overlay: individual moving markers on real Williamsburg area streets, continuously updating
+    rather than a stale snapshot.</p>
     <figure>
       <img src="../images/traffic-feed.png" alt="Traffic incidents feed">
       <figcaption>Traffic incidents feed, ranked by severity</figcaption>
@@ -346,19 +344,22 @@
   <div class="logentry">
     <span class="tag">ENTRY 004 — WEATHER INTEL</span>
     <h3>Weather Alerts Pipeline</h3>
-    <p>NOAA's public Alerts API required no key, but a descriptive <code>User-Agent</code> header —
-    omission returns a silent 403, an under-documented requirement. Alerts are zone-based rather
-    than coordinate-based, so a lookup table maps known localities to approximate coordinates.</p>
+    <p>NOAA's public Alerts API doesn't need a key, but it does need a descriptive
+    <code>User-Agent</code> header — skip it and the response is a silent 403 with nothing pointing
+    to why. That one took some digging since it's not documented anywhere obvious. NWS alerts are
+    zone-based rather than coordinate-based, so a lookup table maps known localities to
+    approximate coordinates to get them plotted on the map at all.</p>
   </div>
 
   <div class="logentry">
     <span class="tag">ENTRY 005 — LOCAL NEWS INTEL</span>
     <h3>Local News Pipeline — Historic Triangle</h3>
-    <p>Original plan targeted a Williamsburg news outlet's RSS feed directly — the source actively
-    blocks automated requests at the network level, returning 403 regardless of headers. Pivoted to
-    a location-filtered Google News RSS query, requiring a raw regex-based XML parser rather than
-    n8n's built-in conversion node, whose actual output shape didn't match documented behavior.
-    Obituary and real-estate listing noise filtered at parse time.</p>
+    <p>The original target was a Williamsburg news outlet's RSS feed directly, but the source
+    actively blocks automated requests at the network level — 403 regardless of what headers get
+    sent. Pivoted to a location-filtered Google News RSS query instead, which meant writing a raw
+    regex-based XML parser rather than trusting n8n's built-in conversion node, since the actual
+    output shape didn't match what the documentation implied. Obituary and real-estate listing
+    noise gets filtered out at parse time — not useful for a situational-awareness feed.</p>
     <figure>
       <img src="../images/news-feed.png" alt="Local news feed">
       <figcaption>Live local news feed, geocoded and filtered</figcaption>
@@ -368,70 +369,75 @@
   <div class="logentry">
     <span class="tag">ENTRY 006 — INTEGRATION</span>
     <h3>Hampton Roads 757 Panel — Built, Then Redesigned</h3>
-    <p>Originally built as a Cesium map layer polling all three n8n webhooks, rendering colored
-    dots on the globe. A real bug surfaced early: a single failed poll on enable was reverting
-    the entire toggle to OFF ("could not start cleanly") instead of degrading gracefully — fixed
-    so the layer stays on and retries automatically instead of failing hard.</p>
-    <p>A <b>Hampton Roads (757)</b> location pill was added with five real landmarks (Nauticus,
-    Virginia Beach Oceanfront, the Bridge-Tunnel, Naval Station Norfolk, Chrysler Museum), and
-    every other preset city pill was hidden from the UI without deleting its underlying data —
-    CCTV and voice control still reference it under the hood.</p>
-    <p><b>Final redesign:</b> pulled out of the data-layer system entirely. No more map dots, no
-    ON/OFF toggle in Data Layers — it now lives as a persistent panel on the right rail, a
-    live-scrolling feed of real traffic incidents, weather alerts, and news headlines, each
-    carrying source, severity, and timestamp.</p>
+    <p>This started as a Cesium map layer polling all three n8n webhooks and rendering colored
+    dots on the globe. Found a real bug early: a single failed poll on enable was reverting the
+    whole toggle back to OFF ("could not start cleanly") instead of degrading gracefully. Fixed so
+    the layer stays on and retries automatically instead of failing hard on one bad request.</p>
+    <p>Added a <b>Hampton Roads (757)</b> location pill with five real landmarks — Nauticus, the
+    Virginia Beach Oceanfront, the Bridge-Tunnel, Naval Station Norfolk, the Chrysler Museum — and
+    hid every other preset city pill from the UI without deleting the underlying data, so CCTV and
+    voice control still reference it under the hood.</p>
+    <p>The final version pulled the whole thing out of the data-layer system entirely — no more
+    map dots, no ON/OFF toggle in Data Layers. It now lives as a persistent panel on the right
+    rail: a live-scrolling feed of real traffic incidents, weather alerts, and news headlines, each
+    with source, severity, and timestamp. Reads a lot better as an actual intelligence feed than a
+    cluttered globe ever did.</p>
+  </div>
+
+  <div class="logentry">
+    <span class="tag">ENTRY 006B — NETWORK DEBUGGING</span>
+    <h3>Live Vehicle Tracking — TomTom Activation &amp; a Real Debugging Chain</h3>
+    <p>Separate from the n8n incident pipeline, the base platform has its own native
+    <code>TOMTOM_API_KEY</code>, sitting commented-out in <code>.env</code>. Activating it to get
+    live vehicle-position tracking on the globe led straight into "traffic won't populate / stuck
+    at 0% coverage" — which turned out to be three separate, unrelated root causes stacked on top
+    of each other, not one. That's what made it a genuine troubleshooting exercise rather than a
+    quick fix.</p>
+    <p><b>1. Norton Antivirus's SSL inspection.</b> Its own certificate wasn't trusted by Node,
+    producing intermittent <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code> failures on outbound HTTPS
+    calls. Resolved by pointing <code>NODE_EXTRA_CA_CERTS</code> at Norton's own auto-maintained
+    certificate bundle, set as a persistent machine-level environment variable. That part is
+    machine-specific, so it's not in the repo.</p>
+    <p><b>2. Overpass mirror ordering.</b> The first mirror tried
+    (<code>overpass-api.de</code>) was hard-hanging at the TCP level, eating the full 22-second
+    timeout before ever reaching one that actually worked. Reordering the mirror list to try the
+    working ones first cleared that up.</p>
+    <p><b>3. A second, completely unrelated bug:</b> the Overpass proxy's User-Agent was still a
+    stale pre-rebrand string (<code>gods-eye-view-overpass-proxy/1.0</code>), and
+    <code>overpass-api.de</code>'s abuse filter was hard-blocking it with a 406 on every request.
+    Had nothing to do with Norton...only surfaced by swapping that one header in isolation and
+    re-testing. Fixed to <code>Anansi/1.0</code>.</p>
+    <p>Cause-level logging went into both proxies (<code>vite.config.js</code>) so any future
+    failure surfaces the actual reason instead of a bare "fetch failed." A live firewall-off test
+    ruled out Norton's firewall specifically — behavior was identical either way, which confirmed
+    the User-Agent was the real missing piece for Overpass, not just a secondary symptom of the
+    SSL issue.</p>
+    <p>By the end of that session: TomTom flow, Overpass road geometry, and the Hampton Roads
+    panel were all confirmed running on real data — 98+ live traffic incidents, real news
+    headlines, clean coverage percentages instead of stuck zeros.</p>
   </div>
 
   <div class="logentry">
     <span class="tag">ENTRY 007 — COVER IDENTITY</span>
     <h3>Rebrand: Anansi</h3>
-    <p>Base platform rebranded end-to-end — UI, page title, and config/branding strings (AI
-    prompts, User-Agent headers, console messages); project docs and the original repo/YouTube
-    links were left untouched since those describe the real public source. Logo replaced
-    everywhere — favicon, title bar, loading screen — with an original red spider-mark SVG.
-    Full color pass: black/near-black backgrounds, gold text (<code>#d4af37</code> primary,
-    <code>#a8842a</code> dimmer for secondary/hint text — both verified against WCAG contrast
-    at 9.4:1 and 5.6:1), red (<code>#c81e1e</code>) for buttons, borders, and active states.
-    A follow-up pass caught several spots the first sweep missed: icon SVGs with colors baked
-    directly into the file rather than driven by CSS, the voice-control widget's waveform, the
-    first-run modal, command-dock borders, CCTV panel indicators. Subtitle changed to
+    <p>Full rebrand of the base platform UI, page title, config/branding strings (AI prompts,
+    User-Agent headers, console messages). Project docs and the original repo/YouTube links stayed
+    untouched, since those point to the real public source and deserve credit. Replaced logo,
+    Favicon, title bar, loading screen with an original red spider-mark SVG. Full
+    color pass: black/near-black backgrounds, gold text (<code>#d4af37</code> primary,
+    <code>#a8842a</code> dimmer for secondary/hint text — checked both against WCAG contrast, 9.4:1
+    and 5.6:1), red (<code>#c81e1e</code>) for buttons, borders, and active states.</p>
+    <p>A follow-up pass caught a few spots the first sweep missed — icon SVGs with colors baked
+    directly into the file instead of driven by CSS, the voice-control widget's waveform, the
+    first-run modal, the command-dock borders, CCTV panel indicators. Subtitle changed to
     <em>"I'm everywhere. And nowhere."</em></p>
     <figure>
       <img src="../images/anansi-rebrand.png" alt="Anansi rebrand with live vehicle tracking">
       <figcaption>Final rebrand — live vehicle tracking, red/black/gold theme</figcaption>
     </figure>
-  </div>  <div class="logentry">
-    <span class="tag">ENTRY 006B — NETWORK DEBUGGING</span>
-    <h3>Live Vehicle Tracking — TomTom Activation &amp; a Real Debugging Chain</h3>
-    <p>Separate from the n8n incident pipeline, the base platform's own native
-    <code>TOMTOM_API_KEY</code> — sitting commented-out in <code>.env</code> — was activated to
-    drive live vehicle-position tracking directly on the globe. What followed was diagnosing
-    "traffic won't populate / stuck at 0% coverage," which turned out to have three distinct,
-    unrelated root causes rather than one:</p>
-    <p><b>1. Norton Antivirus's SSL inspection.</b> Its own certificate wasn't trusted by Node,
-    causing intermittent <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code> failures on any outbound
-    HTTPS call. Fixed by pointing <code>NODE_EXTRA_CA_CERTS</code> at Norton's own
-    auto-maintained certificate bundle, set as a persistent machine-level environment variable
-    (not committed to the repo — machine-specific).</p>
-    <p><b>2. Overpass mirror ordering.</b> The first-tried mirror (<code>overpass-api.de</code>)
-    was hard-hanging at the TCP level, burning the full 22-second timeout before ever reaching a
-    working mirror. Fixed by reordering the mirror list to try working ones first.</p>
-    <p><b>3. A second, unrelated bug:</b> the Overpass proxy's User-Agent was a stale
-    pre-rebrand string (<code>gods-eye-view-overpass-proxy/1.0</code>) that
-    <code>overpass-api.de</code>'s abuse filter was hard-blocking with a 406 on every request —
-    nothing to do with Norton at all. Proven by swapping only that header in isolation; fixed to
-    <code>Anansi/1.0</code>.</p>
-    <p>Cause-level logging was added to both proxies (<code>vite.config.js</code>) so any future
-    failure surfaces the actual reason instead of a bare "fetch failed." A live firewall-off test
-    confirmed Norton's firewall itself wasn't the remaining blocker — TomTom behaved identically
-    either way, and the stale User-Agent was the actual missing piece for Overpass.</p>
-    <p>End state, confirmed live in-session: TomTom flow, Overpass road geometry, and the Hampton
-    Roads panel all running on real data — 98+ live traffic incidents, real news headlines, clean
-    coverage percentages instead of stuck zeros.</p>
   </div>
 
-
-  <h2>System Architecture</h2>
+  <h2 style="margin-top:34px;">System Architecture</h2>
   <pre class="schematic">TRACK 1 — n8n (Docker, self-hosted)
   ├── Traffic  → TomTom Incident API   ─┐
   ├── Weather  → NOAA Alerts API        ├─→ normalized JSON via webhook
@@ -446,64 +452,65 @@ TRACK 2 — Native platform integrations
 
                          Anansi (CesiumJS 3D globe, in-browser)</pre>
   <p style="margin-top:16px;">The n8n track is fully webhook-triggered rather than cron-scheduled
-  — upstream APIs are only called when the panel is actually being viewed. The native track (TomTom
+  — upstream APIs only get called when the panel's actually being viewed. The native track (TomTom
   flow, Overpass) runs independently inside the platform itself, with its own self-hosted proxy
   layer handling mirror selection and request headers.</p>
 </section>
 
 <section>
   <div class="sec-tag">04 // OBSTACLES ENCOUNTERED</div>
-  <h2>Debrief: Complications in the Field</h2>
+  <h2>What Actually Went Wrong</h2>
   <ul class="debrief">
     <li><b>Norton Antivirus's SSL inspection</b> — its own certificate wasn't trusted by Node,
     causing intermittent <code>UNABLE_TO_VERIFY_LEAF_SIGNATURE</code> failures on outbound HTTPS
     calls. Not a firewall issue — confirmed by testing with the firewall fully disabled and seeing
     identical behavior. Fixed via <code>NODE_EXTRA_CA_CERTS</code> pointed at Norton's own
     certificate bundle.</li>
-    <li><b>Overpass mirror hanging at the TCP level</b> — the first-tried mirror consumed the
-    entire 22-second timeout before ever reaching a working one, masquerading as a total failure
-    when only one mirror was actually broken.</li>
-    <li><b>A stale pre-rebrand User-Agent silently 406'd by Overpass's abuse filter</b> — looked
-    identical to the mirror-timeout symptom from the outside, isolated only by swapping the header
+    <li><b>Overpass mirror hanging at the TCP level</b> — the first-tried mirror ate the entire
+    22-second timeout before ever reaching a working one, which made it look like a total failure
+    when really only one mirror was broken.</li>
+    <li><b>A stale pre-rebrand User-Agent, silently 406'd by Overpass's abuse filter</b> — looked
+    identical to the mirror-timeout symptom from the outside. Only isolated by swapping the header
     alone and re-testing.</li>
-    <li><b>NOAA's undocumented User-Agent requirement</b> — a silent 403 with no indication of cause
-    until cross-referencing NOAA's own documentation directly.</li>
+    <li><b>NOAA's undocumented User-Agent requirement</b> — a silent 403 with no clue as to why,
+    until cross-referencing NOAA's own docs directly.</li>
     <li><b>Source-level bot blocking</b> — the original news source's protection couldn't be
-    bypassed with header spoofing, forcing a full pivot to a different feed.</li>
-    <li><b>n8n's XML node output shape</b> — didn't match assumed conventions three separate times;
-    resolved by dumping the raw HTTP response and parsing the actual structure directly.</li>
-    <li><b>n8n's empty-array execution behavior</b> — a workflow returning zero results (a valid
-    state) silently halted execution before the response node, requiring the "Always Output Data"
-    setting to be explicitly enabled.</li>
-    <li><b>A layer-level failure mode</b> — one failed poll on enable was reverting the entire
-    Hampton Roads toggle to OFF rather than degrading gracefully; fixed to retry automatically
+    bypassed with header spoofing, so the fix was pivoting to a different feed entirely.</li>
+    <li><b>n8n's XML node output shape</b> — didn't match assumed conventions three separate
+    times; ended up dumping the raw HTTP response and parsing the actual structure directly
+    instead of trusting the built-in node.</li>
+    <li><b>n8n's empty-array execution behavior</b> — a workflow returning zero results (a
+    perfectly valid state) was silently halting execution before it reached the response node.
+    Had to explicitly enable "Always Output Data" to fix it.</li>
+    <li><b>A layer-level failure mode</b> — one failed poll on enable was reverting the whole
+    Hampton Roads toggle to OFF instead of degrading gracefully; fixed to retry automatically
     instead of failing hard.</li>
-    <li><b>Google Cloud billing</b> — the Photorealistic 3D Tiles API requires a linked payment
-    method even for free-tier usage; blocked the optional Google 3D imagery layer. Logged as an
+    <li><b>Google Cloud billing</b> — the Photorealistic 3D Tiles API needs a linked payment
+    method even for free-tier usage, which blocked the optional Google 3D imagery layer. Still an
     open item.</li>
   </ul>
   <p style="margin-top:16px; font-size:13px; color:var(--text-dim);">Three of the traffic-related
   failures above <i>looked identical from the outside</i> — all presented as "coverage stuck at
-  0%." Isolating them required changing one variable at a time (firewall off/on, header swap,
-  mirror order) rather than assuming a single cause.</p>
+  0%." Isolating them meant changing one variable at a time — firewall off/on, header swap, mirror
+  order — instead of assuming a single cause and stopping there.</p>
   <div class="stamp">UNRESOLVED — SEE FUTURE OPS</div>
 </section>
 
 <section>
   <div class="sec-tag">05 // FUTURE OPERATIONS</div>
-  <h2>Pending Objectives</h2>
+  <h2>What's Next</h2>
   <ul class="debrief">
-    <li>Enable the Google Photorealistic 3D Tiles imagery layer once billing is configured.</li>
-    <li>Persist historical snapshots of each layer (SQLite/Postgres) for before/after trend
-    queries instead of only current state.</li>
+    <li>Enable the Google Photorealistic 3D Tiles imagery layer once billing's sorted out.</li>
+    <li>Persist historical snapshots of each layer (SQLite/Postgres) to support basic
+    before/after trend queries instead of only showing current state.</li>
     <li>Add a lightweight alerting hook (Discord/Telegram webhook) for high-severity weather or
     traffic events.</li>
   </ul>
 </section>
 
 <section>
-  <div class="sec-tag">06 // OPERATOR ASSESSMENT</div>
-  <h2>Skills Demonstrated</h2>
+  <div class="sec-tag">06 // WHAT THIS DEMONSTRATES</div>
+  <h2>Skills Applied</h2>
   <ul class="debrief">
     <li><b>Automation / ETL engineering</b> — self-hosted n8n workflows normalizing three
     independent, differently-shaped public APIs into one consistent schema.</li>
@@ -513,7 +520,7 @@ TRACK 2 — Native platform integrations
     code into an open-source base project.</li>
     <li><b>Root-cause network debugging</b> — isolating three unrelated failures (SSL trust store,
     TCP-level mirror hang, abuse-filter header block) that presented identically from the outside,
-    by changing one variable at a time rather than assuming a single cause.</li>
+    by changing one variable at a time instead of guessing.</li>
     <li><b>Self-hosted infrastructure</b> — Docker-based deployment, container persistence, local
     network configuration on Windows.</li>
     <li><b>Product / UI work</b> — end-to-end rebrand including original logo design, color
@@ -523,9 +530,9 @@ TRACK 2 — Native platform integrations
 
 <section>
   <div class="sec-tag">06B // EVIDENCE LOG</div>
-  <h2>Files Modified</h2>
-  <p style="font-size:13px;">A non-exhaustive manifest of what actually changed across this
-  operation, for anyone auditing the work directly:</p>
+  <h2>Files Touched</h2>
+  <p style="font-size:13px;">A non-exhaustive list of what actually changed, for anyone who wants
+  to check the work directly:</p>
   <pre class="schematic" style="font-size:11.5px;">index.html
 style.css
 vite.config.js
@@ -547,25 +554,25 @@ public/*.svg
   <div class="sec-tag">07 // SOURCE ATTRIBUTION</div>
   <h2>Credit</h2>
   <div class="credit-box">
-    This operation is built directly on top of <b>God's Eye View</b>
+    This project is built directly on top of <b>God's Eye View</b>
     (<a href="https://github.com/bilawalsidhu/gods-eye-view" target="_blank" rel="noopener">github.com/bilawalsidhu/gods-eye-view</a>),
     an open-source CesiumJS geospatial visualization platform created by
     <b>Bilawal Sidhu</b> (<a href="https://github.com/bilawalsidhu" target="_blank" rel="noopener">github.com/bilawalsidhu</a>).
     His original demo is available <a href="https://youtu.be/rXvU7bPJ8n4" target="_blank" rel="noopener">on YouTube</a>.
     Anansi extends that base platform with a self-hosted n8n data pipeline, a custom regional data
-    layer, and a full visual rebrand — but the underlying 3D globe engine, layer architecture, and
-    original concept are his work. Full credit for the foundation this operation builds on.
+    panel, and a full visual rebrand but the underlying 3D globe engine, layer architecture, and
+    original concept are his. Full credit for the foundation this project builds on.
   </div>
 </section>
 
 <section>
   <div class="sec-tag">08 // DEBRIEF SUMMARY</div>
-  <h2>Conclusion</h2>
-  <p>Anansi demonstrates the ability to take a public, general-purpose open-source visualization
-  platform and turn it into a purpose-built, live regional intelligence tool — designing the ETL
-  pipeline, resolving real API and infrastructure issues as they surfaced, extending the platform's
-  actual codebase with new functionality, and finishing with a fully custom identity. The result is
-  a working, self-hosted, real-time dashboard built entirely on free-tier public data sources.</p>
+  <h2>Where This Leaves Things</h2>
+  <p>A public, general-purpose open-source visualization platform got turned into a purpose-built,
+  live regional intelligence tool designing the ETL pipeline, working through real API and
+  infrastructure issues as they came up, extending the platform's actual codebase with new
+  functionality, and finishing with a fully custom identity. What's live now is a working,
+  self-hosted, real-time dashboard built entirely on free-tier public data sources.</p>
   <div class="stamp" style="border-color:var(--gold-bright); color:var(--gold-bright);">OPERATION COMPLETE</div>
 </section>
 
