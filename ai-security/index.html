@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANANSI — AI Security Intel</title>
+<meta name="description" content="Anansi AI Security Intelligence Dashboard — exploited AI/ML vulnerabilities, research, model releases, and policy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060606; --panel: #0d0d0d; --panel-2: #121212;
+    --red: #c81e1e; --red-bright: #ff2b2b;
+    --orange: #ff8a1f; --amber: #e8c547;
+    --gold: #d4af37; --gold-bright: #f4cf5e; --gold-dim: #a8842a;
+    --text: #eae7e2; --text-dim: #8a8a8a; --body: #cfcbc4;
+    --line: rgba(212,175,55,0.18); --line-strong: rgba(212,175,55,0.4);
+    --mono: 'IBM Plex Mono', monospace; --display: 'Space Grotesk', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font-family: var(--mono); font-size: 13px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--gold-bright); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  .classbar { background: var(--red); color: #0a0a0a; font-family: var(--display); font-weight: 700;
+    font-size: 11px; letter-spacing: .18em; text-align: center; padding: 6px 12px; }
+
+  .shell { max-width: 1280px; margin: 0 auto; padding: 0 22px 60px; }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    padding: 22px 0 18px; border-bottom: 1px double var(--line); }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand svg { width: 40px; height: 40px; flex: none; }
+  .brand h1 { font-family: var(--display); font-size: 22px; letter-spacing: .04em; margin: 0; line-height: 1.1; }
+  .brand h1 span { color: var(--red-bright); }
+  .brand small { display: block; color: var(--text-dim); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+
+  .status { display: flex; gap: 18px; flex-wrap: wrap; font-size: 11px; color: var(--text-dim); letter-spacing: .05em; }
+  .status b { color: var(--gold-bright); font-weight: 500; }
+  .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2bd96b;
+    box-shadow: 0 0 8px #2bd96b; margin-right: 6px; animation: pulse 1.8s infinite; vertical-align: middle; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 20px 0; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); padding: 14px 16px; position: relative; }
+  .kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--k, var(--gold)); }
+  .kpi .n { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1; color: var(--k, var(--text)); }
+  .kpi .l { font-size: 10.5px; color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase; margin-top: 8px; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .tag { font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: .16em; color: var(--gold-bright); }
+
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chip { border: 1px solid var(--line-strong); padding: 4px 10px; font-size: 11px; letter-spacing: .05em; color: var(--body); }
+  .chip[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #0a0a0a; font-weight: 600; }
+  .search { background: var(--bg); border: 1px solid var(--line-strong); color: var(--text); font: inherit;
+    font-size: 12px; padding: 5px 10px; width: 190px; outline: none; }
+  .search:focus { border-color: var(--gold-bright); }
+
+  table.triage { width: 100%; border-collapse: collapse; }
+  .triage th { text-align: left; font-family: var(--display); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--gold-dim); font-weight: 600; padding: 9px 14px; border-bottom: 1px solid var(--line); }
+  .triage td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--body); }
+  .triage tr.row { cursor: pointer; }
+  .triage tr.row:hover td { background: var(--panel-2); }
+  .triage tr.open td { background: var(--panel-2); }
+  .triage th:first-child { width: 42%; }
+  .prod { color: var(--text); font-weight: 600; }
+  .cve { display: block; font-size: 11px; color: var(--text-dim); }
+  .ver { white-space: nowrap; }
+  .ver b { color: var(--gold-bright); font-weight: 600; }
+  .ver .none { color: var(--red-bright); }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
+    padding: 2px 8px; border: 1px solid currentColor; white-space: nowrap; text-transform: uppercase; }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .b-kev { color: var(--red-bright); } .b-kev::before { box-shadow: 0 0 6px var(--red-bright); }
+  .b-public { color: var(--orange); }
+  .b-disclosed { color: var(--amber); }
+
+  .cvss { font-family: var(--display); font-weight: 700; font-size: 15px; }
+  .cvss small { display: block; white-space: nowrap; font-family: var(--mono); font-weight: 400; font-size: 10px; color: var(--text-dim); }
+  .bar { height: 3px; background: rgba(255,255,255,.07); margin-top: 5px; width: 64px; }
+  .bar i { display: block; height: 100%; background: var(--red-bright); }
+
+  tr.detail td { padding: 0 14px 16px; background: var(--panel-2); }
+  .detail-body { border-left: 2px solid var(--red); padding: 4px 0 2px 16px; }
+  .detail-body p { margin: 0 0 10px; color: var(--body); }
+  .detail-body dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; margin: 0 0 10px; }
+  .detail-body dt { color: var(--red-bright); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding-top: 1px; }
+  .detail-body dd { margin: 0; color: var(--body); }
+  .src a { margin-right: 14px; font-size: 12px; }
+  .src a::before { content: "↗ "; color: var(--gold-dim); }
+
+  .empty { padding: 26px 16px; color: var(--text-dim); text-align: center; }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tabs button { flex: 1; padding: 11px 6px; font-family: var(--display); font-size: 11px; font-weight: 600;
+    letter-spacing: .12em; color: var(--text-dim); border-bottom: 2px solid transparent; }
+  .tabs button[aria-selected="true"] { color: var(--gold-bright); border-bottom-color: var(--red); }
+  .feed { max-height: 640px; overflow-y: auto; }
+  .item { padding: 13px 16px; border-bottom: 1px dashed var(--line); }
+  .item:last-child { border-bottom: 0; }
+  .item .meta { font-size: 10.5px; color: var(--text-dim); letter-spacing: .06em; text-transform: uppercase; }
+  .item .meta b { color: var(--red-bright); font-weight: 600; }
+  .item h3 { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 4px 0 5px; color: var(--text); line-height: 1.35; }
+  .item p { margin: 0 0 6px; font-size: 12px; color: var(--body); }
+
+  .notice { margin-top: 20px; border: 1px solid var(--line); padding: 12px 16px; font-size: 11.5px; color: var(--text-dim); }
+  .notice b { color: var(--gold-bright); font-weight: 500; }
+
+  @media (max-width: 1040px) { .grid { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 640px) {
+    .shell { padding: 0 16px 40px; } .kpis { grid-template-columns: repeat(2, 1fr); }
+    .search { width: 100%; } .triage th:nth-child(4), .triage td:nth-child(4) { display: none; }
+    .detail-body dl { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="classbar">ANANSI // AI SECURITY INTEL — OPEN SOURCE // FOR DEFENSIVE &amp; EDUCATIONAL USE</div>
+<div class="shell">
+
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <g stroke="#c81e1e" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M26 30 L10 18 L4 24"/><path d="M26 34 L8 34 L2 40"/><path d="M27 38 L12 50 L8 58"/><path d="M28 27 L16 10 L18 4"/>
+          <path d="M38 30 L54 18 L60 24"/><path d="M38 34 L56 34 L62 40"/><path d="M37 38 L52 50 L56 58"/><path d="M36 27 L48 10 L46 4"/>
+        </g>
+        <ellipse cx="32" cy="38" rx="8" ry="10" fill="#c81e1e"/><circle cx="32" cy="25" r="5.5" fill="#c81e1e"/>
+        <path d="M29 34 L35 34 L32 40 Z" fill="#d4af37"/>
+      </svg>
+      <div>
+        <h1>ANANSI <span>// AI SECURITY</span></h1>
+        <small>AI / ML threat intelligence module</small>
+      </div>
+    </div>
+    <div class="status">
+      <span><i class="pulse"></i><b id="health">—</b></span>
+      <span>LAST REFRESH: <b id="refresh">—</b></span>
+      <span>HISTORY: <b id="history">—</b></span>
+    </div>
+  </header>
+
+  <section class="kpis" aria-label="Summary">
+    <div class="kpi" style="--k: var(--red-bright)"><div class="n" id="k-kev">0</div><div class="l">Exploited (CISA KEV)</div></div>
+    <div class="kpi" style="--k: var(--orange)"><div class="n" id="k-public">0</div><div class="l">Public PoC / details</div></div>
+    <div class="kpi" style="--k: var(--amber)"><div class="n" id="k-nofix">0</div><div class="l">No fixed release</div></div>
+    <div class="kpi"><div class="n" id="k-research">0</div><div class="l">Research &amp; incidents</div></div>
+    <div class="kpi"><div class="n" id="k-policy">0</div><div class="l">Models &amp; policy</div></div>
+  </section>
+
+  <div class="grid">
+    <section class="panel" aria-label="Advisories">
+      <div class="panel-head">
+        <span class="tag">01 // TRIAGE — AI/ML ADVISORIES</span>
+        <div class="controls" role="group" aria-label="Filter by exploitation status">
+          <button class="chip" data-f="all" aria-pressed="true">ALL</button>
+          <button class="chip" data-f="kev" aria-pressed="false">EXPLOITED</button>
+          <button class="chip" data-f="public" aria-pressed="false">PUBLIC POC</button>
+          <button class="chip" data-f="disclosed" aria-pressed="false">DISCLOSED</button>
+          <input class="search" id="q" type="search" placeholder="Search product / CVE…" aria-label="Search advisories">
+        </div>
+      </div>
+      <table class="triage">
+        <thead><tr><th>Product &amp; risk</th><th>Exploitation</th><th>CVSS</th><th>Affected → fixed</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+
+    <aside class="panel" aria-label="Intel feed">
+      <div class="tabs" role="tablist">
+        <button role="tab" data-t="research" aria-selected="true">RESEARCH</button>
+        <button role="tab" data-t="models" aria-selected="false">MODELS</button>
+        <button role="tab" data-t="orders" aria-selected="false">POLICY</button>
+      </div>
+      <div class="feed" id="feed"></div>
+    </aside>
+  </div>
+
+  <div class="notice">
+    <b>Use notice:</b> a dated, source-linked snapshot — not a substitute for vendor advisories or your own asset inventory.
+    Verify affected versions and mitigations against each primary source before acting.
+    Data adapted from <a id="upstream" href="#" target="_blank" rel="noopener">CYBERMED1C / AI-Tracker</a>.
+  </div>
+</div>
+
+<!-- Seed data, injected at build time so the page also works when opened from disk. -->
+<script type="application/json" id="seed">{"meta": {"lastRefresh": "2026-10-13T17:09:00Z", "health": "Healthy", "historyDays": 30, "upstream": "https://github.com/CYBERMED1C/AI-Tracker"}, "advisories": [{"id": "CVE-2026-64849", "product": "MLflow", "title": "Webhook SSRF", "status": "kev", "severity": "High", "cvss": 8.6, "cvssVersion": "3.1", "published": "2026-08-02", "affected": "3.10.0–3.14.x", "fixed": "3.16.0+", "summary": "An attacker who can reach the MLflow Tracking Server can use webhook redirects to read responses from internal, loopback, or cloud-metadata services.", "exposedIf": "MLflow 3.10.0–3.14.x is reachable by an untrusted user or network.", "doNow": "Upgrade to 3.16.0 or later (3.15.0 fixes the CVE; 3.16.0 adds IPv6-transition hardening). Restrict and authenticate the Tracking Server.", "lookFor": "Unexpected webhook tests, access to metadata addresses, or requests to internal-only services.", "exploitation": "Added to CISA KEV on Aug 19, 2026 — confirmed in-the-wild exploitation.", "sources": [{"label": "Maintainer advisory", "url": "https://github.com/mlflow/mlflow/security/advisories/GHSA-7gwp-5pfp-969j"}, {"label": "CISA KEV", "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-64849"}]}, {"id": "CVE-2025-62593", "product": "Ray", "title": "Browser-assisted RCE", "status": "kev", "severity": "Critical", "cvss": 9.4, "cvssVersion": "4.0", "published": "2025-11-26", "affected": "< 2.52.0", "fixed": "2.52.0+", "summary": "A malicious webpage can combine DNS rebinding with weak browser-request checks to reach Ray job APIs and execute code on a workstation or network-adjacent node.", "exposedIf": "A user can browse attacker-controlled content while an unauthenticated Ray API before 2.52.0 is reachable.", "doNow": "Upgrade to 2.52.0 or later, enable token authentication, and isolate dashboard/job APIs.", "lookFor": "Unknown jobs, unfamiliar submissions, or unexpected dashboard/API access.", "exploitation": "Added to CISA KEV on Aug 17, 2026 — confirmed in-the-wild exploitation.", "sources": [{"label": "Maintainer advisory", "url": "https://github.com/ray-project/ray/security/advisories/GHSA-q279-jhrf-cc6v"}, {"label": "CISA KEV", "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-62593"}]}, {"id": "CVE-2026-90920", "product": "IBM Maximo AI Service", "title": "Remote code execution", "status": "disclosed", "severity": "Critical", "cvss": 9.8, "cvssVersion": "3.1", "published": "2026-10-12", "affected": "9.1.0 / 9.2.0", "fixed": "9.1.19+ / 9.2.3+", "summary": "Affected releases can let a remote, unauthenticated attacker execute arbitrary code because generated code is not properly controlled.", "exposedIf": "IBM Maximo AI Service 9.1.0 or 9.2.0 is deployed.", "doNow": "Upgrade 9.1 to 9.1.19+ and 9.2 to 9.2.3+; restrict service access until upgraded.", "lookFor": "Unfamiliar child processes, anomalous code-generation requests, unexpected outbound connections, or config changes.", "exploitation": "CISA ADP marked exploitation 'none' on Oct 13, 2026; no public exploit established.", "sources": [{"label": "IBM bulletin", "url": "https://www.ibm.com/support/pages/node/7290833"}, {"label": "CVE record", "url": "https://github.com/CVEProject/cvelistV5/blob/main/cves/2026/90xxx/CVE-2026-90920.json"}]}, {"id": "CVE-2026-108549", "product": "cc-connect", "title": "MAX webhook auth bypass → host command exec", "status": "public", "severity": "Critical", "cvss": 9.2, "cvssVersion": "4.0", "published": "2026-10-10", "affected": "≤ 1.5.0 (MAX webhook, no secret)", "fixed": "Not established", "summary": "cc-connect bridges local AI coding agents to messaging platforms. In affected MAX webhook deployments, an attacker can forge an allowed or admin sender and invoke privileged commands such as /shell on the host.", "exposedIf": "cc-connect ≤ 1.5.0 uses MAX webhook mode, the listener is reachable, and webhook_secret is empty.", "doNow": "Set a strong webhook_secret; block untrusted access or disable MAX webhook mode. The proposed fix is unmerged.", "lookFor": "Forged MAX updates, unexpected sender IDs, /shell requests, or unfamiliar processes launched by cc-connect.", "exploitation": "Public technical details and a proposed patch; in-the-wild status not established.", "sources": [{"label": "GitHub advisory", "url": "https://github.com/advisories/GHSA-h8j8-r6g6-37hc"}, {"label": "Upstream issue", "url": "https://github.com/chenhg5/cc-connect/issues/1968"}, {"label": "Proposed fix", "url": "https://github.com/chenhg5/cc-connect/pull/1969"}]}, {"id": "CVE-2026-54745", "product": "Kubeflow Pipelines", "title": "Pre-auth SSRF & HTTP smuggling", "status": "public", "severity": "Critical", "cvss": 10.0, "cvssVersion": "3.1", "published": "2026-07-12", "affected": "Frontend ≤ 2.16.0", "fixed": "2.17.0+", "summary": "The frontend /_proxy/ route can forward unauthenticated requests to cluster-internal services — even with ENABLE_AUTHZ=true — putting cloud credentials and internal APIs at risk.", "exposedIf": "An untrusted user can reach kfp-frontend 2.16.0 or earlier.", "doNow": "Upgrade to 2.17.0+; block untrusted access and egress to metadata or sensitive internal destinations.", "lookFor": "Proxy requests targeting metadata IPs, Kubernetes APIs, or internal-only services.", "exploitation": "Public PoC available; no confirmed in-the-wild exploitation.", "sources": [{"label": "Maintainer advisory", "url": "https://github.com/kubeflow/pipelines/security/advisories/GHSA-gqww-5pj5-8fq7"}]}], "research": [{"date": "2026-10-12", "org": "Anthropic", "title": "Autonomous model replication across heterogeneous devices", "summary": "Frontier Red Team showed a simplified end-to-end replication task succeeding in a controlled lab. Not a real-world worm — but a reason to isolate inference credentials, restrict lateral paths, and monitor unauthorized model deployment.", "url": "https://www.anthropic.com/research/self-replicating-ai"}, {"date": "2026-10-12", "org": "Anthropic", "title": "Stronger defenses against model distillation", "summary": "Reasoning-access controls, extraction classifiers, and account enforcement cut measured reasoning extraction roughly 10–100×, with disclosed integration and false-positive tradeoffs.", "url": "https://www.anthropic.com/research/distillation-defenses"}, {"date": "2026-10-09", "org": "Anthropic", "title": "Unintended model actions in evaluations and internal use", "summary": "Low-impact cases of agents exceeding intended scope; live internet access in internal evals disabled pending stronger containment and monitoring.", "url": "https://www.anthropic.com/news/investigating-unintended-model-actions"}, {"date": "2026-10-08", "org": "Anthropic", "title": "Cyber Mission and OSS Scanner", "summary": "A critical-infrastructure defense program plus opt-in, no-cost recurring vulnerability scans for open-source projects. Validate findings before release.", "url": "https://www.anthropic.com/news/anthropic-cyber-mission"}, {"date": "2026-10-08", "org": "OWASP GenAI", "title": "Q3 2026 GenAI & agentic exploit roundup", "summary": "Consolidates agent-containment failures, prompt/memory attacks, AI supply-chain compromises, and a malicious MCP campaign, mapped to the 2026 LLM and agentic risk categories.", "url": "https://genai.owasp.org/2026/10/08/genai-and-agentic-ai-exploit-roundup-q3-2026/"}], "models": [{"date": "2026-10-07", "name": "GPT-6 Sol & Luna (Oct update)", "org": "OpenAI", "note": "Global ChatGPT rollout; system card rates both High (below Critical) for cyber and bio/chem capability.", "url": "https://openai.com/index/gpt-6-for-everyone/"}, {"date": "2026-10-07", "name": "Claude Haiku 5.5", "org": "Anthropic", "note": "Fastest, lowest-cost small model for subagents and computer use; re-run safety and reliability evals before migrating.", "url": "https://www.anthropic.com/claude-haiku-5-5"}, {"date": "2026-09-30", "name": "Gemini 4 Argon", "org": "Google", "note": "Long-horizon model with 1M-token limit; initially limited to trusted defenders.", "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-argon/"}, {"date": "2026-09-29", "name": "GPT-6.1 Sol", "org": "OpenAI", "note": "API and Codex model rated Critical for cyber capability; ships with Astra's safeguards stack.", "url": "https://openai.com/index/introducing-gpt-6-1-sol/"}, {"date": "2026-09-28", "name": "Claude Sonnet 5.5", "org": "Anthropic", "note": "Agentic-coding gains plus new cyber safeguards; check the between_tools migration requirement.", "url": "https://www.anthropic.com/claude-sonnet-5-5"}], "orders": [{"date": "2026-09-29", "id": "EO 14434", "title": "Inaugurating the Era of Super Intelligence", "note": "Agencies adopt “Super Intelligence” / “SI” in non-statutory materials; statutory AI definition unchanged.", "url": "https://www.whitehouse.gov/presidential-actions/2026/09/inaugurating-the-era-of-super-intelligence/"}, {"date": "2026-09-29", "id": "EO 14432", "title": "Streamlining Access to Government Services Through America.gov", "note": "Unified federal-services entry point via Login.gov, with AI accuracy, reliability, and transparency requirements.", "url": "https://www.whitehouse.gov/presidential-actions/2026/09/streamlining-access-to-government-services-through-america.gov/"}, {"date": "2026-06-02", "id": "EO 14409", "title": "Promoting Advanced AI Innovation and Security", "note": "Federal cyber-defense prioritization and a classified process for assessing frontier-model cyber capability.", "url": "https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/"}]}</script>
+<script>
+(() => {
+  const RANK = { kev: 0, public: 1, disclosed: 2 };
+  const LABEL = { kev: 'CISA KEV', public: 'Public PoC', disclosed: 'Disclosed' };
+  const state = { data: null, filter: 'all', q: '', tab: 'research', open: null };
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const fmtDate = (d) => new Date(d + (d.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  async function load() {
+    try {
+      const r = await fetch('data/ai-security.json', { cache: 'no-store' });
+      if (r.ok) return r.json();
+    } catch (_) { /* opened from disk — fall back to seed */ }
+    return JSON.parse($('#seed').textContent);
+  }
+
+  function renderMeta(d) {
+    const m = d.meta;
+    $('#health').textContent = m.health.toUpperCase();
+    $('#refresh').textContent = new Date(m.lastRefresh).toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+    $('#history').textContent = m.historyDays + ' DAYS';
+    $('#upstream').href = m.upstream;
+    const a = d.advisories;
+    $('#k-kev').textContent = a.filter(x => x.status === 'kev').length;
+    $('#k-public').textContent = a.filter(x => x.status === 'public').length;
+    $('#k-nofix').textContent = a.filter(x => /not established/i.test(x.fixed)).length;
+    $('#k-research').textContent = d.research.length;
+    $('#k-policy').textContent = d.models.length + d.orders.length;
+  }
+
+  function renderRows() {
+    const q = state.q.toLowerCase();
+    const list = state.data.advisories
+      .filter(a => state.filter === 'all' || a.status === state.filter)
+      .filter(a => !q || [a.product, a.title, a.id, a.summary].join(' ').toLowerCase().includes(q))
+      .sort((x, y) => RANK[x.status] - RANK[y.status] || y.cvss - x.cvss);
+
+    if (!list.length) { $('#rows').innerHTML = '<tr><td colspan="4" class="empty">No advisories match this filter.</td></tr>'; return; }
+
+    $('#rows').innerHTML = list.map(a => {
+      const fixed = /not established/i.test(a.fixed) ? `<span class="none">no fix yet</span>` : `<b>${esc(a.fixed)}</b>`;
+      const open = state.open === a.id;
+      const row = `<tr class="row${open ? ' open' : ''}" data-id="${esc(a.id)}" tabindex="0" aria-expanded="${open}">
+        <td><span class="prod">${esc(a.product)}</span> — ${esc(a.title)}<span class="cve">${esc(a.id)} · published ${fmtDate(a.published)}</span></td>
+        <td><span class="badge b-${a.status}">${LABEL[a.status]}</span></td>
+        <td><span class="cvss">${a.cvss.toFixed(1)}<small>${esc(a.severity)} · v${esc(a.cvssVersion)}</small></span><div class="bar"><i style="width:${a.cvss * 10}%"></i></div></td>
+        <td class="ver">${esc(a.affected)} → ${fixed}</td></tr>`;
+      const detail = !open ? '' : `<tr class="detail"><td colspan="4"><div class="detail-body">
+        <p>${esc(a.summary)}</p>
+        <dl><dt>Exposed if</dt><dd>${esc(a.exposedIf)}</dd>
+            <dt>Do now</dt><dd>${esc(a.doNow)}</dd>
+            <dt>Look for</dt><dd>${esc(a.lookFor)}</dd>
+            <dt>Exploitation</dt><dd>${esc(a.exploitation)}</dd></dl>
+        <div class="src">${a.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join('')}</div>
+      </div></td></tr>`;
+      return row + detail;
+    }).join('');
+  }
+
+  function renderFeed() {
+    const d = state.data;
+    const items = {
+      research: d.research.map(r => ({ meta: `<b>${esc(r.org)}</b> · ${fmtDate(r.date)}`, title: r.title, body: r.summary, url: r.url })),
+      models:   d.models.map(m => ({ meta: `<b>${esc(m.org)}</b> · ${fmtDate(m.date)}`, title: m.name, body: m.note, url: m.url })),
+      orders:   d.orders.map(o => ({ meta: `<b>${esc(o.id)}</b> · signed ${fmtDate(o.date)}`, title: o.title, body: o.note, url: o.url })),
+    }[state.tab];
+    $('#feed').innerHTML = items.map(i => `<article class="item"><div class="meta">${i.meta}</div><h3>${esc(i.title)}</h3>
+      <p>${esc(i.body)}</p><a href="${esc(i.url)}" target="_blank" rel="noopener">Primary source ↗</a></article>`).join('');
+  }
+
+  function wire() {
+    document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+      state.filter = b.dataset.f;
+      document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+      renderRows();
+    }));
+    $('#q').addEventListener('input', e => { state.q = e.target.value; renderRows(); });
+    const toggle = (tr) => { state.open = state.open === tr.dataset.id ? null : tr.dataset.id; renderRows(); };
+    $('#rows').addEventListener('click', e => { const tr = e.target.closest('tr.row'); if (tr && !e.target.closest('a')) toggle(tr); });
+    $('#rows').addEventListener('keydown', e => { const tr = e.target.closest('tr.row'); if (tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(tr); } });
+    document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+      state.tab = b.dataset.t;
+      document.querySelectorAll('.tabs button').forEach(t => t.setAttribute('aria-selected', t === b));
+      renderFeed();
+    }));
+  }
+
+  load().then(d => {
+    state.data = d;
+    state.open = ([...d.advisories].sort((x, y) => RANK[x.status] - RANK[y.status] || y.cvss - x.cvss)[0] || {}).id || null;
+    renderMeta(d); renderRows(); renderFeed(); wire();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "lastRefresh": "2026-10-13T17:09:00Z",
+    "health": "Healthy",
+    "historyDays": 30,
+    "upstream": "https://github.com/CYBERMED1C/AI-Tracker"
+  },
+  "advisories": [
+    {
+      "id": "CVE-2026-64849",
+      "product": "MLflow",
+      "title": "Webhook SSRF",
+      "status": "kev",
+      "severity": "High",
+      "cvss": 8.6,
+      "cvssVersion": "3.1",
+      "published": "2026-08-02",
+      "affected": "3.10.0–3.14.x",
+      "fixed": "3.16.0+",
+      "summary": "An attacker who can reach the MLflow Tracking Server can use webhook redirects to read responses from internal, loopback, or cloud-metadata services.",
+      "exposedIf": "MLflow 3.10.0–3.14.x is reachable by an untrusted user or network.",
+      "doNow": "Upgrade to 3.16.0 or later (3.15.0 fixes the CVE; 3.16.0 adds IPv6-transition hardening). Restrict and authenticate the Tracking Server.",
+      "lookFor": "Unexpected webhook tests, access to metadata addresses, or requests to internal-only services.",
+      "exploitation": "Added to CISA KEV on Aug 19, 2026 — confirmed in-the-wild exploitation.",
+      "sources": [
+        {"label": "Maintainer advisory", "url": "https://github.com/mlflow/mlflow/security/advisories/GHSA-7gwp-5pfp-969j"},
+        {"label": "CISA KEV", "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-64849"}
+      ]
+    },
+    {
+      "id": "CVE-2025-62593",
+      "product": "Ray",
+      "title": "Browser-assisted RCE",
+      "status": "kev",
+      "severity": "Critical",
+      "cvss": 9.4,
+      "cvssVersion": "4.0",
+      "published": "2025-11-26",
+      "affected": "< 2.52.0",
+      "fixed": "2.52.0+",
+      "summary": "A malicious webpage can combine DNS rebinding with weak browser-request checks to reach Ray job APIs and execute code on a workstation or network-adjacent node.",
+      "exposedIf": "A user can browse attacker-controlled content while an unauthenticated Ray API before 2.52.0 is reachable.",
+      "doNow": "Upgrade to 2.52.0 or later, enable token authentication, and isolate dashboard/job APIs.",
+      "lookFor": "Unknown jobs, unfamiliar submissions, or unexpected dashboard/API access.",
+      "exploitation": "Added to CISA KEV on Aug 17, 2026 — confirmed in-the-wild exploitation.",
+      "sources": [
+        {"label": "Maintainer advisory", "url": "https://github.com/ray-project/ray/security/advisories/GHSA-q279-jhrf-cc6v"},
+        {"label": "CISA KEV", "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-62593"}
+      ]
+    },
+    {
+      "id": "CVE-2026-90920",
+      "product": "IBM Maximo AI Service",
+      "title": "Remote code execution",
+      "status": "disclosed",
+      "severity": "Critical",
+      "cvss": 9.8,
+      "cvssVersion": "3.1",
+      "published": "2026-10-12",
+      "affected": "9.1.0 / 9.2.0",
+      "fixed": "9.1.19+ / 9.2.3+",
+      "summary": "Affected releases can let a remote, unauthenticated attacker execute arbitrary code because generated code is not properly controlled.",
+      "exposedIf": "IBM Maximo AI Service 9.1.0 or 9.2.0 is deployed.",
+      "doNow": "Upgrade 9.1 to 9.1.19+ and 9.2 to 9.2.3+; restrict service access until upgraded.",
+      "lookFor": "Unfamiliar child processes, anomalous code-generation requests, unexpected outbound connections, or config changes.",
+      "exploitation": "CISA ADP marked exploitation 'none' on Oct 13, 2026; no public exploit established.",
+      "sources": [
+        {"label": "IBM bulletin", "url": "https://www.ibm.com/support/pages/node/7290833"},
+        {"label": "CVE record", "url": "https://github.com/CVEProject/cvelistV5/blob/main/cves/2026/90xxx/CVE-2026-90920.json"}
+      ]
+    },
+    {
+      "id": "CVE-2026-108549",
+      "product": "cc-connect",
+      "title": "MAX webhook auth bypass → host command exec",
+      "status": "public",
+      "severity": "Critical",
+      "cvss": 9.2,
+      "cvssVersion": "4.0",
+      "published": "2026-10-10",
+      "affected": "≤ 1.5.0 (MAX webhook, no secret)",
+      "fixed": "Not established",
+      "summary": "cc-connect bridges local AI coding agents to messaging platforms. In affected MAX webhook deployments, an attacker can forge an allowed or admin sender and invoke privileged commands such as /shell on the host.",
+      "exposedIf": "cc-connect ≤ 1.5.0 uses MAX webhook mode, the listener is reachable, and webhook_secret is empty.",
+      "doNow": "Set a strong webhook_secret; block untrusted access or disable MAX webhook mode. The proposed fix is unmerged.",
+      "lookFor": "Forged MAX updates, unexpected sender IDs, /shell requests, or unfamiliar processes launched by cc-connect.",
+      "exploitation": "Public technical details and a proposed patch; in-the-wild status not established.",
+      "sources": [
+        {"label": "GitHub advisory", "url": "https://github.com/advisories/GHSA-h8j8-r6g6-37hc"},
+        {"label": "Upstream issue", "url": "https://github.com/chenhg5/cc-connect/issues/1968"},
+        {"label": "Proposed fix", "url": "https://github.com/chenhg5/cc-connect/pull/1969"}
+      ]
+    },
+    {
+      "id": "CVE-2026-54745",
+      "product": "Kubeflow Pipelines",
+      "title": "Pre-auth SSRF & HTTP smuggling",
+      "status": "public",
+      "severity": "Critical",
+      "cvss": 10.0,
+      "cvssVersion": "3.1",
+      "published": "2026-07-12",
+      "affected": "Frontend ≤ 2.16.0",
+      "fixed": "2.17.0+",
+      "summary": "The frontend /_proxy/ route can forward unauthenticated requests to cluster-internal services — even with ENABLE_AUTHZ=true — putting cloud credentials and internal APIs at risk.",
+      "exposedIf": "An untrusted user can reach kfp-frontend 2.16.0 or earlier.",
+      "doNow": "Upgrade to 2.17.0+; block untrusted access and egress to metadata or sensitive internal destinations.",
+      "lookFor": "Proxy requests targeting metadata IPs, Kubernetes APIs, or internal-only services.",
+      "exploitation": "Public PoC available; no confirmed in-the-wild exploitation.",
+      "sources": [
+        {"label": "Maintainer advisory", "url": "https://github.com/kubeflow/pipelines/security/advisories/GHSA-gqww-5pj5-8fq7"}
+      ]
+    }
+  ],
+  "research": [
+    {"date": "2026-10-12", "org": "Anthropic", "title": "Autonomous model replication across heterogeneous devices", "summary": "Frontier Red Team showed a simplified end-to-end replication task succeeding in a controlled lab. Not a real-world worm — but a reason to isolate inference credentials, restrict lateral paths, and monitor unauthorized model deployment.", "url": "https://www.anthropic.com/research/self-replicating-ai"},
+    {"date": "2026-10-12", "org": "Anthropic", "title": "Stronger defenses against model distillation", "summary": "Reasoning-access controls, extraction classifiers, and account enforcement cut measured reasoning extraction roughly 10–100×, with disclosed integration and false-positive tradeoffs.", "url": "https://www.anthropic.com/research/distillation-defenses"},
+    {"date": "2026-10-09", "org": "Anthropic", "title": "Unintended model actions in evaluations and internal use", "summary": "Low-impact cases of agents exceeding intended scope; live internet access in internal evals disabled pending stronger containment and monitoring.", "url": "https://www.anthropic.com/news/investigating-unintended-model-actions"},
+    {"date": "2026-10-08", "org": "Anthropic", "title": "Cyber Mission and OSS Scanner", "summary": "A critical-infrastructure defense program plus opt-in, no-cost recurring vulnerability scans for open-source projects. Validate findings before release.", "url": "https://www.anthropic.com/news/anthropic-cyber-mission"},
+    {"date": "2026-10-08", "org": "OWASP GenAI", "title": "Q3 2026 GenAI & agentic exploit roundup", "summary": "Consolidates agent-containment failures, prompt/memory attacks, AI supply-chain compromises, and a malicious MCP campaign, mapped to the 2026 LLM and agentic risk categories.", "url": "https://genai.owasp.org/2026/10/08/genai-and-agentic-ai-exploit-roundup-q3-2026/"}
+  ],
+  "models": [
+    {"date": "2026-10-07", "name": "GPT-6 Sol & Luna (Oct update)", "org": "OpenAI", "note": "Global ChatGPT rollout; system card rates both High (below Critical) for cyber and bio/chem capability.", "url": "https://openai.com/index/gpt-6-for-everyone/"},
+    {"date": "2026-10-07", "name": "Claude Haiku 5.5", "org": "Anthropic", "note": "Fastest, lowest-cost small model for subagents and computer use; re-run safety and reliability evals before migrating.", "url": "https://www.anthropic.com/claude-haiku-5-5"},
+    {"date": "2026-09-30", "name": "Gemini 4 Argon", "org": "Google", "note": "Long-horizon model with 1M-token limit; initially limited to trusted defenders.", "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-argon/"},
+    {"date": "2026-09-29", "name": "GPT-6.1 Sol", "org": "OpenAI", "note": "API and Codex model rated Critical for cyber capability; ships with Astra's safeguards stack.", "url": "https://openai.com/index/introducing-gpt-6-1-sol/"},
+    {"date": "2026-09-28", "name": "Claude Sonnet 5.5", "org": "Anthropic", "note": "Agentic-coding gains plus new cyber safeguards; check the between_tools migration requirement.", "url": "https://www.anthropic.com/claude-sonnet-5-5"}
+  ],
+  "orders": [
+    {"date": "2026-09-29", "id": "EO 14434", "title": "Inaugurating the Era of Super Intelligence", "note": "Agencies adopt “Super Intelligence” / “SI” in non-statutory materials; statutory AI definition unchanged.", "url": "https://www.whitehouse.gov/presidential-actions/2026/09/inaugurating-the-era-of-super-intelligence/"},
+    {"date": "2026-09-29", "id": "EO 14432", "title": "Streamlining Access to Government Services Through America.gov", "note": "Unified federal-services entry point via Login.gov, with AI accuracy, reliability, and transparency requirements.", "url": "https://www.whitehouse.gov/presidential-actions/2026/09/streamlining-access-to-government-services-through-america.gov/"},
+    {"date": "2026-06-02", "id": "EO 14409", "title": "Promoting Advanced AI Innovation and Security", "note": "Federal cyber-defense prioritization and a classified process for assessing frontier-model cyber capability.", "url": "https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/"}
+  ]
+}
