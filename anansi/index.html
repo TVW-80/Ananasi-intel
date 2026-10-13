@@ -296,6 +296,7 @@
     <tr><td>Weather Intel</td><td>n8n → NOAA / National Weather Service Alerts API</td></tr>
     <tr><td>Local News Intel</td><td>n8n → Google News RSS, XML-parsed, geocoded by keyword match</td></tr>
     <tr><td>Hampton Roads 757 Panel</td><td>Persistent right-rail feed (redesigned from a map layer)</td></tr>
+    <tr><td>AI Security Intel (Module 2)</td><td>AI Security Intelligence Dashboard — exploited AI/ML CVEs, research, models, policy</td></tr>
     <tr><td>Cover Identity</td><td>Custom UI theme, wordmark, original spider-mark logo</td></tr>
   </table>
 </section>
@@ -437,6 +438,31 @@
     </figure>
   </div>
 
+  <div class="logentry">
+    <span class="tag">ENTRY 008 — AI SECURITY INTEL</span>
+    <h3>New Module: AI Security Intelligence Dashboard</h3>
+    <p>Anansi picked up a second area of operations: the <b>AI/ML attack surface</b>. The new AI
+    Security module is a remake of CYBERMED1C's AI-Tracker — an AI-maintained dashboard that lives
+    entirely in a GitHub README — rebuilt as a structured, interactive Anansi panel. It tracks
+    actively exploited vulnerabilities in AI/ML infrastructure, AI security research and incidents,
+    frontier-model releases, and AI-related executive orders, each linked to its primary source
+    (maintainers, CISA, the CVE Program, OWASP, and the AI labs).</p>
+    <p>Same normalize-first approach as the n8n pipelines: every advisory is a record in
+    <code>data/ai-security.json</code> with one shape — <code>{id, product, status, cvss, affected,
+    fixed, exposedIf, doNow, lookFor, exploitation, sources[]}</code>. The triage board sorts by
+    exploitation evidence first (CISA KEV → public PoC → vendor-disclosed) and CVSS second, so an
+    exploited 8.6 outranks an unexploited 10.0. Clicking a row expands <b>Exposed if / Do now / Look
+    for / Exploitation</b>; filter chips and search narrow the board. Research, model, and policy
+    intel sits in a right-rail tabbed panel — the same layout lesson learned from the 757 redesign.</p>
+    <p>The page fetches the JSON when served and falls back to a seed copy embedded by
+    <code>build.py</code> when opened from disk, so it runs on any static host with no API key.
+    <a href="../ai-security/">Open the live AI Security dashboard →</a></p>
+    <figure>
+      <img src="../images/ai-security-dashboard.png" alt="Anansi AI Security Intelligence Dashboard with triage board and research feed">
+      <figcaption>AI Security module — triage board with an expanded CISA KEV advisory, research feed on the right rail</figcaption>
+    </figure>
+  </div>
+
   <h2 style="margin-top:34px;">System Architecture</h2>
   <pre class="schematic">TRACK 1 — n8n (Docker, self-hosted)
   ├── Traffic  → TomTom Incident API   ─┐
@@ -450,7 +476,15 @@ TRACK 2 — Native platform integrations
   ├── TomTom Flow API   → live vehicle position tracking on the globe
   └── Overpass API      → real road geometry (self-hosted proxy, mirror-ordered)
 
-                         Anansi (CesiumJS 3D globe, in-browser)</pre>
+                         Anansi (CesiumJS 3D globe, in-browser)
+
+TRACK 3 — AI Security Intel module
+  ├── Maintainer advisories / CISA KEV / CVE records  ─┐
+  ├── AI lab research, OWASP GenAI                     ├─→ data/ai-security.json
+  └── Frontier-model releases, executive orders       ─┘          │
+                                                          build.py (seed embed)
+                                                                    ▼
+                    AI Security dashboard (triage board + right-rail intel feed)</pre>
   <p style="margin-top:16px;">The n8n track is fully webhook-triggered rather than cron-scheduled
   — upstream APIs only get called when the panel's actually being viewed. The native track (TomTom
   flow, Overpass) runs independently inside the platform itself, with its own self-hosted proxy
@@ -505,6 +539,9 @@ TRACK 2 — Native platform integrations
     before/after trend queries instead of only showing current state.</li>
     <li>Add a lightweight alerting hook (Discord/Telegram webhook) for high-severity weather or
     traffic events.</li>
+    <li>Automate the AI Security module's daily refresh with an n8n workflow that pulls CISA KEV and
+    maintainer advisories into <code>ai-security.json</code>, keeping a rolling 30-day history.</li>
+    <li>Link the AI Security module into the main globe UI as its own panel.</li>
   </ul>
 </section>
 
@@ -523,6 +560,8 @@ TRACK 2 — Native platform integrations
     by changing one variable at a time instead of guessing.</li>
     <li><b>Self-hosted infrastructure</b> — Docker-based deployment, container persistence, local
     network configuration on Windows.</li>
+    <li><b>Threat intelligence &amp; vulnerability management</b> — an AI/ML advisory board
+    prioritized by exploitation evidence (CISA KEV, public PoC) rather than CVSS alone.</li>
     <li><b>Product / UI work</b> — end-to-end rebrand including original logo design, color
     theming, and consistent naming across a codebase.</li>
   </ul>
@@ -547,7 +586,12 @@ src/data/hamptonRoads757.js        (new)
 src/voice/gevRealtime.js
 src/styles/anansi-logo.svg
 public/*.svg
-.env / .env.example</pre>
+.env / .env.example
+ai-security/index.html             (new)
+ai-security/src/dashboard.html     (new)
+ai-security/data/ai-security.json  (new)
+ai-security/build.py               (new)
+images/ai-security-dashboard.png   (new)</pre>
 </section>
 
 <section>
@@ -556,7 +600,8 @@ public/*.svg
   <p>Claude (Anthropic) was used throughout this project as a coding and debugging assistant —
   working through n8n workflow errors, writing and wiring the custom CesiumJS data layer, walking
   through the Docker and environment setup, and helping design the rebrand (logo concepts, color
-  system, UI pass). It was also used to help write this debrief itself.</p>
+  system, UI pass). It was also used to help write this debrief itself, and to build the AI Security module
+  (schema, dashboard, build script, and screenshot).</p>
   <p>The architecture decisions, the actual debugging (including isolating the three stacked
   network failures in Entry 006B), testing, and every commit pushed to this repo were done
   directly — Claude functioned as a pair-programming and research tool, not an autonomous builder.
@@ -578,6 +623,12 @@ public/*.svg
     panel, and a full visual rebrand — but the underlying 3D globe engine, layer architecture, and
     original concept are his. Full credit for the foundation this project builds on.
   </div>
+  <div class="credit-box" style="margin-top:14px;">
+    The AI Security module is a remake of the <b>AI Security Intelligence Dashboard</b> by
+    <b>CYBERMED1C</b> (<a href="https://github.com/CYBERMED1C/AI-Tracker" target="_blank" rel="noopener">github.com/CYBERMED1C/AI-Tracker</a>).
+    The concept, advisory format, and curated intelligence are theirs; Anansi rebuilds the
+    presentation as a structured, interactive dashboard.
+  </div>
 </section>
 
 <section>
@@ -587,7 +638,8 @@ public/*.svg
   live regional intelligence tool — designing the ETL pipeline, working through real API and
   infrastructure issues as they came up, extending the platform's actual codebase with new
   functionality, and finishing with a fully custom identity. What's live now is a working,
-  self-hosted, real-time dashboard built entirely on free-tier public data sources.</p>
+  self-hosted, real-time dashboard built entirely on free-tier public data sources — now with a
+  second module covering the AI/ML attack surface alongside the Hampton Roads picture.</p>
   <div class="stamp" style="border-color:var(--gold-bright); color:var(--gold-bright);">OPERATION COMPLETE</div>
 </section>
 
