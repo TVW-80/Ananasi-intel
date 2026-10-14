@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>God's Eye View</title>
+  <title>Anansi</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,8 +25,8 @@
   <!-- Title -->
   <div id="title-bar">
     <div class="title-glow"></div>
-    <h1><span class="title-logo brand-logo" data-logo-gaze data-logo-src="/logo.svg" aria-hidden="true"><img src="/logo.svg" alt="" /></span> <span>GOD'S EYE <span class="title-accent">VIEW</span></span></h1>
-    <p class="subtitle">NO PLACE LEFT BEHIND</p>
+    <h1><span class="title-logo brand-logo" data-logo-gaze data-logo-src="/logo.svg" aria-hidden="true"><img src="/logo.svg" alt="" /></span> <span>ANANSI</span></h1>
+    <p class="subtitle">I'm everywhere. And nowhere.</p>
   </div>
 
   <!-- Style indicator -->
@@ -354,7 +354,7 @@
   </nav>
 
   <!-- Post-processing toggles (top-right) -->
-  <div id="pp-toggles" class="panel-collapsible collapsed" data-panel-id="pp-toggles">
+  <div id="pp-toggles" class="panel-collapsible collapsed angular-panel--notch" data-panel-id="pp-toggles">
     <div class="compact pp-header-row">
       <span class="pp-header-label">DISPLAY</span>
       <span class="panel-divider" aria-hidden="true"></span>
@@ -364,6 +364,10 @@
       <button class="pp-toggle-btn" id="hud-toggle" title="Intelligence HUD (H)">
         <span class="pp-icon">&#x25CE;</span>
         <span class="pp-label">HUD</span>
+      </button>
+      <button class="pp-toggle-btn" id="console-mode-toggle" title="Console porthole HUD" aria-pressed="false">
+        <span class="pp-icon">&#x25C9;</span>
+        <span class="pp-label">CONSOLE</span>
       </button>
       <div class="pp-slider-row" id="hud-layout-row">
         <span class="pp-slider-mini-label">Layout</span>
@@ -478,7 +482,7 @@
   <button id="clean-view-exit" title="Return UI controls">EXIT CLEAN VIEW</button>
 
   <!-- Unified bottom command dock: locations, voice (injected at runtime), visual presets -->
-  <div id="command-dock" aria-label="Navigation, voice, and visual preset controls">
+  <div id="command-dock" class="angular-panel" aria-label="Navigation, voice, and visual preset controls">
   <!-- Control panel -->
   <div id="control-panel" class="panel-collapsible collapsed">
     <div class="panel-glow"></div>
@@ -577,7 +581,7 @@
   <!-- Data Layer Toggle Panel -->
   <div id="data-panel" class="panel-collapsible collapsed active" data-panel-id="data-panel">
     <div class="panel-glow"></div>
-    <div class="data-panel-inner">
+    <div class="data-panel-inner angular-panel">
       <div class="panel-header">
         <span class="panel-title">DATA LAYERS</span>
         <span class="panel-divider"></span>
@@ -590,7 +594,7 @@
   <!-- CCTV Coverage Panel -->
   <div id="cctv-panel" class="panel-collapsible collapsed" data-panel-id="cctv-panel">
     <div class="panel-glow"></div>
-    <div class="cctv-panel-inner">
+    <div class="cctv-panel-inner angular-panel--alt">
       <div class="panel-header">
         <span class="panel-title">CCTV</span>
         <span class="panel-divider"></span>
@@ -646,7 +650,7 @@
   <!-- Scene Director Panel -->
   <div id="scene-panel" class="panel-collapsible collapsed" data-panel-id="scene-panel">
     <div class="panel-glow"></div>
-    <div class="scene-panel-inner">
+    <div class="scene-panel-inner angular-panel--notch">
       <div class="panel-header">
         <span class="panel-title">SCENES</span>
         <span class="panel-divider"></span>
@@ -686,7 +690,7 @@
   <aside id="right-context-rail">
     <div id="global-context-panel" class="panel-collapsible collapsed" data-panel-id="global-context-panel">
       <div class="panel-glow"></div>
-      <div class="global-context-panel-inner">
+      <div class="global-context-panel-inner angular-panel">
         <div class="panel-header">
           <span class="panel-title">CONTEXT</span>
           <span class="panel-divider"></span>
@@ -825,6 +829,44 @@
         </section>
       </div>
     </div>
+
+    <div id="hampton-roads-panel" class="panel-collapsible collapsed" data-panel-id="hampton-roads-panel">
+      <div class="panel-glow"></div>
+      <div class="hampton-roads-panel-inner angular-panel--alt">
+        <div class="panel-header">
+          <span class="panel-title">HAMPTON ROADS 757</span>
+          <span class="panel-divider"></span>
+          <button class="panel-collapse-btn" data-collapse-target="hampton-roads-panel" title="Expand panel">▶</button>
+        </div>
+        <div id="hampton-roads-meta" class="hampton-roads-meta">n8n (local) · never</div>
+        <div id="hampton-roads-feed" class="hampton-roads-feed" role="list" aria-label="Hampton Roads 757 live feed"></div>
+      </div>
+    </div>
+
+    <!-- AI Security Intelligence — live from CISA KEV, GitHub Advisories, the
+         Federal Register and lab/research feeds via /api/ai-sec-intel
+         (vite.config.js → src/data/aiSecIntel.js). Rendered by ui.js
+         _initAiSecPanel; collapse/expand is the generic _initPanelChrome wiring. -->
+    <div id="ai-sec-panel" class="panel-collapsible collapsed" data-panel-id="ai-sec-panel">
+      <div class="panel-glow"></div>
+      <div class="ai-sec-panel-inner angular-panel--notch">
+        <div class="panel-header">
+          <span class="panel-title">AI SECURITY INTEL</span>
+          <span class="panel-divider"></span>
+          <button class="panel-collapse-btn" data-collapse-target="ai-sec-panel" title="Expand panel">▶</button>
+        </div>
+        <div id="ai-sec-meta" class="ai-sec-meta">syncing…</div>
+        <div class="ai-sec-tabs" role="tablist" aria-label="AI security intelligence sections">
+          <button type="button" class="ai-sec-tab active" role="tab" aria-selected="true" data-ai-sec-tab="vulns">VULNS</button>
+          <button type="button" class="ai-sec-tab" role="tab" aria-selected="false" data-ai-sec-tab="models">MODELS</button>
+          <button type="button" class="ai-sec-tab" role="tab" aria-selected="false" data-ai-sec-tab="research">RESEARCH</button>
+          <button type="button" class="ai-sec-tab" role="tab" aria-selected="false" data-ai-sec-tab="policy">POLICY</button>
+        </div>
+        <div id="ai-sec-list" class="ai-sec-list" role="tabpanel" aria-label="AI security intelligence feed"></div>
+        <div id="ai-sec-sources" class="ai-sec-sources"></div>
+        <div class="ai-sec-note">Informational snapshot of public sources — verify affected versions against vendor advisories and your own inventory.</div>
+      </div>
+    </div>
   </aside>
 
   <div id="scene-runtime"></div>
@@ -879,7 +921,7 @@
     </div>
     <!-- Kept out of the footer row: it swaps to mission progress and errors, and
          a live region that also holds layout makes the row jump as it speaks. -->
-    <p class="first-run-note" data-first-run-status role="status" aria-live="polite">Tip: the GEV MIC button in the dock lets you talk to the map.</p>
+    <p class="first-run-note" data-first-run-status role="status" aria-live="polite">Tip: the Anansi MIC button in the dock lets you talk to the map.</p>
   </aside>
 
   <!-- Intelligence HUD Overlay -->
@@ -889,8 +931,39 @@
   <div id="loading-screen">
     <div class="loader-content">
       <span class="loader-logo brand-logo" data-logo-gaze data-logo-src="/logo.svg" aria-hidden="true"><img src="/logo.svg" alt="" /></span>
-      <h2>GOD'S EYE <span class="title-accent">VIEW</span></h2>
+      <h2>ANANSI</h2>
       <p class="loader-status">Initializing photorealistic world...</p>
+    </div>
+  </div>
+
+  <!-- VIEW CONTROL: manual camera/view control (src/cameraControl.js) -->
+  <button id="view-control-toggle" class="view-control-toggle" type="button"
+          aria-expanded="false" aria-controls="view-control-panel" title="View controls">VIEW</button>
+  <div id="view-control-panel" class="view-control-panel angular-panel" role="group"
+       aria-label="Camera view controls" hidden>
+    <div class="panel-header">
+      <span class="panel-title">VIEW CONTROL</span>
+      <span class="panel-divider"></span>
+      <button id="view-ctrl-close" class="panel-collapse-btn" type="button" title="Hide view controls">▾</button>
+    </div>
+    <div class="view-ctrl-readout" aria-live="polite">
+      <span>HDG <b id="vc-hdg">--</b></span>
+      <span>TILT <b id="vc-pitch">--</b></span>
+      <span>ALT <b id="vc-alt">--</b></span>
+    </div>
+    <div class="view-ctrl-grid">
+      <button id="vc-rot-left" class="scene-btn" type="button" title="Rotate view left">⟲</button>
+      <button id="vc-north" class="scene-btn" type="button" title="Face north (heading 0)">N ↑</button>
+      <button id="vc-rot-right" class="scene-btn" type="button" title="Rotate view right">⟳</button>
+      <button id="vc-tilt-up" class="scene-btn" type="button" title="Tilt toward the horizon">TILT ▲</button>
+      <button id="vc-level" class="scene-btn" type="button" title="Level the horizon (reset roll)">LEVEL</button>
+      <button id="vc-tilt-down" class="scene-btn" type="button" title="Tilt toward the ground">TILT ▼</button>
+      <button id="vc-top" class="scene-btn" type="button" title="Look straight down">TOP</button>
+      <button id="vc-oblique" class="scene-btn" type="button" title="45° oblique">45°</button>
+      <button id="vc-horizon" class="scene-btn" type="button" title="Near the horizon">HORIZON</button>
+      <button id="vc-zoom-out" class="scene-btn" type="button" title="Zoom out">ZOOM −</button>
+      <button id="vc-reset" class="scene-btn" type="button" title="Reset: north-up, 45° tilt, level">RESET</button>
+      <button id="vc-zoom-in" class="scene-btn" type="button" title="Zoom in">ZOOM +</button>
     </div>
   </div>
 

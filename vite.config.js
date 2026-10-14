@@ -1,5 +1,5 @@
 /**
- * Vite configuration for God's Eye View — a cinematic geospatial app.
+ * Vite configuration for Anansi — a cinematic geospatial app.
  *
  * Registers the dev-server proxy middlewares that bypass CORS and add
  * caching/auth for upstream APIs:
@@ -18,6 +18,7 @@
  *  13. Weather effects — camera-local Open-Meteo observations without news/geocoding overhead
  *  14. Rocket launches — recent Launch Library 2 mission metadata
  *  15. Radio Browser — public-domain station directory and click counting
+ *  16. AI Security Intel — CISA KEV / GitHub advisories / Federal Register / lab + research feeds
  *
  * Also exposes Cesium and Google 3D Tiles API keys to the
  * client via `import.meta.env.*` defines.
@@ -34,12 +35,24 @@ import https from 'node:https';
 import { lookup as lookupDns } from 'node:dns/promises';
 import { directionToHeading } from './src/data/directionText.js';
 import {
+  GHSA_PACKAGES,
+  RETAIN_DAYS as AI_SEC_RETAIN_DAYS,
+  assembleSnapshot as assembleAiSecSnapshot,
+  normalizeFederalRegister,
+  normalizeGhsa,
+  normalizeKev,
+  normalizeModelFeed,
+  normalizeResearchFeed,
+  parseFeed,
+} from './src/data/aiSecIntel.js';
+import {
   isValidTileCoord as isValidTomTomTile,
   utcDayKey as tomtomUtcDayKey,
   normalizeBudget as normalizeTomTomBudget,
   isOverBudget as isTomTomOverBudget,
 } from './src/data/tomtomTiles.js';
 import { filterTrailing24h, parseFirmsCsv } from './src/data/firmsCsv.js';
+import { flipperSerialProxy } from './src/data/flipperSerialProxy.js';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { defineConfig, loadEnv } from 'vite';
@@ -140,16 +153,22 @@ const OPENSKY_SOURCE_STALE_MS = 120_000;
 // ---------------------------------------------------------------------------
 // Overpass API proxy constants and cache state
 // ---------------------------------------------------------------------------
-/** Ordered list of Overpass API mirrors; tried sequentially on failure/rate-limit. */
+/**
+ * Ordered list of Overpass API mirrors; tried sequentially on failure/rate-limit.
+ *
+ * overpass-api.de and its lz4. subdomain (same infra) moved to the back —
+ * 2026-09-02 field testing found both silently black-holing every connection
+ * (TCP connect never completes) rather than refusing fast, so with them
+ * first every request paid their full per-mirror timeout before reaching a
+ * mirror that actually answers. kumi.systems and private.coffee lead now;
+ * both verified live (real POST query, 200 OK) as of the same test. Keep all
+ * four — mirror reliability rotates, this is a reprioritization, not a cut.
+ */
 const OVERPASS_UPSTREAMS = [
-  'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
-  'https://lz4.overpass-api.de/api/interpreter',
-  // Community full-planet instance (privateforge nonprofit) — added 2026-07-30
-  // when all three mirrors above refused this IP (likely a dev-traffic rate
-  // ban; refused connections fail in ms, so healthy mirrors above still win).
-  // Verified: planet coverage (Texas query), CORS *, ~5-20 s cold latency.
   'https://overpass.private.coffee/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+  'https://lz4.overpass-api.de/api/interpreter',
 ];
 /**
  * TTL for FRESH cached Overpass responses (ms). Road geometry is static for
@@ -746,7 +765,7 @@ const RADIO_RESPONSE_MAX_BYTES = 4 * 1024 * 1024;
 const RADIO_DIRECTORY_LIMIT = 750;
 const RADIO_CATALOG_MIN_SUCCESSFUL_QUERIES = 5;
 const RADIO_CATALOG_HEALTHY_MIN_STATIONS = Math.ceil(RADIO_DIRECTORY_LIMIT / 2);
-const RADIO_USER_AGENT = 'GodsEyeView/1.0 (Radio Browser directory client)';
+const RADIO_USER_AGENT = 'Anansi/1.0 (Radio Browser directory client)';
 const RADIO_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const RADIO_FALLBACK_MIRRORS = Object.freeze([
   'https://de1.api.radio-browser.info',
@@ -1596,6 +1615,223 @@ function celestrakProxy() {
   };
 }
 
+/**
+ * AI Security Intelligence aggregator. One keyless endpoint fans out to
+ * CISA KEV, GitHub Security Advisories, the Federal Register, and a handful
+ * of lab/research feeds, normalizes them (src/data/aiSecIntel.js), and serves
+ * a single cached snapshot.
+ *
+ * Reliability model: every source keeps its own last-good normalized items on
+ * disk, so one upstream outage degrades that source to "stale" instead of
+ * blanking the panel; the whole snapshot is also served stale if a refresh
+ * throws. Refreshes are single-flight, so N tabs cost one upstream sweep.
+ * Optional `GITHUB_TOKEN` lifts the 60 req/h anonymous GitHub limit; it never
+ * leaves the server.
+ */
+export function createAiSecIntelMiddleware({
+  fetchImpl = (...args) => fetch(...args),
+  now: clock = Date.now,
+  cachePath = path.join(process.cwd(), '.gev-cache', 'ai-sec-intel.json'),
+  ttlMs = 3 * 3600_000,
+  /** After a partial outage, retry sooner than the full TTL. */
+  degradedTtlMs = 15 * 60_000,
+} = {}) {
+  const FETCH_TIMEOUT_MS = 25_000;
+  const MAX_BYTES = 8 * 1024 * 1024;
+  const USER_AGENT = 'Anansi/1.0 (AI security intelligence panel)';
+  /** @type {{ at: number, snapshot: object, history: object, perSource: object } | null} */
+  let state = null;
+  let inflight = null;
+
+  const fetchBody = async (url, { json = false, headers = {} } = {}) => {
+    let res;
+    try {
+      res = await fetchImpl(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: { 'User-Agent': USER_AGENT, Accept: json ? 'application/json' : 'application/xml, text/xml, */*', ...headers },
+      });
+    } catch (err) {
+      // undici reports every network failure as a bare "fetch failed"; the
+      // actionable part (cert trust vs. connect timeout vs. DNS) is on `cause`.
+      const cause = err?.cause?.code || err?.cause?.message || err?.name;
+      throw new Error(`${err?.message || 'fetch failed'}${cause ? ` [${cause}]` : ''}`);
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    if (text.length > MAX_BYTES) throw new Error('response too large');
+    return json ? JSON.parse(text) : text;
+  };
+
+  const feedSource = (id, label, bucket, url, normalize) => ({
+    id, label, bucket,
+    fetch: async (now) => normalize(label, parseFeed(await fetchBody(url)), { now }),
+  });
+
+  const SOURCES = [
+    {
+      id: 'cisa-kev', label: 'CISA KEV', bucket: 'vulns',
+      fetch: async (now) => normalizeKev(await fetchBody(
+        'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json',
+        { json: true },
+      ), { now }),
+    },
+    {
+      id: 'ghsa', label: 'GitHub Advisories', bucket: 'vulns',
+      fetch: async (now) => {
+        const url = new URL('https://api.github.com/advisories');
+        url.searchParams.set('type', 'reviewed');
+        url.searchParams.set('affects', GHSA_PACKAGES.join(','));
+        url.searchParams.set('published', `>=${new Date(now - AI_SEC_RETAIN_DAYS * 86_400_000).toISOString().slice(0, 10)}`);
+        url.searchParams.set('sort', 'published');
+        url.searchParams.set('direction', 'desc');
+        url.searchParams.set('per_page', '100');
+        const token = String(process.env.GITHUB_TOKEN || '').trim();
+        return normalizeGhsa(await fetchBody(url.toString(), {
+          json: true,
+          headers: { 'X-GitHub-Api-Version': '2022-11-28', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        }), { now });
+      },
+    },
+    {
+      id: 'federal-register', label: 'Federal Register', bucket: 'policy',
+      fetch: async () => {
+        const url = new URL('https://www.federalregister.gov/api/v1/documents.json');
+        url.searchParams.append('conditions[presidential_document_type][]', 'executive_order');
+        url.searchParams.set('conditions[term]', 'artificial intelligence');
+        url.searchParams.set('order', 'newest');
+        url.searchParams.set('per_page', '30'); // headroom: the AI-relevance filter discards full-text-only hits
+        for (const field of ['title', 'executive_order_number', 'signing_date', 'publication_date', 'html_url', 'abstract', 'document_number']) {
+          url.searchParams.append('fields[]', field);
+        }
+        return normalizeFederalRegister(await fetchBody(url.toString(), { json: true }));
+      },
+    },
+    feedSource('openai', 'OpenAI', 'models', 'https://openai.com/news/rss.xml', normalizeModelFeed),
+    feedSource('google-ai', 'Google AI', 'models', 'https://blog.google/technology/ai/rss/', normalizeModelFeed),
+    feedSource('deepmind', 'Google DeepMind', 'models', 'https://deepmind.google/blog/rss.xml', normalizeModelFeed),
+    feedSource('huggingface', 'Hugging Face', 'models', 'https://huggingface.co/blog/feed.xml', normalizeModelFeed),
+    feedSource(
+      'arxiv', 'arXiv cs.CR', 'research',
+      'https://export.arxiv.org/api/query?search_query=cat:cs.CR+AND+(all:LLM+OR+all:%22prompt+injection%22+OR+all:jailbreak+OR+all:%22AI+agent%22)&sortBy=submittedDate&sortOrder=descending&max_results=15',
+      normalizeResearchFeed,
+    ),
+    feedSource('owasp-genai', 'OWASP GenAI', 'research', 'https://genai.owasp.org/feed/', normalizeResearchFeed),
+    feedSource('mitre-atlas', 'MITRE ATLAS', 'research', 'https://github.com/mitre-atlas/atlas-data/releases.atom', normalizeResearchFeed),
+  ];
+
+  async function readDisk() {
+    if (!cachePath) return null;
+    try {
+      const parsed = JSON.parse(await fsp.readFile(cachePath, 'utf8'));
+      if (Number.isFinite(parsed?.at) && parsed?.snapshot && parsed?.perSource) return parsed;
+    } catch { /* no disk cache yet */ }
+    return null;
+  }
+
+  async function writeDisk(next) {
+    if (!cachePath) return;
+    try {
+      await fsp.mkdir(path.dirname(cachePath), { recursive: true });
+      await fsp.writeFile(cachePath, JSON.stringify(next), 'utf8');
+    } catch (err) {
+      console.warn('[ai-sec-intel] cache write failed:', err?.message || err);
+    }
+  }
+
+  const isFresh = (entry) => {
+    const degraded = entry.snapshot.sources.some((source) => !source.ok);
+    return clock() - entry.at < (degraded ? degradedTtlMs : ttlMs);
+  };
+
+  async function refresh(previous) {
+    const now = clock();
+    const results = await Promise.allSettled(SOURCES.map((source) => source.fetch(now)));
+    const perSource = { ...(previous?.perSource || {}) };
+    const sources = [];
+    results.forEach((result, index) => {
+      const { id, label } = SOURCES[index];
+      if (result.status === 'fulfilled') {
+        perSource[id] = { at: now, items: result.value };
+        sources.push({ id, label, ok: true, count: result.value.length, at: now });
+      } else {
+        const reason = result.reason?.message || String(result.reason);
+        console.warn(`[ai-sec-intel] ${id} failed (${reason})${perSource[id] ? ' — keeping last-good items' : ''}`);
+        sources.push({
+          id, label, ok: false, stale: Boolean(perSource[id]),
+          count: perSource[id]?.items?.length || 0, at: perSource[id]?.at || null, error: reason,
+        });
+      }
+    });
+    if (!sources.some((source) => source.ok)) throw new Error('every upstream source failed');
+    const bucketItems = (bucket) => SOURCES
+      .filter((source) => source.bucket === bucket)
+      .flatMap((source) => perSource[source.id]?.items || []);
+    const { snapshot, history } = assembleAiSecSnapshot({
+      vulns: bucketItems('vulns'),
+      models: bucketItems('models'),
+      research: bucketItems('research'),
+      policy: bucketItems('policy'),
+      sources,
+      history: previous?.history || null,
+      now,
+    });
+    return { at: now, snapshot, history, perSource };
+  }
+
+  return async function aiSecIntelMiddleware(req, res) {
+    const send = (status, body, cacheStatus) => {
+      if (res.headersSent) return;
+      res.writeHead(status, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'x-ai-sec-cache': cacheStatus,
+      });
+      res.end(JSON.stringify(body));
+    };
+    if (req.method !== 'GET') {
+      send(405, { error: 'method not allowed' }, 'NONE');
+      return;
+    }
+    try {
+      if (!state) state = await readDisk();
+      if (state && isFresh(state)) {
+        send(200, state.snapshot, 'HIT');
+        return;
+      }
+      if (!inflight) {
+        const previous = state;
+        inflight = refresh(previous)
+          .then(async (fresh) => {
+            state = fresh;
+            await writeDisk(fresh);
+            return fresh;
+          })
+          .catch((err) => {
+            console.warn(`[ai-sec-intel] refresh failed (${err?.message || err}) — serving cache if any`);
+            return null;
+          })
+          .finally(() => { inflight = null; });
+      }
+      const fresh = await inflight;
+      if (fresh) send(200, fresh.snapshot, 'MISS');
+      else if (state) send(200, state.snapshot, 'STALE-ERROR');
+      else send(502, { error: 'AI security intel sources unavailable and no cache yet' }, 'NONE');
+    } catch (err) {
+      send(500, { error: `ai-sec-intel proxy error: ${err?.message || err}` }, 'ERROR');
+    }
+  };
+}
+
+function aiSecIntelProxy() {
+  const middleware = createAiSecIntelMiddleware();
+  return {
+    name: 'ai-sec-intel-proxy',
+    configureServer(server) {
+      server.middlewares.use('/api/ai-sec-intel', middleware);
+    },
+  };
+}
+
 export const LL2_CACHE_TTL_MS = 15 * 60_000;
 
 /** Build LL2 request headers without exposing its optional token client-side. */
@@ -1928,7 +2164,8 @@ function tomtomProxy() {
                 return fresh;
               })
               .catch((err) => {
-                console.warn(`[tomtom-proxy] ${key} fetch failed (${err?.message || err}) — serving stale if any`);
+                const cause = err?.cause ? ` cause: ${err.cause?.code || err.cause?.message || err.cause}` : '';
+                console.warn(`[tomtom-proxy] ${key} fetch failed (${err?.message || err})${cause} — serving stale if any`);
                 return null;
               })
               .finally(() => inflight.delete(key)));
@@ -2521,7 +2758,13 @@ async function fetchOverpassPayload(body, maxResponseBytes = OVERPASS_MAX_RESPON
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'gods-eye-view-overpass-proxy/1.0',
+          // 2026-09-04 field testing: overpass-api.de's WAF returns a bare 406
+          // for this exact string (stale pre-rebrand UA) on every request,
+          // while a plain "Anansi/1.0" identifier passes cleanly — looks
+          // tuned against UAs that read as scraper/proxy noise, not against
+          // the app itself. Keep this short and honest per Overpass's own
+          // usage-policy convention; don't reintroduce "proxy"/"client".
+          'User-Agent': 'Anansi/1.0',
         },
         body,
         signal: controller.signal,
@@ -2551,7 +2794,12 @@ async function fetchOverpassPayload(body, maxResponseBytes = OVERPASS_MAX_RESPON
         lastError = new Error(`Overpass runtime error (${endpoint})`);
         continue;
       }
-      if (status >= 500) {
+      // Any non-2xx (406/403/400/etc., not just 5xx) is a failed request, not
+      // a cacheable "success" — 2026-09-04 field testing found 81% of the
+      // disk cache poisoned with a 406 HTML error page from overpass-api.de
+      // that got treated as valid data and served back on every repeat
+      // query, permanently zeroing road-match coverage for that viewport.
+      if (status < 200 || status >= 300) {
         lastError = new Error(`Overpass upstream returned ${status} (${endpoint})`);
         continue;
       }
@@ -2695,7 +2943,8 @@ function overpassProxy() {
             sendOverpassResponse(res, stale, 'STALE');
             return;
           }
-          console.error('[Overpass Proxy]', e.message);
+          const overpassCause = e?.cause ? ` cause: ${e.cause?.code || e.cause?.message || e.cause}` : '';
+          console.error('[Overpass Proxy]', e.message + overpassCause);
           res.writeHead(502, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Overpass proxy error' }));
         }
@@ -4990,7 +5239,7 @@ function openAiRealtimeProxy() {
           body: JSON.stringify({
             model: process.env.OPENAI_HUD_SUMMARY_MODEL || OPENAI_HUD_SUMMARY_MODEL_DEFAULT,
             instructions: [
-              "Write one concise intelligence-HUD summary for God's Eye View.",
+              "Write one concise intelligence-HUD summary for Anansi.",
               'Use only the supplied place, street, nearby-place, and enabled-layer text labels.',
               'Prefer the clearest named place and include a relevant enabled layer only when useful.',
               'Do not infer from coordinates or invent a place.',
@@ -5114,7 +5363,7 @@ function openAiRealtimeProxy() {
             output: { voice },
           },
           instructions: [
-            "You are GEV Voice Control, a concise voice controller for a Cesium geospatial app called God's Eye View.",
+            "You are Anansi Voice Control, a concise voice controller for a Cesium geospatial app called Anansi.",
             'Have a natural spoken conversation with the user while the mic session is active.',
             'Do not require a wake phrase. Treat direct commands like "zoom into London" or "open datacenters" as GEV control requests.',
             'Only control the app by calling the provided tools. Never invent tool names or arguments.',
@@ -5535,7 +5784,7 @@ const GEV_REALTIME_TOOLS = [
   {
     type: 'function',
     name: 'fly_to_location',
-    description: "Fly the God's Eye View camera to a known city, geocoded country/region/city/landmark, or explicit WGS84 coordinate. Countries/cities frame the whole place; landmarks/buildings use close framing.",
+    description: "Fly the Anansi camera to a known city, geocoded country/region/city/landmark, or explicit WGS84 coordinate. Countries/cities frame the whole place; landmarks/buildings use close framing.",
     parameters: {
       type: 'object',
       additionalProperties: false,
@@ -5632,7 +5881,7 @@ const GEV_REALTIME_TOOLS = [
   {
     type: 'function',
     name: 'set_layer_visibility',
-    description: "Enable or disable one registered God's Eye View data layer.",
+    description: "Enable or disable one registered Anansi data layer.",
     parameters: {
       type: 'object',
       additionalProperties: false,
@@ -5756,7 +6005,7 @@ const GEV_REALTIME_TOOLS = [
   {
     type: 'function',
     name: 'set_visual_style',
-    description: "Set the active God's Eye View visual filter/style.",
+    description: "Set the active Anansi visual filter/style.",
     parameters: {
       type: 'object',
       additionalProperties: false,
@@ -7031,7 +7280,7 @@ function fetchRegionalPlace(point) {
     });
     const payload = await fetchRegionalJson(`https://nominatim.openstreetmap.org/reverse?${params}`, {
       headers: {
-        'User-Agent': 'GodsEyeView/0.1 (+https://github.com/bilawalsidhu/gods-eye-view)',
+        'User-Agent': 'Anansi/0.1 (+https://github.com/bilawalsidhu/gods-eye-view)',
         Referer: 'https://github.com/bilawalsidhu/gods-eye-view',
       },
     });
@@ -7052,7 +7301,7 @@ async function fetchRegionalNews(place) {
   });
   try {
     const xml = await fetchRegionalText(`https://news.google.com/rss/search?${rssParams}`, {
-      headers: { 'User-Agent': 'GodsEyeView/0.1' },
+      headers: { 'User-Agent': 'Anansi/0.1' },
       timeoutMs: 12_000,
     });
     const articles = normalizeRssArticles(xml, 5);
@@ -7068,7 +7317,7 @@ async function fetchRegionalNews(place) {
   });
   try {
     const payload = await fetchRegionalJson(`https://api.gdeltproject.org/api/v2/doc/doc?${params}`, {
-      headers: { 'User-Agent': 'GodsEyeView/0.1' },
+      headers: { 'User-Agent': 'Anansi/0.1' },
       timeoutMs: 12_000,
     });
     const articles = normalizeRegionalArticles(payload, 5);
@@ -7343,6 +7592,7 @@ export default defineConfig(({ mode }) => {
       cesium(),
       openSkyProxy(),
       celestrakProxy(),
+      aiSecIntelProxy(),
       tomtomProxy(),
       firmsProxy(),
       rocketLaunchesProxy(),
@@ -7357,6 +7607,7 @@ export default defineConfig(({ mode }) => {
       gbfsProxy(),
       adsbLolProxy(),
       aisLiveProxy(),
+      flipperSerialProxy(),
       trackBackfillProxies(),
       openAiRealtimeProxy(),
       googlePlacesContextProxy(),

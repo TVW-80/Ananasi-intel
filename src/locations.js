@@ -117,6 +117,33 @@ export const CITY_POIS = {
       { name: 'Jefferson Memorial', lat: 38.8814, lon: -77.0365, alt: 400, pitch: -30, heading: 0, buildingHeight: 25 },
     ],
   },
+  hamptonroads: {
+    name: 'Hampton Roads (757)',
+    groundElevation: 3,
+    viewBounds: { southwest: { lat: 36.70, lng: -76.55 }, northeast: { lat: 37.10, lng: -75.90 } },
+    pois: [
+      // Nauticus / Battleship Wisconsin sit on the downtown Norfolk waterfront;
+      // heading ~35 looks NE across the Elizabeth River at the skyline (the old
+      // 200 faced inland, away from the view you expect).
+      { name: 'Nauticus & Battleship Wisconsin', lat: 36.8496, lon: -76.2887, alt: 650, pitch: -28, heading: 35, buildingHeight: 20 },
+      { name: 'Virginia Beach Oceanfront', lat: 36.8529, lon: -75.9780, alt: 600, pitch: -22, heading: 270, buildingHeight: 15 },
+      { name: 'Hampton Roads Bridge-Tunnel', lat: 36.9938, lon: -76.3153, alt: 900, pitch: -22, heading: 120, buildingHeight: 10 },
+      { name: 'Naval Station Norfolk', lat: 36.9455, lon: -76.3053, alt: 1000, pitch: -32, heading: 300, buildingHeight: 15 },
+      { name: 'Chrysler Museum of Art', lat: 36.8615, lon: -76.2818, alt: 450, pitch: -28, heading: 180, buildingHeight: 15 },
+    ],
+  },
+  williamsburg: {
+    name: 'Williamsburg',
+    groundElevation: 25,
+    viewBounds: { southwest: { lat: 37.20, lng: -76.80 }, northeast: { lat: 37.31, lng: -76.63 } },
+    pois: [
+      { name: 'Colonial Williamsburg', lat: 37.2707, lon: -76.7005, alt: 650, pitch: -30, heading: 45, buildingHeight: 15 },
+      { name: 'Wren Building (William & Mary)', lat: 37.2716, lon: -76.7076, alt: 450, pitch: -26, heading: 90, buildingHeight: 20 },
+      { name: "Governor's Palace", lat: 37.2738, lon: -76.7008, alt: 420, pitch: -30, heading: 180, buildingHeight: 18 },
+      { name: 'Busch Gardens Williamsburg', lat: 37.2335, lon: -76.6471, alt: 950, pitch: -30, heading: 45, buildingHeight: 30 },
+      { name: 'Jamestown Settlement', lat: 37.2232, lon: -76.7797, alt: 750, pitch: -25, heading: 110, buildingHeight: 15 },
+    ],
+  },
 };
 
 /**

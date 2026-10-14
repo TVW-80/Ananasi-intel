@@ -8,12 +8,12 @@
   --glass-bg: rgba(12, 12, 20, 0.72);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-border-hover: rgba(255, 255, 255, 0.15);
-  --accent: #00d4ff;
-  --accent-dim: rgba(0, 212, 255, 0.15);
-  --accent-glow: rgba(0, 212, 255, 0.4);
-  --text-primary: #e8eaed;
-  --text-secondary: rgba(232, 234, 237, 0.5);
-  --text-dim: rgba(232, 234, 237, 0.3);
+  --accent: #c81e1e;
+  --accent-dim: rgba(200, 30, 30, 0.15);
+  --accent-glow: rgba(200, 30, 30, 0.4);
+  --text-primary: #d4af37;
+  --text-secondary: #a8842a;
+  --text-dim: #a8842a;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --panel-radius: 16px;
@@ -91,6 +91,20 @@ html, body {
      ring rode above the in-scene scope artifact. Detection (z5) and the
      overlay root (z6) stay above both. */
   z-index: 1;
+  pointer-events: none;
+}
+
+/* Console-mode's decorative porthole ring + circuit traces (src/hudFrame.js).
+   Sits above every scene/overlay layer (world-overlay z6, cockpit-cloud
+   z7) so the ring and traces are never occluded by scene content, but well
+   under the z100+ panel chrome it draws lines toward. Purely decorative —
+   pointer-events:none, never touches camera/picking. */
+#hud-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9;
   pointer-events: none;
 }
 
@@ -241,7 +255,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   pointer-events: auto;
   font-family: var(--font-mono);
   font-size: 10px;
-  color: rgba(232, 234, 237, 0.55);
+  color: var(--text-secondary);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 #cesium-credits .cesium-credit-logoContainer,
@@ -252,7 +266,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 #cesium-credits a,
 #cesium-credits .cesium-credit-expand-link {
-  color: rgba(232, 234, 237, 0.7);
+  color: var(--text-primary);
 }
 
 /* Cesium's stock attribution lightbox grows with every registered data source.
@@ -330,7 +344,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.03) inset,
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 0 20px rgba(0, 212, 255, 0.08);
+    0 0 20px rgba(200, 30, 30, 0.08);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
   font-family: var(--font-mono);
@@ -341,9 +355,9 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   width: 72px;
   height: 34px;
   flex: 0 0 auto;
-  color: var(--accent);
-  background: rgba(0, 212, 255, 0.06);
-  border: 1px solid rgba(0, 212, 255, 0.28);
+  color: var(--text-primary);
+  background: rgba(200, 30, 30, 0.06);
+  border: 1px solid rgba(200, 30, 30, 0.28);
   border-radius: var(--btn-radius);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -354,7 +368,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 #gev-voice-button:hover {
   color: #ffffff;
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.22);
+  box-shadow: 0 0 12px rgba(200, 30, 30, 0.22);
 }
 
 .gev-voice-readout {
@@ -365,7 +379,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 
 #gev-voice-status {
   font-size: 10px;
-  color: var(--accent);
+  color: var(--text-primary);
 }
 
 #gev-voice-detail {
@@ -461,7 +475,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   display: block;
   width: 52px;
   height: auto;
-  filter: drop-shadow(0 0 12px rgba(0, 246, 255, 0.5));
+  filter: drop-shadow(0 0 12px rgba(200, 30, 30, 0.5));
 }
 
 #title-bar .title-logo::before,
@@ -517,7 +531,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 
 .brand-logo {
-  aspect-ratio: 775 / 520;
+  aspect-ratio: 1 / 1;
   overflow: visible;
   pointer-events: none;
 }
@@ -531,7 +545,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 
 #title-bar .title-accent,
 .loader-content .title-accent {
-  color: var(--accent);
+  color: var(--text-primary);
   font-weight: 300;
 }
 
@@ -570,7 +584,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   font-size: 16px;
   font-weight: 500;
   letter-spacing: 5px;
-  color: var(--accent);
+  color: var(--text-primary);
   margin-top: 4px;
   text-shadow: 0 0 20px var(--accent-glow);
   transition: var(--transition-smooth);
@@ -641,9 +655,9 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 1.8px;
-  color: var(--accent);
+  color: var(--text-primary);
   text-transform: uppercase;
-  text-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+  text-shadow: 0 0 8px rgba(200, 30, 30, 0.3);
 }
 
 .panel-drag-handle {
@@ -712,6 +726,120 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* ── Angular panel skin (console mode) ───────────
+   Additive: applied ALONGSIDE each panel's existing *-panel-inner class,
+   never in place of it — the rounded-glass background/backdrop-filter/
+   box-shadow those classes already set stays untouched, this only cuts the
+   corners and adds a glowing edge. Three corner-cut variants so the ring of
+   panels doesn't look stamped from one template; assign per-panel in
+   index.html, not by selector, so the choice is visible at a glance.
+   Scoped entirely under body.console-mode: the class names are present in
+   the markup at all times, but inert (no visual effect at all) until
+   console mode is toggled on — the default layout is byte-for-byte
+   unaffected either way. */
+body.console-mode .angular-panel,
+body.console-mode .angular-panel--alt,
+body.console-mode .angular-panel--notch {
+  position: relative;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--accent);
+  box-shadow:
+    0 0 6px var(--accent-glow),
+    0 0 32px var(--accent-glow),
+    inset 0 0 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Inset double-frame line — a second, dimmer bevel a few px in from the
+   outer edge. Pure decoration: absolutely positioned within the panel's
+   own (already `position: relative`) box, so it adds nothing to the
+   panel's layout footprint or its getBoundingClientRect() reported size. */
+body.console-mode .angular-panel::before,
+body.console-mode .angular-panel--alt::before,
+body.console-mode .angular-panel--notch::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Corner tab — a small solid wedge filling the clipped notch, like a welded
+   bevel plate. Sized/positioned per variant to land exactly in that
+   variant's cut corner. */
+body.console-mode .angular-panel::after,
+body.console-mode .angular-panel--alt::after,
+body.console-mode .angular-panel--notch::after {
+  content: '';
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Full-fidelity pass: deep, unmistakably hexagonal cuts (was a subtle
+   22-28px corner nip) — big enough to read as "cockpit console panel" at
+   a glance rather than "rectangle with the corner knocked off". Corner
+   wedges (::after) enlarged to match. */
+body.console-mode .angular-panel {
+  clip-path: polygon(
+    44px 0%, 100% 0%, 100% calc(100% - 20px),
+    calc(100% - 44px) 100%, 0% 100%, 0% 20px
+  );
+}
+body.console-mode .angular-panel::after {
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+body.console-mode .angular-panel--alt {
+  clip-path: polygon(
+    0% 0%, calc(100% - 44px) 0%, 100% 44px,
+    100% 100%, 20px 100%, 0% calc(100% - 20px)
+  );
+}
+body.console-mode .angular-panel--alt::after {
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+}
+
+body.console-mode .angular-panel--notch {
+  clip-path: polygon(
+    36px 0%, 100% 0%, 100% 100%, 36px 100%,
+    0% calc(100% - 36px), 0% 36px
+  );
+}
+body.console-mode .angular-panel--notch::after {
+  width: 36px;
+  height: 36px;
+  top: 0;
+  left: 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+body.console-mode .angular-panel--notch::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* ── Button Grid ──────────────────────────────── */
 .button-grid {
   display: flex;
@@ -771,12 +899,12 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   border-color: var(--accent);
   background: var(--accent-dim);
   box-shadow:
-    0 0 20px rgba(0, 212, 255, 0.15),
-    0 0 0 1px rgba(0, 212, 255, 0.1) inset;
+    0 0 20px rgba(200, 30, 30, 0.15),
+    0 0 0 1px rgba(200, 30, 30, 0.1) inset;
 }
 
 .style-btn.active .btn-icon {
-  color: var(--accent);
+  color: var(--text-primary);
   text-shadow: 0 0 12px var(--accent-glow);
 }
 
@@ -843,7 +971,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   width: 128px;
   height: auto;
   margin: 0 auto 24px;
-  filter: drop-shadow(0 0 24px rgba(0, 246, 255, 0.42));
+  filter: drop-shadow(0 0 24px rgba(200, 30, 30, 0.42));
   animation: logo-pulse 2s ease-in-out infinite;
 }
 
@@ -1002,7 +1130,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 .pp-toggle-btn.active {
   border-color: var(--accent);
   background: var(--accent-dim);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.15);
+  box-shadow: 0 0 12px rgba(200, 30, 30, 0.15);
 }
 
 .pp-icon {
@@ -1029,7 +1157,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 
 .pp-toggle-btn.active .pp-label {
-  color: var(--accent);
+  color: var(--text-primary);
 }
 
 /* ── Bloom Slider (inline with toggle) ───────── */
@@ -1102,7 +1230,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.5px;
-  color: var(--accent);
+  color: var(--text-primary);
   min-width: 28px;
   text-align: right;
   flex-shrink: 0;
@@ -1165,7 +1293,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 .gev-slider-value {
   min-width: 28px;
-  color: var(--accent);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: .5px;
@@ -1219,7 +1347,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   gap: 6px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(123, 189, 211, 0.18);
+  border-top: 1px solid rgba(200, 30, 30, 0.18);
 }
 
 .map-source-heading {
@@ -1299,15 +1427,15 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 
 .map-stack-chip.active {
-  color: var(--accent);
+  color: var(--text-primary);
   border-color: var(--accent);
   background: var(--accent-dim);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.15);
+  box-shadow: 0 0 10px rgba(200, 30, 30, 0.15);
 }
 
 .map-stack-chip.unavailable,
 .map-stack-chip[aria-disabled='true'] {
-  color: rgba(232, 234, 237, 0.28);
+  color: rgba(168, 132, 42, 0.4);
   border-color: rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
   cursor: not-allowed;
@@ -1316,7 +1444,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 .map-stack-chip-req {
   font-size: 7px;
   letter-spacing: 0.3px;
-  color: rgba(232, 234, 237, 0.28);
+  color: rgba(168, 132, 42, 0.4);
 }
 
 .pp-stack-status {
@@ -1328,7 +1456,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.8px;
-  color: var(--accent);
+  color: var(--text-primary);
   text-align: center;
   text-transform: uppercase;
 }
@@ -1529,7 +1657,7 @@ body.ui-clean-view #scene-runtime.active {
 }
 
 #param-slider-panel:not(.collapsed) .param-panel-divider {
-  background: linear-gradient(90deg, rgb(0 212 255 / 28%), rgba(0, 212, 255, 0.18) 58%, transparent);
+  background: linear-gradient(90deg, rgb(200 30 30 / 28%), rgba(200, 30, 30, 0.18) 58%, transparent);
 }
 
 .param-slider-row {
@@ -1594,7 +1722,7 @@ body.ui-clean-view #scene-runtime.active {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.5px;
-  color: var(--accent);
+  color: var(--text-primary);
   min-width: 32px;
   text-align: right;
   flex-shrink: 0;
@@ -1662,7 +1790,7 @@ body.ui-clean-view #scene-runtime.active {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.8px;
-  color: #bdefff;
+  color: var(--text-primary);
 }
 
 .location-mini-poi {
@@ -1714,8 +1842,8 @@ body.ui-clean-view #scene-runtime.active {
 .location-pill.active {
   background: var(--accent-dim);
   border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.15);
+  color: var(--text-primary);
+  box-shadow: 0 0 12px rgba(200, 30, 30, 0.15);
 }
 
 /* ── Expandable POI Row ──────────────────────── */
@@ -1782,7 +1910,7 @@ body.ui-clean-view #scene-runtime.active {
 .poi-pill.active {
   background: var(--accent-dim);
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.15);
+  box-shadow: 0 0 12px rgba(200, 30, 30, 0.15);
 }
 
 .poi-pill-name {
@@ -1794,7 +1922,7 @@ body.ui-clean-view #scene-runtime.active {
 }
 
 .poi-pill.active .poi-pill-name {
-  color: var(--accent);
+  color: var(--text-primary);
 }
 
 .poi-pill-key {
@@ -1809,8 +1937,8 @@ body.ui-clean-view #scene-runtime.active {
 }
 
 .poi-pill.active .poi-pill-key {
-  color: var(--accent);
-  background: rgba(0, 212, 255, 0.12);
+  color: var(--text-primary);
+  background: rgba(200, 30, 30, 0.12);
 }
 
 /* ── Location Search ─────────────────────────── */
@@ -1931,28 +2059,28 @@ body.ui-clean-view #scene-runtime.active {
   max-width: calc(100vw - 32px);
   padding: 6px 10px;
   border-radius: 7px;
-  border: 1px solid rgba(0, 212, 255, 0.24);
+  border: 1px solid rgba(200, 30, 30, 0.24);
   background: rgba(3, 10, 18, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: rgba(170, 252, 255, 0.92);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 1.35px;
   text-transform: uppercase;
   transform: translateX(-50%);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), 0 0 14px rgba(0, 212, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), 0 0 14px rgba(200, 30, 30, 0.08);
   pointer-events: none;
 }
 #global-loading-status[hidden] { display: none; }
 #global-loading-label {
-  color: rgba(184, 244, 255, 0.92);
+  color: var(--text-primary);
 }
 #global-loading-detail {
   min-width: 34px;
   max-width: min(220px, 38vw);
   overflow: hidden;
-  color: #00e1ff;
+  color: var(--text-primary);
   font-weight: 600;
   letter-spacing: 1.6px;
   text-align: right;
@@ -1973,8 +2101,8 @@ body.ui-clean-view #scene-runtime.active {
 #global-loading-status[data-state='cancelled'] #global-loading-label,
 #global-loading-status[data-state='cancelled'] #global-loading-detail { color: #ffd488; }
 #global-loading-status[data-state='acquiring'] {
-  border-color: rgba(0, 212, 255, 0.42);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), 0 0 18px rgba(0, 212, 255, 0.12);
+  border-color: rgba(200, 30, 30, 0.42);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), 0 0 18px rgba(200, 30, 30, 0.12);
 }
 
 .share-icon {
@@ -1994,11 +2122,11 @@ body.ui-clean-view #scene-runtime.active {
   gap: 10px;
   padding: 6px 10px;
   border-radius: 7px;
-  border: 1px solid rgba(0, 212, 255, 0.24);
+  border: 1px solid rgba(200, 30, 30, 0.24);
   background: rgba(3, 10, 18, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: rgba(170, 252, 255, 0.92);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 1.35px;
@@ -2006,7 +2134,7 @@ body.ui-clean-view #scene-runtime.active {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease, transform 0.22s ease;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), 0 0 14px rgba(0, 212, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34), 0 0 14px rgba(200, 30, 30, 0.08);
 }
 
 /* Stacked below the traffic chip so both can show at once */
@@ -2022,12 +2150,12 @@ body.ui-clean-view #scene-runtime.active {
 
 #traffic-sync-label,
 #cctv-sync-label {
-  color: rgba(184, 244, 255, 0.92);
+  color: var(--text-primary);
 }
 
 #traffic-sync-progress,
 #cctv-sync-progress {
-  color: #00e1ff;
+  color: var(--text-primary);
   font-weight: 600;
   letter-spacing: 1.6px;
   min-width: 34px;
@@ -2181,13 +2309,13 @@ body.ui-clean-view #scene-runtime.active {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 2px;
-  color: var(--accent);
+  color: var(--text-primary);
   text-transform: uppercase;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+  box-shadow: 0 0 20px rgba(200, 30, 30, 0.15);
 }
 
 #toast.visible {
@@ -2954,17 +3082,17 @@ body.cockpit-mode:has(#left-panel-stack > .panel-collapsible:not(.collapsed)) .c
   gap: 6px;
   min-height: 32px;
   padding: 7px 10px;
-  border: 1px solid rgba(116, 219, 255, 0.38);
+  border: 1px solid rgba(200, 30, 30, 0.38);
   border-radius: 6px;
   background: rgba(2, 12, 20, 0.82);
-  color: #bceeff;
+  color: var(--text-primary);
   font: 700 8px/1 var(--font-mono);
   letter-spacing: 0.12em;
   cursor: pointer;
   box-shadow: 0 0 18px rgba(0, 0, 0, 0.24);
 }
 #view-switcher button[hidden] { display: none; }
-#view-switcher button:hover, #view-switcher button:focus-visible { border-color: #fff; color: #fff; outline: none; }
+#view-switcher button:hover, #view-switcher button:focus-visible { border-color: var(--accent); color: #fff; outline: none; }
 #view-switcher .material-symbols-outlined { font-size: 16px; }
 body.cockpit-mode #view-switcher {
   right: auto;
@@ -3365,8 +3493,8 @@ body.cockpit-mode #view-switcher button {
   box-shadow: none;
 }
 .cockpit-utility-control.is-expanded .cockpit-utility-divider {
-  background: linear-gradient(90deg, rgb(0 212 255 / 28%), rgba(0, 212, 255, 0.18) 58%, transparent);
-  box-shadow: 0 0 7px rgba(0, 212, 255, .22);
+  background: linear-gradient(90deg, rgb(200 30 30 / 28%), rgba(200, 30, 30, 0.18) 58%, transparent);
+  box-shadow: 0 0 7px rgba(200, 30, 30, .22);
 }
 .cockpit-utility-glyph {
   display: grid;
@@ -3859,6 +3987,163 @@ body.cockpit-mode #right-context-rail {
   display: none !important;
 }
 
+/* ── Console mode: shrink the globe into a centered hologram ───────
+   #cesiumContainer itself shrinks from full-viewport to a small centered
+   box. This is safe rather than merely decorative: every scene overlay
+   (#scope-mask, #world-overlay-root + its children, #hud-frame) is already
+   `position: absolute; inset: 0` INSIDE #cesiumContainer (see the base
+   rules above), so they automatically resize/recenter to match — same for
+   Cesium's own canvas and all of its internal camera/picking math, which is
+   written against the canvas's own live size and position, never the
+   window's. getKeyholeGeometry() (src/celestialRing.js) derives the ring
+   radius from the *canvas's* width/height too, so the bezel/graticule/scope
+   vignette all shrink to hug the smaller globe with no code changes.
+   The one thing that does NOT come for free: hudFrame.js's circuit traces
+   reach OUTSIDE the container to panels positioned in viewport space
+   (#title-bar, #left-panel-stack, ...), so that one function converts
+   between the canvas's local origin and the viewport explicitly — see the
+   comment in src/hudFrame.js's drawTrace(). */
+body.console-mode:not(.cockpit-mode) #cesiumContainer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(58vh, 58vw, 720px);
+  height: min(58vh, 58vw, 720px);
+  transform: translate(-50%, -50%);
+}
+@media (max-width: 900px) {
+  /* Narrow viewports: a small centered globe would leave almost nothing
+     usable beside the full-width stacked panels. Revert to full-viewport,
+     same as every other console-mode decoration at this breakpoint. */
+  body.console-mode #cesiumContainer {
+    position: absolute;
+    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+}
+
+/* ── Console mode ─────────────────────────────
+   The radial "porthole" HUD (src/hudFrame.js draws the ring + circuit
+   traces this reads as connecting to). Each panel/HUD block gets its own
+   small decorative tilt for the "radiating petal" look from the reference
+   image. #left-panel-stack and #right-context-rail themselves stay
+   unrotated (only their real children tilt) so the stacks' own
+   getBoundingClientRect() lane bounds stay trustworthy.
+
+   Every element rotated here is either read directly by
+   _doSyncRightPanelAdaptiveLayout / _doSyncLeftPanelAdaptiveLayout's
+   getBoundingClientRect() collision math in ui.js, or listed in
+   LEFT_STACK_OBSTACLE_SELECTOR / RIGHT_STACK_OBSTACLE_SELECTOR — a rotated
+   element's axis-aligned bounding rect is bigger than its visual footprint,
+   which starved #pp-toggles down to a ~59px sliver the first time this was
+   tried. ui.js's CONSOLE_MODE_ROTATED_SELECTOR list (kept in sync with the
+   selectors rotated below) now neutralizes exactly these elements'
+   transform for the duration of each layout pass via
+   withUnrotatedConsolePanels(), so the math always sees the true unrotated
+   footprint regardless of what's rotated here for paint. Cockpit (flight)
+   mode's own rules above still take priority whenever both classes are
+   present. */
+body.console-mode:not(.cockpit-mode) #title-bar {
+  transform: rotate(-5deg);
+}
+body.console-mode:not(.cockpit-mode) #style-indicator {
+  transform: rotate(5deg);
+}
+body.console-mode:not(.cockpit-mode) #command-dock {
+  transform-origin: 50% 100%;
+  transform: rotate(-2deg);
+}
+body.console-mode:not(.cockpit-mode) #intel-hud .hud-top-left {
+  transform: translateX(-10px) rotate(-2deg);
+}
+body.console-mode:not(.cockpit-mode) #intel-hud .hud-top-right {
+  transform: translateX(10px) rotate(2deg);
+}
+body.console-mode:not(.cockpit-mode) #intel-hud .hud-bottom-left {
+  transform: translateX(-10px) rotate(2deg);
+}
+body.console-mode:not(.cockpit-mode) #intel-hud .hud-bottom-right {
+  transform: translateX(10px) rotate(-2deg);
+}
+body.console-mode:not(.cockpit-mode) #left-panel-stack > #data-panel {
+  transform: rotate(2deg);
+}
+body.console-mode:not(.cockpit-mode) #left-panel-stack > #cctv-panel {
+  transform: rotate(-1.5deg);
+}
+body.console-mode:not(.cockpit-mode) #left-panel-stack > #scene-panel {
+  transform: rotate(3deg);
+}
+body.console-mode:not(.cockpit-mode) #right-context-rail > #cctv-panel {
+  transform: rotate(-1deg);
+}
+body.console-mode:not(.cockpit-mode) #right-context-rail > #global-context-panel {
+  transform: rotate(-2deg);
+}
+@media (max-width: 900px) {
+  /* Narrow viewports: the ring/traces stay (hudFrame.js already no-ops
+     gracefully when a target element is hidden or has no size), but the
+     decorative rotations go — a tilted title on a phone-width screen just
+     reads as broken, not stylish.
+     !important is required here: the base rules this overrides are
+     scoped `body.console-mode:not(.cockpit-mode) ...`, which carries an
+     extra class from :not()'s argument and so is MORE specific than a
+     plain `body.console-mode ...` selector — a plain reset here would
+     silently lose to the rotation rule at every viewport width, matching
+     media query or not. */
+  body.console-mode #title-bar,
+  body.console-mode #style-indicator,
+  body.console-mode #command-dock,
+  body.console-mode #intel-hud .hud-top-left,
+  body.console-mode #intel-hud .hud-top-right,
+  body.console-mode #intel-hud .hud-bottom-left,
+  body.console-mode #intel-hud .hud-bottom-right,
+  body.console-mode #left-panel-stack > #data-panel,
+  body.console-mode #left-panel-stack > #cctv-panel,
+  body.console-mode #left-panel-stack > #scene-panel,
+  body.console-mode #right-context-rail > #cctv-panel,
+  body.console-mode #right-context-rail > #global-context-panel {
+    transform: none !important;
+  }
+}
+
+/* Hampton Roads gets a physically separate slot rather than just an
+   in-rail tilt: ui.js's _initConsoleModeToggle() actually moves the panel
+   out to a direct child of <body> (and adds this class) whenever console
+   mode is on and cockpit mode is not — a real DOM move, not a visual
+   trick, so it's also no longer measured by _syncRightPanelAdaptiveLayout
+   (which only looks at #right-context-rail's *current* children). It's
+   moved back into the rail, and this class removed, the moment either
+   condition flips (including entering Cockpit/flight mode), so it never
+   gets left stranded in a body-level position while some other mode's CSS
+   expects it back inside the rail. Sits in the empty lower-left gap below
+   the DATA LAYERS/SCENES stack and above the MGRS/lat-long HUD readout. */
+#hampton-roads-panel.rail-detached {
+  position: fixed;
+  inset: auto;
+  left: 16px;
+  bottom: 26vh;
+  width: 300px;
+  max-height: 30vh;
+  z-index: 110;
+  transform-origin: 50% 50%;
+  transform: rotate(-3deg);
+}
+@media (max-width: 900px) {
+  /* Narrow viewports never detach it in the first place (see the
+     matchMedia guard in _initConsoleModeToggle), but this is a defensive
+     fallback in case the class is ever present without JS having run. */
+  #hampton-roads-panel.rail-detached {
+    position: static;
+    width: auto;
+    max-height: none;
+    transform: none;
+  }
+}
 /* Keep the user's intelligence HUD text available in first person. It stays
    subordinate to the visor instruments and occupies the four peripheral
    corridors, leaving the optical center, context rails, and heading tape free. */
@@ -4082,7 +4367,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 2px;
-  color: var(--accent);
+  color: var(--text-primary);
   text-shadow: 0 0 12px var(--accent-glow);
   pointer-events: none;
   user-select: none;
@@ -4111,9 +4396,9 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, visibility 0.4s ease;
-  --hud-color: rgba(0, 255, 255, 0.6);
-  --hud-glow: rgba(0, 255, 255, 0.4);
-  --hud-border: rgba(0, 255, 255, 0.15);
+  --hud-color: rgba(212, 175, 55, 0.92);
+  --hud-glow: rgba(212, 175, 55, 0.4);
+  --hud-border: rgba(200, 30, 30, 0.15);
 }
 
 #intel-hud.active {
@@ -4319,9 +4604,9 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   right: auto;
   width: min(52vw, 720px);
   transform: translateX(-50%);
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: rgba(200, 30, 30, 0.24);
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.56), rgba(8, 26, 34, 0.5));
-  box-shadow: 0 0 24px rgba(0, 255, 255, 0.08);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.08);
 }
 
 #intel-hud[data-variant='tactical'] .hud-top-left,
@@ -4332,13 +4617,13 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 #intel-hud[data-variant='operator'] .hud-bottom-bar {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(200, 30, 30, 0.2);
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.52), rgba(8, 22, 18, 0.52));
 }
 
 #intel-hud[data-variant='operator'] .hud-corner {
   padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(200, 30, 30, 0.16);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.36);
 }
@@ -4448,7 +4733,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   overscroll-behavior: contain;
   padding-right: 4px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 212, 255, 0.5) rgba(255, 255, 255, 0.04);
+  scrollbar-color: rgba(200, 30, 30, 0.5) rgba(255, 255, 255, 0.04);
   scrollbar-gutter: stable;
 }
 
@@ -4462,7 +4747,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 .data-toggle-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(0, 212, 255, 0.65), rgba(0, 212, 255, 0.2));
+  background: linear-gradient(180deg, rgba(200, 30, 30, 0.65), rgba(200, 30, 30, 0.2));
   border-radius: 999px;
 }
 
@@ -4502,16 +4787,36 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 #right-context-rail > #pp-toggles,
 #right-context-rail > #cctv-panel,
-#right-context-rail > #global-context-panel {
+#right-context-rail > #global-context-panel,
+#right-context-rail > #hampton-roads-panel,
+#right-context-rail > #ai-sec-panel {
   position: relative;
   inset: auto;
   flex: 0 0 auto;
   pointer-events: auto;
 }
+#right-context-rail #ai-sec-panel {
+  width: 100%;
+  max-height: 100%;
+  pointer-events: auto;
+}
+#right-context-rail #ai-sec-panel.collapsed {
+  width: var(--right-display-collapsed-width);
+  margin-left: auto;
+}
 #right-context-rail #global-context-panel {
   width: 100%;
   max-height: 100%;
   pointer-events: auto;
+}
+#right-context-rail #hampton-roads-panel {
+  width: 100%;
+  max-height: 100%;
+  pointer-events: auto;
+}
+#right-context-rail #hampton-roads-panel.collapsed {
+  width: var(--right-display-collapsed-width);
+  margin-left: auto;
 }
 #right-context-rail #cctv-panel {
   width: 100%;
@@ -4578,7 +4883,8 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 #right-context-rail.layout-focus > #pp-toggles:not(.collapsed),
 #right-context-rail.layout-focus > #cctv-panel:not(.collapsed),
-#right-context-rail.layout-focus > #global-context-panel:not(.collapsed) {
+#right-context-rail.layout-focus > #global-context-panel:not(.collapsed),
+#right-context-rail.layout-focus > #ai-sec-panel:not(.collapsed) {
   flex: 0 1 var(--right-panel-allocated-height);
   height: var(--right-panel-allocated-height);
   min-height: 0;
@@ -4588,12 +4894,32 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 212, 255, 0.4) transparent;
+  scrollbar-color: rgba(200, 30, 30, 0.4) transparent;
 }
 #right-context-rail.layout-focus > #cctv-panel:not(.collapsed) .cctv-panel-inner,
-#right-context-rail.layout-focus > #global-context-panel:not(.collapsed) .global-context-panel-inner {
+#right-context-rail.layout-focus > #global-context-panel:not(.collapsed) .global-context-panel-inner,
+#right-context-rail.layout-focus > #ai-sec-panel:not(.collapsed) .ai-sec-panel-inner {
   height: 100%;
   box-sizing: border-box;
+}
+/* Under a constrained allocation the feed list takes whatever height the
+   header, tabs and footer leave, and scrolls inside it — otherwise its fixed
+   46vh cap makes the inner box taller than the panel and it spills offscreen. */
+#right-context-rail.layout-focus > #ai-sec-panel:not(.collapsed) .ai-sec-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+/* The corridor between the HUD readouts can be barely 250px tall; the source
+   chips and footnote would otherwise leave the list ~25px. Source health stays
+   in the header summary ("10/10 sources") and each chip's tooltip is the only
+   thing lost; the verify-with-vendor note returns whenever the rail is roomy. */
+#right-context-rail.layout-focus > #ai-sec-panel:not(.collapsed) .ai-sec-sources,
+#right-context-rail.layout-focus > #ai-sec-panel:not(.collapsed) .ai-sec-note {
+  display: none;
+}
+#right-context-rail.layout-focus > #ai-sec-panel:not(.collapsed) .ai-sec-panel-inner {
+  padding: 10px 12px 8px;
 }
 #right-context-rail #context-missions-view:not([hidden]),
 #right-context-rail #space-mission-panel-host,
@@ -5147,6 +5473,328 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
 }
+
+/* ── Hampton Roads 757 side panel ─────────────── */
+#hampton-roads-panel .panel-glow {
+  position: absolute;
+  inset: -18px;
+  background: radial-gradient(ellipse at center, rgba(200, 30, 30, 0.16) 0%, transparent 65%);
+  filter: blur(16px);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.hampton-roads-panel-inner {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--panel-radius);
+  background: var(--glass-bg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+.hampton-roads-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+  margin: 2px 0 10px;
+}
+.hampton-roads-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 46vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 30, 30, 0.46) rgba(255, 255, 255, 0.06);
+}
+.hampton-roads-feed::-webkit-scrollbar {
+  width: 8px;
+}
+.hampton-roads-feed::-webkit-scrollbar-thumb {
+  background: rgba(200, 30, 30, 0.46);
+  border-radius: 4px;
+}
+.hampton-roads-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 9px;
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--hr-item-accent, var(--accent));
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.hampton-roads-item-kind {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+.hampton-roads-item-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.hampton-roads-item-label a {
+  color: inherit;
+  text-decoration: none;
+}
+.hampton-roads-item-label a:hover {
+  text-decoration: underline;
+}
+.hampton-roads-item-meta {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--text-secondary);
+}
+.hampton-roads-empty,
+.hampton-roads-error {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-secondary);
+  padding: 8px 4px;
+}
+.hampton-roads-error {
+  color: var(--accent);
+}
+#hampton-roads-panel.collapsed .hampton-roads-meta,
+#hampton-roads-panel.collapsed .hampton-roads-feed {
+  display: none !important;
+}
+#hampton-roads-panel.collapsed .panel-title {
+  font-size: 8px;
+  letter-spacing: 1.8px;
+}
+#hampton-roads-panel.collapsed .hampton-roads-panel-inner {
+  padding-bottom: 10px;
+}
+#hampton-roads-panel.collapsed .panel-header {
+  margin-bottom: 2px;
+}
+
+/* ── AI Security Intelligence panel ───────────────
+   Read-only feed (ui.js _initAiSecPanel). Priority reads left-to-right on each
+   card: KEV (confirmed exploitation) in accent red, then severity, then NEW.
+   Palette is the app's gold/red/black tokens only — no new colors. */
+#ai-sec-panel .panel-glow {
+  position: absolute;
+  inset: -18px;
+  background: radial-gradient(ellipse at center, rgba(200, 30, 30, 0.16) 0%, transparent 65%);
+  filter: blur(16px);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.ai-sec-panel-inner {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--panel-radius);
+  background: var(--glass-bg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+.ai-sec-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+  margin: 2px 0 8px;
+}
+.ai-sec-meta.ai-sec-error { color: var(--accent); }
+.ai-sec-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.ai-sec-tab {
+  flex: 1 1 0;
+  padding: 5px 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+}
+.ai-sec-tab[data-count]:not([data-count=""])::after {
+  content: ' ' attr(data-count);
+  color: var(--text-dim);
+}
+.ai-sec-tab:hover { color: var(--text-primary); }
+.ai-sec-tab:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+.ai-sec-tab.active {
+  color: var(--text-primary);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.ai-sec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 46vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 30, 30, 0.46) rgba(255, 255, 255, 0.06);
+}
+.ai-sec-list::-webkit-scrollbar { width: 8px; }
+.ai-sec-list::-webkit-scrollbar-thumb {
+  background: rgba(200, 30, 30, 0.46);
+  border-radius: 4px;
+}
+.ai-sec-item {
+  --ai-sec-accent: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 9px;
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--ai-sec-accent);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.ai-sec-vuln[data-severity="medium"] { --ai-sec-accent: var(--text-secondary); }
+.ai-sec-vuln[data-severity="high"] { --ai-sec-accent: var(--text-primary); }
+.ai-sec-vuln[data-severity="critical"],
+.ai-sec-vuln[data-kev="true"] { --ai-sec-accent: var(--accent); }
+.ai-sec-vuln[data-kev="true"] {
+  background: var(--accent-dim);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.ai-sec-vuln > summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  list-style: none;
+}
+.ai-sec-vuln > summary::-webkit-details-marker { display: none; }
+.ai-sec-vuln > summary:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.ai-sec-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.ai-sec-badge {
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+}
+.ai-sec-badge-kev { color: #fff; background: var(--accent); border-color: var(--accent); }
+.ai-sec-badge-critical { color: var(--accent); }
+.ai-sec-badge-high { color: var(--text-primary); }
+.ai-sec-badge-new { color: var(--text-primary); background: rgba(212, 175, 55, 0.14); }
+.ai-sec-item-title,
+.ai-sec-item-title a {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.ai-sec-item-title a:hover { text-decoration: underline; }
+.ai-sec-item-meta,
+.ai-sec-item-kind {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+}
+.ai-sec-item-kind { display: flex; gap: 6px; align-items: center; letter-spacing: 1.4px; text-transform: uppercase; }
+.ai-sec-item-summary,
+.ai-sec-item-body p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+.ai-sec-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--glass-border);
+}
+.ai-sec-field {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.35;
+}
+.ai-sec-field-key { color: var(--text-secondary); letter-spacing: 1px; }
+.ai-sec-field-value { color: var(--text-primary); overflow-wrap: anywhere; }
+.ai-sec-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.ai-sec-links a {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.ai-sec-links a:hover { text-decoration: underline; }
+.ai-sec-empty {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-secondary);
+  padding: 8px 4px;
+}
+.ai-sec-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.ai-sec-source {
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.6px;
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+}
+.ai-sec-source-ok { color: var(--text-primary); }
+.ai-sec-source-stale { color: var(--text-secondary); border-style: dashed; }
+.ai-sec-source-down { color: var(--accent); border-color: var(--accent); }
+.ai-sec-note {
+  margin-top: 6px;
+  font-size: 8px;
+  line-height: 1.35;
+  color: var(--text-dim);
+}
+#ai-sec-panel.collapsed .ai-sec-meta,
+#ai-sec-panel.collapsed .ai-sec-tabs,
+#ai-sec-panel.collapsed .ai-sec-list,
+#ai-sec-panel.collapsed .ai-sec-sources,
+#ai-sec-panel.collapsed .ai-sec-note {
+  display: none !important;
+}
+#ai-sec-panel.collapsed .panel-title {
+  font-size: 8px;
+  letter-spacing: 1.8px;
+}
+#ai-sec-panel.collapsed .ai-sec-panel-inner {
+  padding-bottom: 10px;
+}
+#ai-sec-panel.collapsed .panel-header {
+  margin-bottom: 2px;
+}
+
 .context-radio-dock {
   position: relative;
   display: flex;
@@ -5175,8 +5823,8 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 .context-radio-toggle.active {
   border-color: rgba(101, 247, 255, .82);
   color: #eaffff;
-  background: rgba(0, 212, 255, .16);
-  box-shadow: inset 0 0 12px rgba(0, 212, 255, .1), 0 0 12px rgba(0, 212, 255, .2);
+  background: rgba(200, 30, 30, .16);
+  box-shadow: inset 0 0 12px rgba(200, 30, 30, .1), 0 0 12px rgba(200, 30, 30, .2);
 }
 .context-radio-toggle:disabled { opacity: .5; cursor: wait; }
 .context-radio-mini {
@@ -5349,10 +5997,10 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   outline: none;
 }
 .context-mode-button.active {
-  border-color: rgba(0, 212, 255, .75);
+  border-color: rgba(200, 30, 30, .75);
   color: #eaffff;
-  background: rgba(0, 212, 255, .14);
-  box-shadow: inset 0 0 16px rgba(0, 212, 255, .08), 0 0 12px rgba(0, 212, 255, .12);
+  background: rgba(200, 30, 30, .14);
+  box-shadow: inset 0 0 16px rgba(200, 30, 30, .08), 0 0 12px rgba(200, 30, 30, .12);
 }
 .context-mode-button:disabled { opacity: .55; cursor: wait; }
 .context-mode-view[hidden],
@@ -5400,10 +6048,10 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   outline: none;
 }
 .panel-layer-toggle.active {
-  border-color: rgba(0, 212, 255, 0.7);
+  border-color: rgba(200, 30, 30, 0.7);
   color: #fff;
-  background: rgba(0, 212, 255, 0.14);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.14);
+  background: rgba(200, 30, 30, 0.14);
+  box-shadow: 0 0 12px rgba(200, 30, 30, 0.14);
 }
 .panel-layer-toggle:disabled { opacity: 0.45; cursor: wait; }
 .global-context-actions .panel-layer-toggle {
@@ -5447,7 +6095,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   background: rgba(2, 15, 20, .42);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 212, 255, .46) rgba(255, 255, 255, .06);
+  scrollbar-color: rgba(200, 30, 30, .46) rgba(255, 255, 255, .06);
 }
 #radio-panel .panel-header { margin-bottom: 0; }
 .radio-layer-state {
@@ -5508,7 +6156,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   border: 1px solid rgba(65, 220, 231, .22);
   border-radius: 7px;
   background: linear-gradient(180deg, rgba(1, 9, 13, .92), rgba(4, 24, 30, .72));
-  box-shadow: inset 0 0 18px rgba(0, 212, 255, .045);
+  box-shadow: inset 0 0 18px rgba(200, 30, 30, .045);
 }
 .radio-tuner[hidden] { display: none; }
 .radio-tuner-header,
@@ -5867,10 +6515,10 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 .data-toggle-btn.active {
-  color: var(--accent);
+  color: var(--text-primary);
   border-color: var(--accent);
   background: var(--accent-dim);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.15);
+  box-shadow: 0 0 10px rgba(200, 30, 30, 0.15);
 }
 
 .data-toggle-btn.active.feed-stale,
@@ -5942,7 +6590,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 .data-toggle-chip.active {
-  color: var(--accent);
+  color: var(--text-primary);
   border-color: var(--accent);
   background: var(--accent-dim);
 }
@@ -6002,7 +6650,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 #cctv-panel .panel-glow {
   position: absolute;
   inset: -18px;
-  background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.16) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, rgba(200, 30, 30, 0.16) 0%, transparent 65%);
   filter: blur(16px);
   opacity: 0.25;
   pointer-events: none;
@@ -6020,7 +6668,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   max-height: calc(100vh - 24px);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 212, 255, 0.46) rgba(255, 255, 255, 0.06);
+  scrollbar-color: rgba(200, 30, 30, 0.46) rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
   box-shadow:
@@ -6039,8 +6687,8 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 .cctv-panel-inner::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(0, 212, 255, 0.6), rgba(0, 212, 255, 0.28));
-  border: 1px solid rgba(0, 212, 255, 0.4);
+  background: linear-gradient(180deg, rgba(200, 30, 30, 0.6), rgba(200, 30, 30, 0.28));
+  border: 1px solid rgba(200, 30, 30, 0.4);
   border-radius: 999px;
 }
 
@@ -6081,7 +6729,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.7px;
-  color: #91edff;
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 7px;
@@ -6091,8 +6739,8 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 .cctv-cal-value:hover:not(:disabled) {
-  border-color: rgba(0, 212, 255, 0.45);
-  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(200, 30, 30, 0.45);
+  background: rgba(200, 30, 30, 0.08);
 }
 
 .cctv-cal-input {
@@ -6101,8 +6749,8 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   font-size: 9px;
   letter-spacing: 0.7px;
   color: var(--text-primary);
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.5);
+  background: rgba(200, 30, 30, 0.1);
+  border: 1px solid rgba(200, 30, 30, 0.5);
   border-radius: 4px;
   padding: 1px 3px;
   outline: none;
@@ -6146,9 +6794,9 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 #cctv-coverage-btn.active,
 #cctv-auto-hop-btn.active,
 #cctv-projection-btn.active {
-  color: var(--accent);
+  color: var(--text-primary);
   border-color: var(--accent);
-  background: rgba(0, 212, 255, 0.14);
+  background: rgba(200, 30, 30, 0.14);
 }
 
 #cctv-quality-chip {
@@ -6157,13 +6805,13 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   justify-content: center;
   min-width: 90px;
   padding: 6px 8px;
-  border: 1px solid rgba(0, 212, 255, 0.2);
+  border: 1px solid rgba(200, 30, 30, 0.2);
   border-radius: 8px;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 1px;
-  color: #8fe7ff;
-  background: rgba(0, 212, 255, 0.08);
+  color: var(--text-primary);
+  background: rgba(200, 30, 30, 0.08);
   text-transform: uppercase;
 }
 
@@ -6195,7 +6843,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    radial-gradient(circle at 20% 20%, rgba(0, 244, 255, 0.09), transparent 44%),
+    radial-gradient(circle at 20% 20%, rgba(200, 30, 30, 0.09), transparent 44%),
     linear-gradient(180deg, rgba(8, 14, 19, 0.88), rgba(4, 7, 11, 0.96));
   min-height: 150px;
   /* .cctv-panel-inner is a scrolling column flex container, so the default
@@ -6213,9 +6861,9 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   background: linear-gradient(
     100deg,
     transparent 24%,
-    rgba(0, 212, 255, 0.08) 44%,
-    rgba(170, 244, 255, 0.14) 50%,
-    rgba(0, 212, 255, 0.08) 56%,
+    rgba(200, 30, 30, 0.08) 44%,
+    rgba(212, 175, 55, 0.22) 50%,
+    rgba(200, 30, 30, 0.08) 56%,
     transparent 76%
   );
   transform: translateX(-100%);
@@ -6240,7 +6888,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 2.2px;
-  color: rgba(145, 237, 255, 0.62);
+  color: rgba(168, 132, 42, 0.9);
   pointer-events: none;
 }
 
@@ -6280,10 +6928,10 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 
 #cctv-source-badge {
   align-self: flex-start;
-  border: 1px solid rgba(0, 212, 255, 0.32);
+  border: 1px solid rgba(200, 30, 30, 0.32);
   border-radius: 999px;
-  background: rgba(0, 212, 255, 0.09);
-  color: #9defff;
+  background: rgba(200, 30, 30, 0.09);
+  color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 1.3px;
@@ -6315,8 +6963,8 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   font-size: 10px;
   letter-spacing: 0.8px;
   line-height: 1.45;
-  color: #a8f7ff;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.18);
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(200, 30, 30, 0.18);
 }
 
 /* ── Scene Director Panel ───────────────────── */
@@ -6412,19 +7060,19 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 #left-panel-stack > [data-panel-id]:not(.collapsed) .panel-divider {
-  background: linear-gradient(90deg, rgb(0 212 255 / 28%), rgba(0, 212, 255, 0.18) 58%, transparent);
-  box-shadow: 0 0 7px rgba(0, 212, 255, 0.22);
+  background: linear-gradient(90deg, rgb(200 30 30 / 28%), rgba(200, 30, 30, 0.18) 58%, transparent);
+  box-shadow: 0 0 7px rgba(200, 30, 30, 0.22);
 }
 
 #right-context-rail [data-panel-id]:not(.collapsed) .panel-divider {
-  background: linear-gradient(90deg, rgb(0 212 255 / 28%), rgba(0, 212, 255, 0.18) 58%, transparent);
-  box-shadow: 0 0 7px rgba(0, 212, 255, 0.22);
+  background: linear-gradient(90deg, rgb(200 30 30 / 28%), rgba(200, 30, 30, 0.18) 58%, transparent);
+  box-shadow: 0 0 7px rgba(200, 30, 30, 0.22);
 }
 
 #scene-panel .panel-glow {
   position: absolute;
   inset: -18px;
-  background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.16) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, rgba(200, 30, 30, 0.16) 0%, transparent 65%);
   filter: blur(16px);
   opacity: 0.25;
   pointer-events: none;
@@ -6531,7 +7179,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 
 .scene-shot-row.active {
   border-color: var(--accent);
-  background: rgba(0, 212, 255, 0.08);
+  background: rgba(200, 30, 30, 0.08);
 }
 
 .scene-shot-top {
@@ -6585,9 +7233,9 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 }
 
 .scene-btn:hover:not(:disabled) {
-  color: var(--accent);
+  color: var(--text-primary);
   border-color: var(--accent);
-  background: rgba(0, 212, 255, 0.14);
+  background: rgba(200, 30, 30, 0.14);
 }
 
 .scene-btn:disabled {
@@ -6614,7 +7262,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
 #scene-progress-fill {
   width: 0%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.75));
+  background: linear-gradient(90deg, rgba(200, 30, 30, 0.2), rgba(200, 30, 30, 0.75));
   color: #d5f7ff;
   font-family: var(--font-mono);
   font-size: 8px;
@@ -6624,7 +7272,7 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   justify-content: flex-end;
   padding-right: 6px;
   transition: width 100ms linear;
-  text-shadow: 0 0 6px rgba(0, 212, 255, 0.6);
+  text-shadow: 0 0 6px rgba(200, 30, 30, 0.6);
 }
 
 #scene-status {
@@ -6647,12 +7295,12 @@ body.cockpit-mode #intel-hud .hud-right-edge { right: 22px; }
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 2px;
-  color: #bff4ff;
+  color: var(--text-primary);
   background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(0, 212, 255, 0.36);
+  border: 1px solid rgba(200, 30, 30, 0.36);
   border-radius: 999px;
   padding: 6px 14px;
-  text-shadow: 0 0 8px rgba(0, 212, 255, 0.55);
+  text-shadow: 0 0 8px rgba(200, 30, 30, 0.55);
   pointer-events: none;
 }
 
@@ -6988,12 +7636,12 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
   padding: 6px;
   overflow: visible;
   background: rgba(9, 18, 27, 0.84);
-  border: 1px solid rgba(123, 189, 211, 0.28);
+  border: 1px solid rgba(200, 30, 30, 0.28);
   border-radius: 12px;
   box-shadow:
     0 12px 36px rgba(0, 0, 0, 0.58),
     0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 0 28px rgba(0, 212, 255, 0.06);
+    0 0 28px rgba(200, 30, 30, 0.06);
   backdrop-filter: blur(28px) saturate(1.35);
   -webkit-backdrop-filter: blur(28px) saturate(1.35);
   transform: translateX(-50%);
@@ -7013,13 +7661,13 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
 #command-dock > #location-bar {
   grid-area: locations;
   min-width: 0;
-  border-right: 1px solid rgba(123, 189, 211, 0.16);
+  border-right: 1px solid rgba(200, 30, 30, 0.16);
 }
 
 #command-dock > #control-panel {
   grid-area: presets;
   min-width: 0;
-  border-left: 1px solid rgba(123, 189, 211, 0.16);
+  border-left: 1px solid rgba(200, 30, 30, 0.16);
 }
 
 #command-dock > #gev-voice-control {
@@ -7030,13 +7678,13 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
   min-width: 0;
   margin: -14px 0;
   padding: 19px 14px 12px;
-  border-color: rgba(0, 212, 255, 0.36);
+  border-color: rgba(200, 30, 30, 0.36);
   border-radius: 12px;
   background: rgba(8, 31, 42, 0.94);
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.56),
-    0 0 26px rgba(0, 212, 255, 0.12),
-    0 0 0 1px rgba(0, 212, 255, 0.08) inset;
+    0 0 26px rgba(200, 30, 30, 0.12),
+    0 0 0 1px rgba(200, 30, 30, 0.08) inset;
 }
 
 #command-dock .gev-voice-kicker {
@@ -7150,7 +7798,7 @@ body.scene-playback-mode :is(#clear-selected-layers, #reset-globe-view) {
   flex: 0 1 190px;
   min-width: 132px;
   padding-right: 8px;
-  border-right: 1px solid rgba(123, 189, 211, 0.14);
+  border-right: 1px solid rgba(200, 30, 30, 0.14);
 }
 
 #command-dock .search-toggle-btn {
@@ -7228,12 +7876,12 @@ body.recording-mode #cesium-credits {
   }
 
   #command-dock > #location-bar {
-    border-right: 1px solid rgba(123, 189, 211, 0.16);
-    border-bottom: 1px solid rgba(123, 189, 211, 0.16);
+    border-right: 1px solid rgba(200, 30, 30, 0.16);
+    border-bottom: 1px solid rgba(200, 30, 30, 0.16);
   }
 
   #command-dock > #control-panel {
-    border-top: 1px solid rgba(123, 189, 211, 0.16);
+    border-top: 1px solid rgba(200, 30, 30, 0.16);
     border-left: 0;
   }
 
@@ -7324,11 +7972,11 @@ body.recording-mode #cesium-credits {
 }
 
 #command-dock > #location-bar {
-  border-right: 1px solid rgba(123, 189, 211, 0.18);
+  border-right: 1px solid rgba(200, 30, 30, 0.18);
 }
 
 #command-dock > #control-panel {
-  border-left: 1px solid rgba(123, 189, 211, 0.18);
+  border-left: 1px solid rgba(200, 30, 30, 0.18);
 }
 
 #command-dock .panel-inner,
@@ -7363,7 +8011,7 @@ body.recording-mode #cesium-credits {
 #command-dock .location-toolbar-label::after {
   content: '›';
   margin-left: 0.45rem;
-  color: rgba(54, 220, 255, 0.68);
+  color: rgba(212, 175, 55, 0.68);
   font-size: 0.7rem;
 }
 
@@ -7534,8 +8182,8 @@ body.recording-mode #cesium-credits {
   padding: 0;
   border-radius: 50%;
   box-shadow:
-    0 0 0 0.2rem rgba(0, 212, 255, 0.06),
-    0 0 1rem rgba(0, 212, 255, 0.12);
+    0 0 0 0.2rem rgba(200, 30, 30, 0.06),
+    0 0 1rem rgba(200, 30, 30, 0.12);
 }
 
 #command-dock .gev-mic-orbit {
@@ -7565,14 +8213,14 @@ body.recording-mode #cesium-credits {
   gap: 0.12rem;
   height: 2.2rem;
   padding: 0.2rem 0.1rem;
-  border-bottom: 1px solid rgba(54, 220, 255, 0.34);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.34);
 }
 
 #command-dock .gev-voice-visualizer span {
   width: 0.18rem;
   height: 0.55rem;
-  background: linear-gradient(to top, #28b9db, #71eaff);
-  box-shadow: 0 0 0.35rem rgba(54, 220, 255, 0.28);
+  background: linear-gradient(to top, #a8842a, #d4af37);
+  box-shadow: 0 0 0.35rem rgba(212, 175, 55, 0.28);
   transform-origin: bottom;
 }
 
@@ -7729,12 +8377,12 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
 #command-dock :is(#location-bar, #control-panel):hover .dock-label-icon,
 #command-dock :is(#location-bar, #control-panel).dock-pinned .dock-label-icon {
   background: var(--accent);
-  filter: drop-shadow(0 0 0.35rem rgba(0, 212, 255, 0.28));
+  filter: drop-shadow(0 0 0.35rem rgba(200, 30, 30, 0.28));
 }
 
 #command-dock :is(#location-bar, #control-panel):hover .location-toolbar-label,
 #command-dock :is(#location-bar, #control-panel):hover .panel-title{
-  color: var(--accent);
+  color: var(--text-primary);
 }
 
 
@@ -7921,10 +8569,10 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   height: 2.45rem;
   aspect-ratio: 1;
   box-sizing: border-box;
-  background: rgba(0, 212, 255, 0.06);
-  border: 1px solid rgba(0, 212, 255, 0.48);
+  background: rgba(200, 30, 30, 0.06);
+  border: 1px solid rgba(200, 30, 30, 0.48);
   border-radius: 50%;
-  box-shadow: 0 0 0 0.18rem rgba(0, 212, 255, 0.06), 0 0 0.9rem rgba(0, 212, 255, 0.12);
+  box-shadow: 0 0 0 0.18rem rgba(200, 30, 30, 0.06), 0 0 0.9rem rgba(200, 30, 30, 0.12);
 }
 
 #command-dock .gev-mic-label {
@@ -7960,7 +8608,7 @@ body:not(.ui-clean-view):not(.recording-mode) #cesium-credits {
   position: static;
   width: auto;
   padding-top: 0;
-  color: var(--accent);
+  color: var(--text-primary);
   font-size: 0.43rem;
   text-align: left;
 }
@@ -8177,11 +8825,11 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   visibility: hidden;
   opacity: 0;
   background: rgba(8, 20, 30, 0.94);
-  border: 1px solid rgba(123, 189, 211, 0.32);
+  border: 1px solid rgba(200, 30, 30, 0.32);
   border-radius: 0.42rem;
   box-shadow:
     0 0.9rem 2.4rem rgba(0, 0, 0, 0.58),
-    0 0 1.5rem rgba(0, 212, 255, 0.08),
+    0 0 1.5rem rgba(200, 30, 30, 0.08),
     0 0 0 1px rgba(255, 255, 255, 0.025) inset;
   backdrop-filter: blur(28px) saturate(1.3);
   -webkit-backdrop-filter: blur(28px) saturate(1.3);
@@ -8227,8 +8875,8 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   width: 0.6rem;
   height: 0.6rem;
   background: rgba(8, 20, 30, 0.96);
-  border-right: 1px solid rgba(123, 189, 211, 0.28);
-  border-bottom: 1px solid rgba(123, 189, 211, 0.28);
+  border-right: 1px solid rgba(200, 30, 30, 0.28);
+  border-bottom: 1px solid rgba(200, 30, 30, 0.28);
   transform: rotate(45deg);
 }
 
@@ -8258,7 +8906,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   padding: 0 0.28rem;
   color: rgba(190, 221, 230, 0.5);
   background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(123, 189, 211, 0.2);
+  border: 1px solid rgba(200, 30, 30, 0.2);
   border-radius: 0.2rem;
   font-family: var(--font-mono);
   font-size: 0.35rem;
@@ -8273,10 +8921,10 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 
 #command-dock .dock-pin-btn:hover,
 #command-dock .dock-pin-btn[aria-pressed='true'] {
-  color: var(--accent);
-  border-color: rgba(0, 212, 255, 0.62);
-  background: rgba(0, 212, 255, 0.1);
-  box-shadow: 0 0 0.55rem rgba(0, 212, 255, 0.12);
+  color: var(--text-primary);
+  border-color: rgba(200, 30, 30, 0.62);
+  background: rgba(200, 30, 30, 0.1);
+  box-shadow: 0 0 0.55rem rgba(200, 30, 30, 0.12);
 }
 
 #command-dock .panel-divider {
@@ -8485,12 +9133,12 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 #command-dock #gev-voice-control[data-speaker='ai'] :is(#gev-voice-status, #gev-voice-detail) {
-  color: var(--accent);
+  color: var(--text-primary);
 }
 
 #command-dock #gev-voice-control[data-speaker='ai'] .gev-voice-visualizer span {
-  background: linear-gradient(to top, #28b9db, #71eaff);
-  box-shadow: 0 0 0.35rem rgba(54, 220, 255, 0.28);
+  background: linear-gradient(to top, #a8842a, #d4af37);
+  box-shadow: 0 0 0.35rem rgba(212, 175, 55, 0.28);
 }
 
 /* Center every slide-up tray on the complete unified dock, not its side wing. */
@@ -8520,6 +9168,18 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+/* #command-dock's own ID rule above zeroes border/box-shadow (the dock is
+   normally just a transparent flex row — its child pills carry the visible
+   chrome). Console mode's angular-panel skin needs to win back over that ID
+   specificity to put a frame around the dock as a whole. */
+body.console-mode #command-dock.angular-panel {
+  border: 2px solid var(--accent);
+  box-shadow:
+    0 0 6px var(--accent-glow),
+    0 0 32px var(--accent-glow),
+    inset 0 0 32px rgba(0, 0, 0, 0.5);
 }
 
 #command-dock > #location-bar {
@@ -8572,9 +9232,9 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   [data-status='listening']:not([data-microphone='muted']),
   [data-status='executing']
 ) .gev-mic-orbit {
-  background: rgba(0, 212, 255, 0.06);
-  border-color: rgba(0, 212, 255, 0.48);
-  box-shadow: 0 0 0 0.18rem rgba(0, 212, 255, 0.06), 0 0 0.9rem rgba(0, 212, 255, 0.12);
+  background: rgba(200, 30, 30, 0.06);
+  border-color: rgba(200, 30, 30, 0.48);
+  box-shadow: 0 0 0 0.18rem rgba(200, 30, 30, 0.06), 0 0 0.9rem rgba(200, 30, 30, 0.12);
 }
 
 #command-dock #gev-voice-button:hover .gev-mic-orbit img,
@@ -8609,16 +9269,16 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 #command-dock > :is(#location-bar, #control-panel):hover {
   background: var(--glass-bg);
   border-color: var(--glass-border-hover);
-  color: var(--accent);
+  color: var(--text-primary);
 
 }
 
 #command-dock > :is(#location-bar, #control-panel).dock-pinned {
-  border-color: rgba(0, 212, 255, 0.55);
+  border-color: rgba(200, 30, 30, 0.55);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(0, 212, 255, 0.08) inset,
-    0 0 1rem rgba(0, 212, 255, 0.12);
+    0 0 0 1px rgba(200, 30, 30, 0.08) inset,
+    0 0 1rem rgba(200, 30, 30, 0.12);
 }
 
 #command-dock #location-bar .location-toolbar {
@@ -8696,13 +9356,13 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   padding: 0.62rem 0.72rem;
   visibility: hidden;
   opacity: 0;
-  color: rgba(223, 245, 250, 0.92);
+  color: var(--text-primary);
   background: rgba(7, 22, 31, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.34);
+  border: 1px solid rgba(200, 30, 30, 0.34);
   border-radius: 0.38rem;
   box-shadow:
     0 0.85rem 2rem rgba(0, 0, 0, 0.58),
-    0 0 1.2rem rgba(0, 212, 255, 0.08);
+    0 0 1.2rem rgba(200, 30, 30, 0.08);
   backdrop-filter: blur(24px) saturate(1.3);
   -webkit-backdrop-filter: blur(24px) saturate(1.3);
   pointer-events: none;
@@ -8715,7 +9375,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 #gev-voice-control .gev-voice-help-kicker {
-  color: rgba(54, 220, 255, 0.72);
+  color: rgba(168, 132, 42, 0.9);
   font-family: var(--font-mono);
   font-size: 0.46rem;
   font-weight: 600;
@@ -8790,8 +9450,8 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 212, 255, 0.06);
-  border: 1px solid rgba(0, 212, 255, 0.34);
+  background: rgba(200, 30, 30, 0.06);
+  border: 1px solid rgba(200, 30, 30, 0.34);
   border-radius: 0.18rem;
   color: var(--text-secondary);
   font-family: var(--font-mono);
@@ -8805,8 +9465,8 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 
 .gev-voice-tier-btn:hover {
   color: var(--text-primary);
-  border-color: rgba(0, 212, 255, 0.6);
-  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(200, 30, 30, 0.6);
+  background: rgba(200, 30, 30, 0.12);
 }
 
 /* MINI engaged — amber, distinct from the cyan default so the cheaper tier
@@ -8870,11 +9530,11 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   background:
     linear-gradient(145deg, rgba(10, 27, 37, 0.97), rgba(7, 13, 22, 0.95)),
     rgba(7, 17, 25, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.42);
+  border: 1px solid rgba(200, 30, 30, 0.42);
   border-radius: 0.65rem;
   box-shadow:
     0 1.4rem 4.5rem rgba(0, 0, 0, 0.72),
-    0 0 2.5rem rgba(0, 212, 255, 0.09),
+    0 0 2.5rem rgba(200, 30, 30, 0.09),
     inset 0 0 0 1px rgba(255, 255, 255, 0.025);
   backdrop-filter: blur(28px) saturate(1.25);
   -webkit-backdrop-filter: blur(28px) saturate(1.25);
@@ -8904,8 +9564,8 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(54, 220, 255, 0.8), transparent);
-  box-shadow: 0 0 1rem rgba(54, 220, 255, 0.45);
+  background: linear-gradient(90deg, transparent, rgba(200, 30, 30, 0.8), transparent);
+  box-shadow: 0 0 1rem rgba(200, 30, 30, 0.45);
   pointer-events: none;
 }
 
@@ -8922,7 +9582,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   text-transform: uppercase;
 }
 
-.first-run-kicker { color: rgba(54, 220, 255, 0.86); }
+.first-run-kicker { color: rgba(168, 132, 42, 0.95); }
 
 #first-run-launcher h2 {
   margin-top: 0.6rem;
@@ -8952,13 +9612,13 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   scroll-behavior: smooth;
   /* A visible, non-overlaying affordance that the list continues. */
   scrollbar-width: thin;
-  scrollbar-color: rgba(54, 220, 255, 0.45) transparent;
+  scrollbar-color: rgba(200, 30, 30, 0.45) transparent;
   scrollbar-gutter: stable;
 }
 
 .first-run-choices::-webkit-scrollbar { width: 6px; }
 .first-run-choices::-webkit-scrollbar-thumb {
-  background: rgba(54, 220, 255, 0.45);
+  background: rgba(200, 30, 30, 0.45);
   border-radius: 3px;
 }
 
@@ -8970,10 +9630,10 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   width: 100%;
   min-height: 3.55rem;
   padding: 0.6rem 0.7rem;
-  color: rgba(225, 244, 248, 0.92);
+  color: var(--text-primary);
   text-align: left;
-  background: rgba(29, 69, 81, 0.18);
-  border: 1px solid rgba(100, 200, 220, 0.18);
+  background: rgba(200, 30, 30, 0.08);
+  border: 1px solid rgba(200, 30, 30, 0.18);
   border-radius: 0.42rem;
   cursor: pointer;
   transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
@@ -8981,8 +9641,8 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 
 .first-run-choices button:hover,
 .first-run-choices button:focus-visible {
-  background: rgba(25, 151, 178, 0.16);
-  border-color: rgba(54, 220, 255, 0.62);
+  background: rgba(200, 30, 30, 0.16);
+  border-color: rgba(200, 30, 30, 0.62);
   outline: none;
   transform: translateX(2px);
 }
@@ -8997,7 +9657,7 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 .first-run-choices button > .material-symbols-outlined:first-child {
-  color: #55dff5;
+  color: var(--text-primary);
   font-size: 1.35rem;
 }
 
@@ -9015,19 +9675,19 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
 }
 
 .first-run-choices small {
-  color: rgba(198, 220, 226, 0.55);
+  color: rgba(168, 132, 42, 0.85);
   font-size: 0.66rem;
 }
 
 .first-run-arrow {
-  color: rgba(54, 220, 255, 0.4);
+  color: rgba(212, 175, 55, 0.4);
   font-size: 1rem;
   transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
 .first-run-choices button:hover .first-run-arrow,
 .first-run-choices button:focus-visible .first-run-arrow {
-  color: rgba(54, 220, 255, 0.9);
+  color: rgba(212, 175, 55, 0.9);
   transform: translateX(2px);
 }
 
@@ -9057,25 +9717,25 @@ body:not(.ui-clean-view):not(.recording-mode):has(#intel-hud[data-variant='minim
   width: 0.82rem;
   height: 0.82rem;
   margin: 0;
-  accent-color: #36dcff;
+  accent-color: #c81e1e;
   cursor: pointer;
 }
 
-.first-run-suppress:hover { color: rgba(225, 244, 248, 0.92); }
+.first-run-suppress:hover { color: var(--text-primary); }
 
 /* The live region carries mission progress and failures, so it owns a full row
    and reserves its height — otherwise the card resizes as it speaks. */
 .first-run-note {
   min-height: 1.1rem;
   margin-top: 0.5rem;
-  color: rgba(199, 225, 231, 0.62);
+  color: rgba(168, 132, 42, 0.85);
   font-family: var(--font-mono);
   font-size: 0.62rem;
   line-height: 1.35;
 }
 
 #first-run-launcher[data-state='loading'] .first-run-note {
-  color: rgba(54, 220, 255, 0.85);
+  color: var(--text-primary);
 }
 
 /* Every surface that claims the screen hides the launcher. This list is the CSS
@@ -9160,4 +9820,74 @@ body.scene-playback-mode #first-run-launcher {
   .first-run-arrow { transition: none; }
   /* Scrolling a tile into view must not animate either. */
   .first-run-choices { scroll-behavior: auto; }
+}
+
+/* ── VIEW CONTROL panel (src/cameraControl.js) ───────────────────────────
+   Self-contained manual camera controls on the left edge, independent of the
+   right rail's adaptive layout. */
+.view-control-toggle {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  padding: 10px 7px;
+  background: rgba(10, 10, 12, 0.78);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 5px;
+  color: #d8d8d8;
+  font: 700 11px/1 ui-monospace, "JetBrains Mono", monospace;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
+}
+.view-control-toggle:hover,
+.view-control-toggle.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  color: #fff;
+}
+
+.view-control-panel {
+  position: fixed;
+  left: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 41;
+  width: 214px;
+  padding: 10px 12px 12px;
+  background: rgba(8, 8, 10, 0.92);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 7px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.55), 0 0 10px var(--accent-glow);
+  backdrop-filter: blur(6px);
+}
+.view-control-panel[hidden] { display: none; }
+
+.view-ctrl-readout {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 8px 0 10px;
+  padding: 6px 2px;
+  font: 500 10px/1.3 ui-monospace, "JetBrains Mono", monospace;
+  color: #8fa3ad;
+  letter-spacing: 0.03em;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.view-ctrl-readout b { color: #fff; font-weight: 700; }
+
+.view-ctrl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.view-ctrl-grid .scene-btn {
+  width: 100%;
+  padding: 9px 2px;
+  font-size: 11px;
+  letter-spacing: 0.03em;
 }

@@ -1,5 +1,6 @@
 import { createLocalGeoJsonLayer } from './localGeojson.js';
 import { createFirmsHeatmapLayer } from './firmsHeatmap.js';
+import { createFlipperDetectionsLayer } from './flipperDetectionsLayer.js';
 import submarineCablesLayer from './telegeographySubmarineCables.js';
 
 // Use Vite's ?url import to properly resolve these assets in dev and build
@@ -44,9 +45,18 @@ const fires = createFirmsHeatmapLayer({
   source: 'NASA FIRMS · LIVE',
 });
 
+// Surveillance devices detected in the field by a Flipper-tethered Spider
+// Sense sensor, served as GeoJSONL by the dev-server middleware
+// (vite.config.js flipperSerialProxy). A dedicated live layer: it re-fetches
+// on an interval so new detections appear without toggling, and while enabled
+// it posts the browser's position so live detections are placed accurately.
+// See src/data/flipperDetectionsLayer.js, flipperSerialProxy.js, flipperDetections.js.
+const flipperDetections = createFlipperDetectionsLayer();
+
 export default [
   datacenters,
   dams,
   submarineCablesLayer,
   fires,
+  flipperDetections,
 ];

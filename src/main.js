@@ -2,6 +2,7 @@ import * as Cesium from 'cesium';
 import { StyleManager } from './ui.js';
 import { flyToAustin } from './camera.js';
 import { DataLayerManager } from './data/manager.js';
+import { createCameraControlPanel } from './cameraControl.js';
 import flightsLayer from './data/flights.js';
 import militaryFlightsLayer from './data/militaryFlights.js';
 import earthquakesLayer from './data/earthquakes.js';
@@ -31,6 +32,8 @@ import {
   releaseContinuousRender,
 } from './renderGovernor.js';
 import { installScopeMask } from './scopeMask.js';
+import { installHudFrame } from './hudFrame.js';
+import { installGraticule } from './graticule.js';
 import { initFirstRunExperience } from './firstRunExperience.js';
 
 initLogoGaze();
@@ -192,6 +195,9 @@ async function init() {
 
     // Initialize the style manager (post-processing, HUD, locations, share links)
     const styleManager = new StyleManager(viewer, { mapStackController });
+
+    // Manual camera/view control panel (VIEW toggle, left edge).
+    createCameraControlPanel(viewer);
     // The previous multi-canvas weather compositor remains disabled. Cockpit
     // clouds use a separate, capped low-resolution GPU pass that never attaches
     // Cesium fog or post-process stages and is fully stopped in map mode.
@@ -280,6 +286,12 @@ async function init() {
     // see src/scopeMask.js. Installed before the UI so the DISPLAY-rail
     // toggle finds it live.
     installScopeMask(viewer);
+    // Console-mode's decorative porthole ring + circuit traces — starts
+    // disabled, ui.js's console-mode toggle turns it on. See src/hudFrame.js.
+    installHudFrame(viewer);
+    // Console-mode's lat/long wireframe grid over the real globe — same
+    // starts-disabled handoff to the console-mode toggle. See src/graticule.js.
+    installGraticule(viewer);
 
     // The follow camera recomputes the tracked target's dead-reckon position
     // every frame — tracking anything is a per-frame animation. (perf wave 2)
@@ -327,7 +339,7 @@ async function init() {
     window.__godsEyeView.voiceCommands = initGevVoiceCommands({ viewer, styleManager, dataManager, sceneDirector, annotations });
 
   } catch (error) {
-    console.error("God's Eye View initialization failed:", error);
+    console.error("Anansi initialization failed:", error);
     loaderStatus.textContent = `Error: ${describeError(error)}`;
     loaderStatus.style.color = '#ff4444';
   }

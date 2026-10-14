@@ -1,0 +1,5 @@
+ts,what,type,conf,mac,rssi,channel,hits,vendor,name
+2026-10-13T16:00:02Z,NEW,FLOCK,H,AA:BB:CC:00:00:01,-58,6,3,FlockSafety,
+2026-10-13T16:00:20Z,NEW,CAMERA,H,DE:AD:BE:EF:00:02,-71,11,1,Wyze,
+2026-10-13T16:00:38Z,NEW,HACKER,H,11:22:33:44:55:66,-44,1,2,Pineapple,Pineapple_test
+2026-10-13T16:00:55Z,NEW,ALPR,M,00:1A:2B:00:00:03,-66,4,1,Motorola,

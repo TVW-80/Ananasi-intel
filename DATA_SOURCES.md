@@ -36,6 +36,12 @@ How to read this:
 | **TfL Open Data (JamCams)** | CCTV camera catalog + frames, London | [TfL Open Data terms](https://tfl.gov.uk/info-for/open-data-users/) — attribution REQUIRED | "Powered by TfL Open Data. Contains OS data © Crown copyright and database rights" |
 | **GBFS (Lyft / BCycle)** | Bikeshare availability | Per-feed (attribution-only) | Credit the operator (e.g. Austin BCycle) + its `license_url` |
 | **Radio Browser** | Geolocated internet-radio station directory and station-level tags | Public-domain directory data under PDDL 1.0; individual broadcaster stream terms apply | "Radio Browser" plus a link to the selected broadcaster |
+| **CISA Known Exploited Vulnerabilities (KEV) catalog** | Actively exploited AI/ML-infrastructure vulnerabilities in the AI Security Intel panel (keyword-filtered to AI/ML products) | U.S. government work, public domain | "CISA KEV" with a link to the catalog entry |
+| **GitHub Advisory Database** (REST) | Reviewed advisories affecting a curated list of AI/ML packages (affected → patched versions) | [CC BY 4.0](https://github.com/github/advisory-database#license); anonymous API limit 60 req/h (optional `GITHUB_TOKEN`) | The advisory's GHSA id, linked |
+| **NVD** (links only) | Evidence links to CVE records | Public domain (links only; the API is not called) | "NVD" |
+| **Federal Register API** | AI-related executive orders in the AI Security Intel panel | U.S. government work, public domain | "Federal Register" with a link to the order |
+| **OpenAI / Google AI / Google DeepMind / Hugging Face blog feeds** | Frontier-model release and API-change headlines (headline + link + short excerpt only) | Publisher RSS; content remains the publisher's — only titles, dates and links are surfaced | Source name + link to the original post |
+| **arXiv API**, **OWASP GenAI Security Project feed**, **MITRE ATLAS releases** | AI-security research, tooling and framework updates | arXiv: [API terms of use](https://info.arxiv.org/help/api/tou.html) (metadata); OWASP/MITRE: public feeds, titles + links only | Source name + link to the original item |
 | **Re:Earth Terrain** (Mapterhorn) | Terrain (keyless globe stacks — OSM etc. — + `/api/terrain/heights` ellipsoidal-height lookups) | Terrain mesh: CC BY 4.0; geoid: EGM2008 (NGA, public domain) | "Terrain (keyless globe stacks): Re:Earth Terrain / Mapterhorn (CC BY 4.0) / EGM2008 (NGA)" |
 
 ### Notes on the live sources

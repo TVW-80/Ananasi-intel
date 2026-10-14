@@ -10,3 +10,7 @@ output/
 .DS_Store
 .gstack/
 3d-models/
+
+# Flipper Spider Sense field captures (user data, keep samples/ only)
+src/data/local_data/flipper/*.csv
+src/data/local_data/flipper/*.gpx
