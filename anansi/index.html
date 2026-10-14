@@ -25,6 +25,26 @@
 
   * { box-sizing: border-box; }
 
+  /* spinning cross-link badge → Spider Sense */
+  .crosslink { position: fixed; top: 16px; right: 16px; z-index: 60; width: 66px; height: 66px; display: block; border-radius: 50%; }
+  .crosslink img {
+    width: 100%; height: 100%; display: block; border-radius: 50%;
+    border: 2px solid var(--gold); background: #050505;
+    box-shadow: 0 0 14px rgba(212,175,55,0.35);
+    animation: spin 9s linear infinite;
+  }
+  .crosslink:hover img { animation-duration: 2.2s; box-shadow: 0 0 20px rgba(212,175,55,0.6); }
+  .crosslink::after {
+    content: "SPIDER SENSE"; position: absolute; top: 50%; right: 78px; transform: translateY(-50%);
+    white-space: nowrap; font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: 0.14em;
+    color: var(--gold-bright); background: #0d0d0d; border: 1px solid var(--line);
+    padding: 5px 10px; opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .crosslink:hover::after { opacity: 1; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .crosslink img { animation: none; } }
+  @media (max-width: 440px) { .crosslink { width: 52px; height: 52px; } }
+
   body {
     margin: 0;
     background: var(--bg);
@@ -258,6 +278,10 @@
 </style>
 </head>
 <body>
+
+<a class="crosslink" href="https://tvw-80.github.io/spider-sense/" target="_blank" rel="noopener" title="Spider Sense" aria-label="Go to Spider Sense">
+  <img src="../images/spider-sense-logo.png" alt="Spider Sense logo">
+</a>
 
 <div class="classbar">TOP SECRET // SI-TK // NOFORN — AUTHORIZED PERSONNEL ONLY</div>
 
