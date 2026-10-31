@@ -1383,10 +1383,10 @@ body.cockpit-mode #view-switcher button {
   background: linear-gradient(
     90deg,
     rgb(0 212 255 / 28%),
-    rgba(0, 212, 255, 0.18) 58%,
+    rgba(200, 30, 30, 0.18) 58%,
     transparent
   );
-  box-shadow: 0 0 7px rgba(0, 212, 255, 0.22);
+  box-shadow: 0 0 7px rgba(200, 30, 30, 0.22);
 }
 .cockpit-utility-glyph {
   display: grid;

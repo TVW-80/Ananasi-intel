@@ -5,7 +5,38 @@
   <div id="loading-screen">
     <div class="loader-content">
       <span class="loader-logo brand-logo" data-logo-gaze data-logo-src="/logo.svg" aria-hidden="true"><img src="/logo.svg" alt="" /></span>
-      <h2 translate="no">GOD'S EYE <span class="title-accent">VIEW</span></h2>
+      <h2 translate="no">ANANSI</h2>
       <p class="loader-status" data-i18n>Initializing photorealistic world...</p>
+    </div>
+  </div>
+
+  <!-- Anansi: VIEW CONTROL — manual camera/view control (src/cameraControl.js) -->
+  <button id="view-control-toggle" class="view-control-toggle" type="button"
+          aria-expanded="false" aria-controls="view-control-panel" title="View controls">VIEW</button>
+  <div id="view-control-panel" class="view-control-panel angular-panel" role="group"
+       aria-label="Camera view controls" hidden>
+    <div class="panel-header">
+      <span class="panel-title" translate="no">VIEW CONTROL</span>
+      <span class="panel-divider"></span>
+      <button id="view-ctrl-close" class="panel-collapse-btn" type="button" title="Hide view controls">▾</button>
+    </div>
+    <div class="view-ctrl-readout" aria-live="polite" translate="no">
+      <span>HDG <b id="vc-hdg">--</b></span>
+      <span>TILT <b id="vc-pitch">--</b></span>
+      <span>ALT <b id="vc-alt">--</b></span>
+    </div>
+    <div class="view-ctrl-grid" translate="no">
+      <button id="vc-rot-left" class="scene-btn" type="button" title="Rotate view left">⟲</button>
+      <button id="vc-north" class="scene-btn" type="button" title="Face north (heading 0)">N ↑</button>
+      <button id="vc-rot-right" class="scene-btn" type="button" title="Rotate view right">⟳</button>
+      <button id="vc-tilt-up" class="scene-btn" type="button" title="Tilt toward the horizon">TILT ▲</button>
+      <button id="vc-level" class="scene-btn" type="button" title="Level the horizon (reset roll)">LEVEL</button>
+      <button id="vc-tilt-down" class="scene-btn" type="button" title="Tilt toward the ground">TILT ▼</button>
+      <button id="vc-top" class="scene-btn" type="button" title="Look straight down">TOP</button>
+      <button id="vc-oblique" class="scene-btn" type="button" title="45° oblique">45°</button>
+      <button id="vc-horizon" class="scene-btn" type="button" title="Near the horizon">HORIZON</button>
+      <button id="vc-zoom-out" class="scene-btn" type="button" title="Zoom out">ZOOM −</button>
+      <button id="vc-reset" class="scene-btn" type="button" title="Reset: north-up, 45° tilt, level">RESET</button>
+      <button id="vc-zoom-in" class="scene-btn" type="button" title="Zoom in">ZOOM +</button>
     </div>
   </div>

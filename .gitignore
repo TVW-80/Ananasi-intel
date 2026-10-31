@@ -28,3 +28,7 @@ pinokio/.installed
 
 # Transient: a release interrupted mid-assembly (npm run changelog recovers it)
 changelog.d/.assembling/
+
+# Flipper Spider Sense field captures (user data, keep samples/ only)
+src/data/local_data/flipper/*.csv
+src/data/local_data/flipper/*.gpx

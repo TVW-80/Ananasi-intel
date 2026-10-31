@@ -57,10 +57,11 @@ const HUD_COLORS = {
     glow: 'rgba(255, 170, 0, 0.5)',
     border: 'rgba(255, 170, 0, 0.2)',
   },
+  // Anansi: gold readouts, red borders.
   _default: {
-    main: 'rgba(0, 255, 255, 0.6)',
-    glow: 'rgba(0, 255, 255, 0.4)',
-    border: 'rgba(0, 255, 255, 0.15)',
+    main: 'rgba(212, 175, 55, 0.92)',
+    glow: 'rgba(212, 175, 55, 0.4)',
+    border: 'rgba(200, 30, 30, 0.15)',
   },
 };
 

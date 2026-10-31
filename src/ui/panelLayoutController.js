@@ -1,6 +1,7 @@
 /** Own rail measurement, layout scheduling and dock tray observation. */
 import { layoutLeftPanelRail, layoutRightPanelRail } from './panelRails.js';
 import { syncRadioPanelPlacement } from './radioPanelPlacement.js';
+import { withUnrotatedConsolePanels } from '../anansi/panels.js';
 const COCKPIT_LAYOUT_SETTLE_MS = 240;
 /**
  * Fixed UI regions that can occupy the left accordion's vertical lane.
@@ -297,7 +298,8 @@ export class PanelLayoutController {
   _syncRightPanelAdaptiveLayout() {
     if (this.destroyed) return;
     syncRadioPanelPlacement(document);
-    layoutRightPanelRail({
+    // Anansi console mode tilts some panels; measure them untilted.
+    withUnrotatedConsolePanels(() => layoutRightPanelRail({
       stack: this._rightPanelStack,
       obstacles: document.querySelectorAll(RIGHT_STACK_OBSTACLE_SELECTOR),
       windowRef: window,
@@ -308,7 +310,7 @@ export class PanelLayoutController {
       leftStack: this._leftPanelStack,
       displayPanel: this._ppToggles,
       readDisplayScrollTop: this.readDisplayScrollTop,
-    });
+    }));
   }
 
   _initLeftPanelAdaptiveLayout() {
@@ -431,7 +433,7 @@ export class PanelLayoutController {
 
   _syncLeftPanelAdaptiveLayout() {
     if (this.destroyed) return;
-    layoutLeftPanelRail({
+    withUnrotatedConsolePanels(() => layoutLeftPanelRail({
       stack: this._leftPanelStack,
       obstacles: document.querySelectorAll(LEFT_STACK_OBSTACLE_SELECTOR),
       windowRef: window,
@@ -441,7 +443,7 @@ export class PanelLayoutController {
       onRetry: () => this._scheduleLeftPanelLayout(),
       collapsedHeights: this._leftStackCollapsedHeights,
       onAligned: () => this._scheduleRightPanelLayout(),
-    });
+    }));
   }
   destroy() {
     if (this.destroyed) return;

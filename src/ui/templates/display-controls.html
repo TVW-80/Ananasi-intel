@@ -1,5 +1,5 @@
   <!-- Post-processing toggles (top-right) -->
-  <div id="pp-toggles" class="panel-collapsible collapsed" data-panel-id="pp-toggles">
+  <div id="pp-toggles" class="panel-collapsible collapsed angular-panel--notch" data-panel-id="pp-toggles">
     <div class="compact pp-header-row">
       <span data-i18n class="pp-header-label">DISPLAY</span>
       <span class="panel-divider" aria-hidden="true"></span>
@@ -10,6 +10,10 @@
       <button class="pp-toggle-btn" id="hud-toggle" title="Intelligence HUD (H)" data-i18n-title>
         <span class="pp-icon">&#x25CE;</span>
         <span class="pp-label" translate="no">HUD</span>
+      </button>
+      <button class="pp-toggle-btn" id="console-mode-toggle" type="button" title="Console porthole HUD" aria-pressed="false">
+        <span class="pp-icon">&#x25C9;</span>
+        <span class="pp-label" translate="no">CONSOLE</span>
       </button>
       <div class="pp-slider-row" id="hud-layout-row">
         <span class="pp-slider-mini-label" data-i18n>Layout</span>

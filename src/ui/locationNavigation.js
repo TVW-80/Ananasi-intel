@@ -2,6 +2,7 @@ import * as Cesium from 'cesium';
 import { t } from '../i18n/index.js';
 import { createStateChannel } from '../app/stateChannel.js';
 import { LocationControls } from './location.js';
+import { anansiVisibleCities } from '../anansi/locations.js';
 
 /** Own destination selection, lookup, orbit and world-jump lifetime. */
 export class LocationNavigation {
@@ -162,7 +163,7 @@ export class LocationNavigation {
         statusCity: this._locationMiniCity,
         statusPoi: this._locationMiniPoi,
       },
-      cities: CITY_POIS,
+      cities: anansiVisibleCities(CITY_POIS),
       getExpandedCity: () => this._expandedCityId,
       onCity: (id) => this._onCityPillClick(id),
       onPoi: (id, index) => this._onPoiClick(id, index),

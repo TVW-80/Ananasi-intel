@@ -3,6 +3,7 @@ import { ShellFacade } from './shellFacade.js';
 import { AircraftDisplay } from './aircraftDisplay.js';
 import { LayerBindings } from './layerBindings.js';
 import { PanelChrome } from './panelChrome.js';
+import { initAnansiPanels } from '../anansi/panels.js';
 import { initMobileShell } from './mobileShell.js';
 import { VisualSettings } from './visualSettings.js';
 import { NavigationController } from './navigationController.js';
@@ -609,6 +610,8 @@ export class StyleManager extends ShellFacade {
     this._initCctvPanel();
     this._initStreetLevelPanel();
     this._initGlobalContextPanel();
+    // Anansi: Hampton Roads 757 + AI Security Intel panels and CONSOLE mode.
+    this._anansiPanels = initAnansiPanels();
     this._initLocationBar();
     this._initMobileShell();
     this._initShareButton();
@@ -1782,6 +1785,7 @@ export class StyleManager extends ShellFacade {
       this.services;
     if (this._disposed) return;
     this._shareRestoration.destroy();
+    this._anansiPanels?.destroy();
     this._feedback._globalStatusNotice = null;
     if (this._globalLoadingStatus) this._globalLoadingStatus.hidden = true;
     this._disposed = true;

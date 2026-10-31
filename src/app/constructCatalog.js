@@ -21,6 +21,7 @@ import { createApplicationSatellites } from './layers/satellites.js';
 import { createApplicationLaunches } from './layers/rocketLaunches.js';
 import { createApplicationAlpr } from './layers/alprCameras.js';
 import { createApplicationLocalAdsb } from './layers/localAdsb.js';
+import { createFlipperDetectionsLayer } from '../data/flipperDetectionsLayer.js';
 import { createApplicationAwareness } from './layers/militaryAwareness.js';
 import { createApplicationFirms } from './layers/firms.js';
 import { createApplicationEarthquakes } from './layers/earthquakes.js';
@@ -41,6 +42,8 @@ import { createBhoteKoshiLocatorLayer } from '../data/bhoteKoshiLocator.js';
  */
 export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'local-adsb', disposition: 'local-only' }),
+  // Anansi: Flipper / Spider Sense field sensor on this machine's serial port.
+  Object.freeze({ id: 'flipper-detections', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -178,6 +181,7 @@ export function createApplicationCatalog({
           source: 'NASA FIRMS · LIVE',
           feed: sources.firms,
         }),
+        createFlipperDetectionsLayer(),
       ],
       metadata,
     );

@@ -26,7 +26,7 @@
     </div>
     <div id="global-context-panel" class="panel-collapsible collapsed" data-panel-id="global-context-panel">
       <div class="panel-glow"></div>
-      <div class="global-context-panel-inner" data-rail-scroller>
+      <div class="global-context-panel-inner angular-panel" data-rail-scroller>
         <div class="panel-header">
           <span class="panel-title" data-i18n>CONTEXT</span>
           <span class="panel-divider"></span>
@@ -239,6 +239,42 @@
           </div>
         </section>
         </div>
+      </div>
+    </div>
+
+    <!-- Anansi: Hampton Roads 757 live feed (local n8n webhooks, src/data/hamptonRoads757.js). -->
+    <div id="hampton-roads-panel" class="panel-collapsible collapsed" data-panel-id="hampton-roads-panel">
+      <div class="panel-glow"></div>
+      <div class="hampton-roads-panel-inner angular-panel--alt" data-rail-scroller>
+        <div class="panel-header">
+          <span class="panel-title" translate="no">HAMPTON ROADS 757</span>
+          <span class="panel-divider"></span>
+          <button class="panel-collapse-btn" data-collapse-target="hampton-roads-panel" title="Expand panel" data-i18n-title>▶</button>
+        </div>
+        <div id="hampton-roads-meta" class="hampton-roads-meta" translate="no">n8n (local) · never</div>
+        <div id="hampton-roads-feed" class="hampton-roads-feed" role="list" aria-label="Hampton Roads 757 live feed"></div>
+      </div>
+    </div>
+
+    <!-- Anansi: AI Security Intelligence — /api/ai-sec-intel (server/providers/anansi/ai-sec-intel.js). -->
+    <div id="ai-sec-panel" class="panel-collapsible collapsed" data-panel-id="ai-sec-panel">
+      <div class="panel-glow"></div>
+      <div class="ai-sec-panel-inner angular-panel--notch" data-rail-scroller>
+        <div class="panel-header">
+          <span class="panel-title" translate="no">AI SECURITY INTEL</span>
+          <span class="panel-divider"></span>
+          <button class="panel-collapse-btn" data-collapse-target="ai-sec-panel" title="Expand panel" data-i18n-title>▶</button>
+        </div>
+        <div id="ai-sec-meta" class="ai-sec-meta" translate="no">syncing…</div>
+        <div class="ai-sec-tabs" role="tablist" aria-label="AI security intelligence sections">
+          <button type="button" class="ai-sec-tab active" role="tab" aria-selected="true" data-ai-sec-tab="vulns" translate="no">VULNS</button>
+          <button type="button" class="ai-sec-tab" role="tab" aria-selected="false" data-ai-sec-tab="models" translate="no">MODELS</button>
+          <button type="button" class="ai-sec-tab" role="tab" aria-selected="false" data-ai-sec-tab="research" translate="no">RESEARCH</button>
+          <button type="button" class="ai-sec-tab" role="tab" aria-selected="false" data-ai-sec-tab="policy" translate="no">POLICY</button>
+        </div>
+        <div id="ai-sec-list" class="ai-sec-list" role="tabpanel" aria-label="AI security intelligence feed"></div>
+        <div id="ai-sec-sources" class="ai-sec-sources"></div>
+        <div class="ai-sec-note" translate="no">Informational snapshot of public sources — verify affected versions against vendor advisories and your own inventory.</div>
       </div>
     </div>
   </aside>

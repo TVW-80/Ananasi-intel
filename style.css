@@ -35,3 +35,6 @@
 @import './src/ui/styles/cjk.css';
 @import './src/ui/styles/mobile-shell.css';
 @import './src/ui/styles/cyber.css';
+
+/* Anansi theme + components — keep last. */
+@import './src/ui/styles/anansi.css';

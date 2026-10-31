@@ -7,6 +7,9 @@ import { createRecentImageryPanel } from '../ui/recentImagery.js';
 import { initGevVoiceCommands } from '../voice/gevRealtime.js';
 import { installViews, isEmbeddedInline } from './embed.js';
 import { installScopeMask, destroyScopeMask } from '../scopeMask.js';
+import { installHudFrame, destroyHudFrame } from '../hudFrame.js';
+import { installGraticule, destroyGraticule } from '../graticule.js';
+import { createCameraControlPanel } from '../cameraControl.js';
 import { installLayerReleaseTrim } from '../sceneCommandRelease.js';
 import {
   installRenderGovernor,
@@ -124,6 +127,15 @@ export function createApplicationTools({
   // Install the explicit scope mask used by the DISPLAY controls.
   installScopeMask(viewer);
   defer(() => destroyScopeMask());
+  // Anansi: console-mode porthole ring + circuit traces and the lat/long
+  // graticule (both start disabled; the CONSOLE toggle turns them on), plus the
+  // VIEW CONTROL camera panel. See src/anansi/panels.js.
+  installHudFrame(viewer);
+  defer(() => destroyHudFrame());
+  installGraticule(viewer);
+  defer(() => destroyGraticule());
+  const removeViewControl = createCameraControlPanel(viewer);
+  defer(() => removeViewControl?.());
 
   // The follow camera recomputes the tracked target's dead-reckon position
   // every frame — tracking anything is a per-frame animation. (perf wave 2)
