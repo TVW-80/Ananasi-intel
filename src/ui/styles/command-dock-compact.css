@@ -52,11 +52,11 @@
 }
 
 #command-dock > #location-bar {
-  border-right: 1px solid rgba(123, 189, 211, 0.18);
+  border-right: 1px solid rgba(200, 30, 30, 0.18);
 }
 
 #command-dock > #control-panel {
-  border-left: 1px solid rgba(123, 189, 211, 0.18);
+  border-left: 1px solid rgba(200, 30, 30, 0.18);
 }
 
 #command-dock .panel-inner,
@@ -299,7 +299,7 @@
 #command-dock .gev-voice-visualizer span {
   width: 0.18rem;
   height: 0.55rem;
-  background: linear-gradient(to top, #28b9db, #71eaff);
+  background: linear-gradient(to top, #c81e1e, #c81e1e);
   box-shadow: 0 0 0.35rem rgba(200, 30, 30, 0.28);
   transform-origin: bottom;
 }

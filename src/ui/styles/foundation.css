@@ -4,8 +4,8 @@
    ═══════════════════════════════════════════════ */
 
 :root {
-  --bg-dark: #0a0a0f;
-  --glass-bg: rgba(12, 12, 20, 0.72);
+  --bg-dark: #0f0e0c;
+  --glass-bg: rgba(20, 18, 16, 0.72);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-border-hover: rgba(255, 255, 255, 0.15);
   --accent: #c81e1e;
@@ -15,7 +15,7 @@
   --text-secondary: rgba(232, 234, 237, 0.5);
   --text-dim: rgba(232, 234, 237, 0.3);
   /* Opaque surface for browser-painted menus, which cannot use --glass-bg. */
-  --menu-bg: #12121c;
+  --menu-bg: #1c1916;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --panel-radius: 16px;
@@ -233,7 +233,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 .celestial-ring-outline {
   position: absolute;
   box-sizing: border-box;
-  border: 0.8px solid rgba(151, 218, 232, 0.095);
+  border: 0.8px solid rgba(200, 30, 30, 0.095);
   border-radius: 50%;
   will-change: width, height;
 }
@@ -264,10 +264,10 @@ body.cockpit-mode #cockpit-cloud-effects.active {
 }
 
 .celestial-moon {
-  color: rgba(55, 211, 239, 0.84);
+  color: rgba(212, 175, 55, 0.84);
   text-shadow:
-    0 0 7px rgba(55, 211, 239, 0.65),
-    0 0 17px rgba(55, 211, 239, 0.25);
+    0 0 7px rgba(200, 30, 30, 0.65),
+    0 0 17px rgba(200, 30, 30, 0.25);
 }
 
 #celestial-toggle:disabled {
@@ -527,7 +527,7 @@ body.cockpit-mode #cockpit-cloud-effects.active {
   display: block;
   width: 52px;
   height: auto;
-  filter: drop-shadow(0 0 12px rgba(0, 246, 255, 0.5));
+  filter: drop-shadow(0 0 12px rgba(200, 30, 30, 0.5));
 }
 
 #title-bar .title-logo::before,

@@ -11,6 +11,7 @@ import { installHudFrame, destroyHudFrame } from '../hudFrame.js';
 import { installGraticule, destroyGraticule } from '../graticule.js';
 import { createCameraControlPanel } from '../cameraControl.js';
 import { installConsoleScene } from '../anansi/consoleScene.js';
+import { applyAnansiSceneTheme } from '../anansi/sceneTheme.js';
 import { installLayerReleaseTrim } from '../sceneCommandRelease.js';
 import {
   installRenderGovernor,
@@ -131,6 +132,7 @@ export function createApplicationTools({
   // Anansi: console-mode porthole ring + circuit traces and the lat/long
   // graticule (both start disabled; the CONSOLE toggle turns them on), plus the
   // VIEW CONTROL camera panel. See src/anansi/panels.js.
+  applyAnansiSceneTheme(viewer);
   installHudFrame(viewer);
   defer(() => destroyHudFrame());
   installGraticule(viewer);

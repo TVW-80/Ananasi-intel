@@ -106,7 +106,7 @@ test('an ambient detection callout paints its backing plate under its text', () 
     leadFromX: 60, leadFromY: 60, leadToX: 60, leadToY: 48,
     plate: 'rgba(2, 18, 26, 0.52)',
     accent: '#22e0ff',
-    label: 'rgba(200, 250, 255, 0.97)',
+    label: 'rgba(244, 226, 170, 0.97)',
     primary: 'JA23NF',
     micro: 'FL017',
     font: '10px JetBrains Mono, monospace',
@@ -350,7 +350,7 @@ test('variant measurement and all six painters remain renderer-local', () => {
   const entry = {
     title: 'CAMERA 12',
     details: ['LIVE', '1.2 KM'],
-    accent: '#6be8ff',
+    accent: '#d4af37',
     image: { width: 192, height: 108 },
     thumbnailWidth: 96,
     thumbnailHeight: 54,
@@ -408,7 +408,7 @@ test('thumbnail painter preserves the shipped CCTV 104x77 geometry and drawing c
   paintThumbnail(ctx, entry, placement, 0.75);
   assert.deepEqual(
     ctx.calls.find(([name]) => name === 'strokeStyle'),
-    ['strokeStyle', 'rgba(107, 232, 255, 0.6)'],
+    ['strokeStyle', 'rgba(212, 175, 55, 0.6)'],
     'CCTV leader uses the source cyan token rather than the generic leader fallback',
   );
   assert.deepEqual(ctx.calls.find(([name]) => name === 'moveTo'), ['moveTo', 200, 184]);
@@ -570,7 +570,7 @@ const CALLOUT_FIXTURE = Object.freeze({
   leadFromX: 60, leadFromY: 60, leadToX: 60, leadToY: 48,
   plate: 'rgba(2, 18, 26, 0.52)',
   accent: '#22e0ff',
-  label: 'rgba(200, 250, 255, 0.97)',
+  label: 'rgba(244, 226, 170, 0.97)',
   primary: 'JA23NF',
   micro: 'FL017',
   font: '10px JetBrains Mono, monospace',

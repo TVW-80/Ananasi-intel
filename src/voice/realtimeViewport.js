@@ -161,7 +161,7 @@ async function capturePointerCrop(screenPx) {
       rect.output,
     );
     if (isNearlyBlackFrame(ctx, rect.output, rect.output)) return null;
-    ctx.strokeStyle = 'rgba(0, 230, 255, 0.95)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.95)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(rect.pointX, rect.pointY, 16, 0, Math.PI * 2);

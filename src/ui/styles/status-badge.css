@@ -11,7 +11,7 @@
   border: 1px solid var(--status-badge-border, rgba(200, 30, 30, 0.32));
   border-radius: 999px;
   background: var(--status-badge-background, rgba(200, 30, 30, 0.09));
-  color: var(--status-badge-color, #9defff);
+  color: var(--status-badge-color, #d4af37);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 1.3px;

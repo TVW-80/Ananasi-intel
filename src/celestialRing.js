@@ -367,9 +367,9 @@ function drawMoonHaze(ctx, cx, cy, radius, angle) {
   const mx = cx + Math.cos(angle) * radius;
   const my = cy + Math.sin(angle) * radius;
   const haze = ctx.createRadialGradient(mx, my, 0, mx, my, radius * 0.22);
-  haze.addColorStop(0, 'rgba(63, 214, 255, 0.16)');
-  haze.addColorStop(0.42, 'rgba(63, 214, 255, 0.055)');
-  haze.addColorStop(1, 'rgba(63, 214, 255, 0)');
+  haze.addColorStop(0, 'rgba(200, 30, 30, 0.16)');
+  haze.addColorStop(0.42, 'rgba(200, 30, 30, 0.055)');
+  haze.addColorStop(1, 'rgba(200, 30, 30, 0)');
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
   ctx.fillStyle = haze;

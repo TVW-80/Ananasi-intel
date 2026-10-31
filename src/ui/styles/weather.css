@@ -70,7 +70,7 @@
   letter-spacing: 0.5px;
 }
 .weather-readout {
-  --weather-card-border: rgba(98, 181, 255, 0.28);
+  --weather-card-border: rgba(200, 30, 30, 0.28);
 }
 .rail-card {
   padding: 0;
@@ -83,11 +83,11 @@
 }
 .rail-card:not(.is-open):hover,
 .rail-card:not(.is-open):focus-within {
-  border-color: #79c2ff;
+  border-color: #c81e1e;
 }
 .rail-card.is-open {
   border-color: rgba(200, 30, 30, 0.55);
-  background: rgba(42, 113, 171, 0.09);
+  background: rgba(200, 30, 30, 0.09);
 }
 .rail-card-labels {
   display: flex;
@@ -366,9 +366,9 @@ html:not([lang='en']) .rail-card-setting {
   display: grid;
   gap: 4px;
   margin-top: 8px;
-  border: 1px solid rgba(65, 220, 231, 0.18);
+  border: 1px solid rgba(200, 30, 30, 0.18);
   border-radius: 7px;
-  background: rgba(2, 15, 20, 0.48);
+  background: rgba(20, 18, 16, 0.48);
   padding: 10px;
 }
 .rail-card-result-header {

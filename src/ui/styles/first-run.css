@@ -19,8 +19,8 @@
   overflow: hidden;
   color: var(--text-primary);
   background:
-    linear-gradient(145deg, rgba(10, 27, 37, 0.97), rgba(7, 13, 22, 0.95)),
-    rgba(7, 17, 25, 0.96);
+    linear-gradient(145deg, rgba(37, 33, 30, 0.97), rgba(22, 20, 18, 0.95)),
+    rgba(25, 23, 20, 0.96);
   border: 1px solid rgba(200, 30, 30, 0.42);
   border-radius: 0.65rem;
   box-shadow:
@@ -134,8 +134,8 @@
   padding: 0.6rem 0.7rem;
   color: rgba(225, 244, 248, 0.92);
   text-align: left;
-  background: rgba(29, 69, 81, 0.18);
-  border: 1px solid rgba(100, 200, 220, 0.18);
+  background: rgba(81, 73, 65, 0.18);
+  border: 1px solid rgba(200, 30, 30, 0.18);
   border-radius: 0.42rem;
   cursor: pointer;
   transition:
@@ -146,7 +146,7 @@
 
 .first-run-choices button:hover,
 .first-run-choices button:focus-visible {
-  background: rgba(25, 151, 178, 0.16);
+  background: rgba(200, 30, 30, 0.16);
   border-color: rgba(200, 30, 30, 0.62);
   outline: none;
   transform: translateX(2px);
@@ -162,7 +162,7 @@
 }
 
 .first-run-choices button > .material-symbols-outlined:first-child {
-  color: #55dff5;
+  color: #d4af37;
   font-size: 1.35rem;
 }
 
@@ -267,7 +267,7 @@
   width: 0.82rem;
   height: 0.82rem;
   margin: 0;
-  accent-color: #36dcff;
+  accent-color: #d4af37;
   cursor: pointer;
 }
 

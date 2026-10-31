@@ -92,10 +92,10 @@
   padding: 6px 10px;
   border-radius: 7px;
   border: 1px solid rgba(200, 30, 30, 0.24);
-  background: rgba(3, 10, 18, 0.78);
+  background: rgba(18, 16, 14, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: rgba(170, 252, 255, 0.92);
+  color: rgba(212, 175, 55, 0.92);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 1.35px;
@@ -116,7 +116,7 @@
   min-width: 34px;
   max-width: min(220px, 38vw);
   overflow: hidden;
-  color: #00e1ff;
+  color: #d4af37;
   font-weight: 600;
   letter-spacing: 1.6px;
   text-align: right;
@@ -191,10 +191,10 @@ html:not([lang='en']) #global-loading-detail {
   padding: 6px 10px;
   border-radius: 7px;
   border: 1px solid rgba(200, 30, 30, 0.24);
-  background: rgba(3, 10, 18, 0.78);
+  background: rgba(18, 16, 14, 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: rgba(170, 252, 255, 0.92);
+  color: rgba(212, 175, 55, 0.92);
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 1.35px;
@@ -227,7 +227,7 @@ html:not([lang='en']) #global-loading-detail {
 
 #traffic-sync-progress,
 #cctv-sync-progress {
-  color: #00e1ff;
+  color: #d4af37;
   font-weight: 600;
   letter-spacing: 1.6px;
   min-width: 34px;

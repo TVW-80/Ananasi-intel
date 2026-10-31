@@ -2837,7 +2837,8 @@
       "src/graticule.js",
       "src/cameraControl.js",
       "src/data/flipperDetectionsLayer.js",
-      "src/data/hamptonRoadsMaritime.js"
+      "src/data/hamptonRoadsMaritime.js",
+      "src/anansi/sceneTheme.js"
     ],
     "external": [
       "hls.js",

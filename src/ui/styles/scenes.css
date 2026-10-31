@@ -255,7 +255,7 @@ html:not([lang='en']) #scene-panel .scene-controls .scene-btn {
   box-sizing: border-box;
   font: inherit;
   color: var(--text-primary);
-  background: var(--bg-panel, #101820);
+  background: var(--bg-panel, #201d1a);
   border: 1px solid var(--accent, #c81e1e);
 }
 
@@ -407,5 +407,5 @@ html:not([lang='en']) #scene-panel .scene-controls .scene-btn {
 }
 
 .director-sharing-dialog::backdrop {
-  background: rgba(0, 8, 14, 0.65);
+  background: rgba(14, 13, 11, 0.65);
 }

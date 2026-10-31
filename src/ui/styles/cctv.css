@@ -117,7 +117,7 @@ html:not([lang='en']) .cctv-controls .scene-btn {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.7px;
-  color: #91edff;
+  color: #d4af37;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 7px;
@@ -163,7 +163,7 @@ html:not([lang='en']) .cctv-controls .scene-btn {
 #cctv-quality-chip {
   min-width: 90px;
   --status-badge-border: rgba(200, 30, 30, 0.2);
-  --status-badge-color: #8fe7ff;
+  --status-badge-color: #c81e1e;
   --status-badge-background: rgba(200, 30, 30, 0.08);
 }
 
@@ -197,10 +197,10 @@ html:not([lang='en']) .cctv-controls .scene-btn {
   background:
     radial-gradient(
       circle at 20% 20%,
-      rgba(0, 244, 255, 0.09),
+      rgba(200, 30, 30, 0.09),
       transparent 44%
     ),
-    linear-gradient(180deg, rgba(8, 14, 19, 0.88), rgba(4, 7, 11, 0.96));
+    linear-gradient(180deg, rgba(19, 17, 15, 0.88), rgba(11, 10, 9, 0.96));
   min-height: 150px;
   /* .cctv-panel-inner is a scrolling column flex container, so the default
      flex-shrink:1 squeezed this wrap down to its 150px floor while the 16:9
@@ -218,7 +218,7 @@ html:not([lang='en']) .cctv-controls .scene-btn {
     100deg,
     transparent 24%,
     rgba(200, 30, 30, 0.08) 44%,
-    rgba(170, 244, 255, 0.14) 50%,
+    rgba(200, 30, 30, 0.14) 50%,
     rgba(200, 30, 30, 0.08) 56%,
     transparent 76%
   );
@@ -244,7 +244,7 @@ html:not([lang='en']) .cctv-controls .scene-btn {
   font-family: var(--font-mono);
   font-size: 8px;
   letter-spacing: 2.2px;
-  color: rgba(145, 237, 255, 0.62);
+  color: rgba(212, 175, 55, 0.62);
   pointer-events: none;
 }
 
@@ -331,7 +331,7 @@ html:not([lang='en']) .cctv-controls .scene-btn {
   font-size: 10px;
   letter-spacing: 0.8px;
   line-height: 1.45;
-  color: #a8f7ff;
+  color: #d4af37;
   text-shadow: 0 0 10px rgba(200, 30, 30, 0.18);
 }
 

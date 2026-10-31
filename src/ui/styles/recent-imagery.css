@@ -69,7 +69,7 @@
 
 /* ---- the fixed stack ---------------------------------------------------- */
 .recent-imagery-readout {
-  --weather-card-border: rgba(98, 181, 255, 0.28);
+  --weather-card-border: rgba(200, 30, 30, 0.28);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -216,10 +216,10 @@
   background: var(--accent-dim);
 }
 .recent-imagery-readout .ri-card.preview {
-  box-shadow: inset 0 0 0 1px rgba(139, 233, 255, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(200, 30, 30, 0.35);
 }
 .recent-imagery-readout .ri-card.pinned {
-  box-shadow: inset 0 0 0 1px rgba(139, 233, 255, 0.75);
+  box-shadow: inset 0 0 0 1px rgba(200, 30, 30, 0.75);
 }
 .recent-imagery-readout .ri-thumb {
   position: relative;
@@ -248,7 +248,7 @@
   position: absolute;
   padding: 0 4px;
   border-radius: 3px;
-  background: rgba(4, 17, 27, 0.9);
+  background: rgba(27, 24, 22, 0.9);
   font-size: 7px;
   font-weight: 700;
   line-height: 12px;
@@ -473,14 +473,14 @@ body.gev-imagery-box .cesium-widget canvas {
   width: 1px;
   pointer-events: none;
   background: rgba(218, 241, 247, 0.76);
-  box-shadow: 0 0 12px rgba(94, 216, 239, 0.72);
+  box-shadow: 0 0 12px rgba(200, 30, 30, 0.72);
 }
 #recent-imagery-split-line span {
   position: absolute;
   top: 14px;
   padding: 2px 6px;
   border-radius: 3px;
-  background: rgba(4, 17, 27, 0.82);
+  background: rgba(27, 24, 22, 0.82);
   color: rgba(239, 247, 249, 0.92);
   font: 700 9px/1.4 var(--font-mono);
   letter-spacing: 1.2px;
@@ -504,10 +504,10 @@ body.gev-imagery-box .cesium-widget canvas {
   border-radius: 50%;
   outline: 0;
   color: rgba(239, 247, 249, 0.96);
-  background: rgba(4, 17, 27, 0.96);
+  background: rgba(27, 24, 22, 0.96);
   box-shadow:
-    0 0 0 5px rgba(62, 112, 125, 0.3),
-    0 0 13px rgba(94, 216, 239, 0.3);
+    0 0 0 5px rgba(200, 30, 30, 0.3),
+    0 0 13px rgba(200, 30, 30, 0.3);
   font: 700 14px/1 var(--font-mono);
   transform: translate(-50%, -50%);
   pointer-events: auto;

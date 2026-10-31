@@ -15,8 +15,8 @@
   width: min(94vw, 1240px);
   padding: 6px;
   overflow: visible;
-  background: rgba(9, 18, 27, 0.84);
-  border: 1px solid rgba(123, 189, 211, 0.28);
+  background: rgba(27, 24, 22, 0.84);
+  border: 1px solid rgba(200, 30, 30, 0.28);
   border-radius: 12px;
   box-shadow:
     0 12px 36px rgba(0, 0, 0, 0.58),
@@ -43,13 +43,13 @@
 #command-dock > #location-bar {
   grid-area: locations;
   min-width: 0;
-  border-right: 1px solid rgba(123, 189, 211, 0.16);
+  border-right: 1px solid rgba(200, 30, 30, 0.16);
 }
 
 #command-dock > #control-panel {
   grid-area: presets;
   min-width: 0;
-  border-left: 1px solid rgba(123, 189, 211, 0.16);
+  border-left: 1px solid rgba(200, 30, 30, 0.16);
 }
 
 #command-dock > #gev-voice-control {
@@ -62,7 +62,7 @@
   padding: 19px 14px 12px;
   border-color: rgba(200, 30, 30, 0.36);
   border-radius: 12px;
-  background: rgba(8, 31, 42, 0.94);
+  background: rgba(42, 38, 34, 0.94);
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.56),
     0 0 26px rgba(200, 30, 30, 0.12),
@@ -180,7 +180,7 @@
   flex: 0 1 190px;
   min-width: 132px;
   padding-right: 8px;
-  border-right: 1px solid rgba(123, 189, 211, 0.14);
+  border-right: 1px solid rgba(200, 30, 30, 0.14);
 }
 
 #command-dock .search-toggle-btn {
@@ -261,12 +261,12 @@ body.recording-mode #cesium-credits {
   }
 
   #command-dock > #location-bar {
-    border-right: 1px solid rgba(123, 189, 211, 0.16);
-    border-bottom: 1px solid rgba(123, 189, 211, 0.16);
+    border-right: 1px solid rgba(200, 30, 30, 0.16);
+    border-bottom: 1px solid rgba(200, 30, 30, 0.16);
   }
 
   #command-dock > #control-panel {
-    border-top: 1px solid rgba(123, 189, 211, 0.16);
+    border-top: 1px solid rgba(200, 30, 30, 0.16);
     border-left: 0;
   }
 

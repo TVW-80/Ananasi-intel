@@ -166,7 +166,7 @@ html:not([lang='en'])
   padding: 8px 6px;
   border: 1px solid var(--glass-border);
   border-radius: 8px;
-  background: var(--bg-panel, #09121b);
+  background: var(--bg-panel, #1b1816);
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: 0.5rem;
@@ -181,7 +181,7 @@ html:not([lang='en'])
   width: 100%;
   min-height: 30px;
   color: var(--text-primary);
-  background: #09121b;
+  background: #1b1816;
   border: 1px solid var(--glass-border);
   border-radius: 4px;
   font: inherit;
@@ -256,8 +256,8 @@ html:not([lang='en'])
   align-items: center;
   gap: 6px;
   padding: 6px 46px 6px 6px;
-  border-color: rgba(123, 189, 211, 0.28);
-  background: rgba(9, 18, 27, 0.88);
+  border-color: rgba(200, 30, 30, 0.28);
+  background: rgba(27, 24, 22, 0.88);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.46);
   color-scheme: dark;
   opacity: 1;
@@ -293,7 +293,7 @@ html:not([lang='en'])
   min-height: 34px;
   padding: 0;
   color: rgba(190, 221, 230, 0.72);
-  background: rgba(9, 18, 27, 0.92);
+  background: rgba(27, 24, 22, 0.92);
   border: 1px solid var(--glass-border);
   border-radius: 0.3rem;
   font-size: 18px;

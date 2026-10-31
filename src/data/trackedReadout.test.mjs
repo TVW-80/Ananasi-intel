@@ -80,7 +80,7 @@ test('the tracked card anchors to the visual position without repurposing the di
     gevTrackedId: 'flights:aaa077',
     gevDisplayPosition: () => { displayReads += 1; return display; },
     gevVisualPosition: () => visual,
-    gevLabelModel: { title: 'SWA143', details: ['ON GROUND'], accent: '#6be8ff' },
+    gevLabelModel: { title: 'SWA143', details: ['ON GROUND'], accent: '#d4af37' },
   };
   assert.equal(cachedTrackedVisualPosition(entity), visual);
   assert.equal(displayReads, 0, 'the visual accessor short-circuits the display read');

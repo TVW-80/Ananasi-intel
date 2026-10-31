@@ -17,8 +17,8 @@
   letter-spacing: 0.09rem;
   background: linear-gradient(
     145deg,
-    rgba(10, 27, 37, 0.92),
-    rgba(7, 13, 22, 0.9)
+    rgba(37, 33, 30, 0.92),
+    rgba(22, 20, 18, 0.9)
   );
   border: 1px solid rgba(200, 30, 30, 0.38);
   border-radius: 0.42rem;
@@ -38,8 +38,8 @@
 #key-setup-chip:focus-visible {
   background: linear-gradient(
     145deg,
-    rgba(14, 38, 51, 0.95),
-    rgba(9, 18, 28, 0.93)
+    rgba(51, 46, 41, 0.95),
+    rgba(28, 25, 22, 0.93)
   );
   border-color: rgba(200, 30, 30, 0.7);
   outline: none;
@@ -47,7 +47,7 @@
 }
 
 #key-setup-chip .material-symbols-outlined {
-  color: #55dff5;
+  color: #d4af37;
   font-size: 0.95rem;
 }
 
@@ -69,8 +69,8 @@
   overflow: hidden;
   color: var(--text-primary);
   background:
-    linear-gradient(145deg, rgba(10, 27, 37, 0.97), rgba(7, 13, 22, 0.95)),
-    rgba(7, 17, 25, 0.96);
+    linear-gradient(145deg, rgba(37, 33, 30, 0.97), rgba(22, 20, 18, 0.95)),
+    rgba(25, 23, 20, 0.96);
   border: 1px solid rgba(200, 30, 30, 0.42);
   border-radius: 0.65rem;
   box-shadow:
@@ -201,8 +201,8 @@
   display: grid;
   gap: 0.35rem;
   padding: 0.6rem 0.7rem;
-  background: rgba(29, 69, 81, 0.14);
-  border: 1px solid rgba(100, 200, 220, 0.15);
+  background: rgba(81, 73, 65, 0.14);
+  border: 1px solid rgba(200, 30, 30, 0.15);
   border-radius: 0.42rem;
 }
 
@@ -284,8 +284,8 @@
   color: rgba(225, 244, 248, 0.92);
   font-family: var(--font-mono);
   font-size: 0.66rem;
-  background: rgba(4, 14, 20, 0.72);
-  border: 1px solid rgba(100, 200, 220, 0.22);
+  background: rgba(20, 18, 16, 0.72);
+  border: 1px solid rgba(200, 30, 30, 0.22);
   border-radius: 0.32rem;
 }
 
@@ -341,12 +341,12 @@
 
 .key-setup-apply {
   padding: 0.5rem 0.95rem;
-  color: #04141c;
+  color: #1c1916;
   font-family: var(--font-mono);
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.09rem;
-  background: linear-gradient(180deg, #45e0ff, #1fb9dd);
+  background: linear-gradient(180deg, #c81e1e, #c81e1e);
   border: none;
   border-radius: 0.38rem;
   cursor: pointer;
@@ -390,11 +390,11 @@ body.scene-playback-mode #key-setup {
 /* Provider Settings additions: externally-managed badge + per-row remove. */
 .key-setup-external {
   padding: 0.05rem 0.3rem;
-  color: rgba(148, 200, 220, 0.7);
+  color: rgba(212, 175, 55, 0.7);
   font-size: 0.5rem;
   letter-spacing: 0.06rem;
   text-transform: uppercase;
-  border: 1px solid rgba(148, 200, 220, 0.28);
+  border: 1px solid rgba(200, 30, 30, 0.28);
   border-radius: 0.3rem;
   white-space: nowrap;
 }
