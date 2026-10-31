@@ -21,7 +21,7 @@
   background:
     linear-gradient(145deg, rgba(10, 27, 37, 0.97), rgba(7, 13, 22, 0.95)),
     rgba(7, 17, 25, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.42);
+  border: 1px solid rgba(200, 30, 30, 0.42);
   border-radius: 0.65rem;
   box-shadow:
     0 1.4rem 4.5rem rgba(0, 0, 0, 0.72),
@@ -60,10 +60,10 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(54, 220, 255, 0.8),
+    rgba(200, 30, 30, 0.8),
     transparent
   );
-  box-shadow: 0 0 1rem rgba(54, 220, 255, 0.45);
+  box-shadow: 0 0 1rem rgba(200, 30, 30, 0.45);
   pointer-events: none;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .first-run-kicker {
-  color: rgba(54, 220, 255, 0.86);
+  color: rgba(200, 30, 30, 0.86);
 }
 
 #first-run-launcher h2 {
@@ -112,7 +112,7 @@
   scroll-behavior: smooth;
   /* A visible, non-overlaying affordance that the list continues. */
   scrollbar-width: thin;
-  scrollbar-color: rgba(54, 220, 255, 0.45) transparent;
+  scrollbar-color: rgba(200, 30, 30, 0.45) transparent;
   scrollbar-gutter: stable;
 }
 
@@ -120,7 +120,7 @@
   width: 6px;
 }
 .first-run-choices::-webkit-scrollbar-thumb {
-  background: rgba(54, 220, 255, 0.45);
+  background: rgba(200, 30, 30, 0.45);
   border-radius: 3px;
 }
 
@@ -147,7 +147,7 @@
 .first-run-choices button:hover,
 .first-run-choices button:focus-visible {
   background: rgba(25, 151, 178, 0.16);
-  border-color: rgba(54, 220, 255, 0.62);
+  border-color: rgba(200, 30, 30, 0.62);
   outline: none;
   transform: translateX(2px);
 }
@@ -185,7 +185,7 @@
 }
 
 .first-run-arrow {
-  color: rgba(54, 220, 255, 0.4);
+  color: rgba(200, 30, 30, 0.4);
   font-size: 1rem;
   transition:
     transform var(--transition-fast),
@@ -194,7 +194,7 @@
 
 .first-run-choices button:hover .first-run-arrow,
 .first-run-choices button:focus-visible .first-run-arrow {
-  color: rgba(54, 220, 255, 0.9);
+  color: rgba(200, 30, 30, 0.9);
   transform: translateX(2px);
 }
 
@@ -235,7 +235,7 @@
 
 .first-run-dismiss:hover,
 .first-run-dismiss:focus-visible {
-  color: rgba(54, 220, 255, 0.86);
+  color: rgba(200, 30, 30, 0.86);
 }
 
 .first-run-dismiss-touch {
@@ -287,7 +287,7 @@
 }
 
 #first-run-launcher[data-state='loading'] .first-run-note {
-  color: rgba(54, 220, 255, 0.85);
+  color: rgba(200, 30, 30, 0.85);
 }
 
 /* Every surface that claims the screen hides the launcher. This list is the CSS

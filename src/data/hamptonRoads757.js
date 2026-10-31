@@ -2,13 +2,24 @@
 //
 // Polls local n8n webhooks (traffic, weather, WJCC news) for the Hampton
 // Roads / Historic Triangle side panel. This is a plain polling service, not
-// a map data layer — see ui.js's Hampton Roads panel for presentation.
-// Adjust the URLs below to match your actual n8n webhook paths.
+// a map data layer — see src/anansi/panels.js for presentation.
+//
+// 0.3.0: the app's Content Security Policy blocks http://localhost:5678 from
+// the browser, so webhooks go through the same-origin bridge
+// /api/n8n/<webhook> (server/providers/anansi/n8n.js; N8N_WEBHOOK_BASE sets
+// the n8n address). Adjust the webhook names to match your n8n paths.
+
+import { buildMaritimePicture } from './hamptonRoadsMaritime.js';
 
 const SOURCES = [
-  { kind: 'traffic', url: 'http://localhost:5678/webhook/757-traffic' },
-  { kind: 'weather', url: 'http://localhost:5678/webhook/757-weather' },
-  { kind: 'news', url: 'http://localhost:5678/webhook/757-wjcc-news' },
+  { kind: 'traffic', url: '/api/n8n/757-traffic' },
+  { kind: 'weather', url: '/api/n8n/757-weather' },
+  { kind: 'news', url: '/api/n8n/757-wjcc-news' },
+  // Optional sources: quietly absent until configured.
+  // VDOT 511 work zones — import integrations/vdot-511/n8n-vdot-workzones.json into n8n.
+  { kind: 'roadwork', url: '/api/n8n/vdot-workzones', optional: true, pick: (body) => body?.items },
+  // Ships — the platform's own AISStream cache (AISSTREAM_API_KEY), ranked by port zone.
+  { kind: 'ships', url: '/api/vessels?maxRows=20000', optional: true, pick: (body) => buildMaritimePicture(body?.rows).items },
 ];
 
 const POLL_INTERVAL_MS = 45000;
@@ -33,6 +44,8 @@ export function createHamptonRoads757Feed() {
     traffic: [],
     weather: [],
     news: [],
+    roadwork: [],
+    ships: [],
     lastUpdate: null,
     error: null,
     loading: false,
@@ -46,7 +59,7 @@ export function createHamptonRoads757Feed() {
   async function poll() {
     setState({ loading: true });
 
-    const next = { traffic: [], weather: [], news: [] };
+    const next = { traffic: [], weather: [], news: [], roadwork: [], ships: [] };
     let anySucceeded = false;
     let lastError = null;
 
@@ -54,11 +67,13 @@ export function createHamptonRoads757Feed() {
       try {
         const res = await fetch(src.url);
         if (!res.ok) {
+          if (src.optional) continue; // not configured yet — not an error
           lastError = `${src.kind} HTTP ${res.status}`;
           console.warn(`[HamptonRoads757] ${src.kind} returned ${res.status}`);
           continue;
         }
-        const items = await res.json();
+        const body = await res.json();
+        const items = src.pick ? src.pick(body) : body;
         if (!Array.isArray(items)) {
           lastError = `${src.kind} malformed response`;
           continue;
@@ -66,6 +81,7 @@ export function createHamptonRoads757Feed() {
         anySucceeded = true;
         next[src.kind] = items.filter((item) => item && typeof item === 'object');
       } catch (err) {
+        if (src.optional) continue;
         lastError = `${src.kind} fetch error`;
         console.warn(`[HamptonRoads757] failed to fetch ${src.kind}`, err);
       }

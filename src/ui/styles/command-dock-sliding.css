@@ -393,7 +393,7 @@
 
 #command-dock #gev-voice-control[data-speaker='ai'] .gev-voice-visualizer span {
   background: linear-gradient(to top, #28b9db, #71eaff);
-  box-shadow: 0 0 0.35rem rgba(54, 220, 255, 0.28);
+  box-shadow: 0 0 0.35rem rgba(200, 30, 30, 0.28);
 }
 
 /* Center every slide-up tray on the complete unified dock, not its side wing. */
@@ -616,7 +616,7 @@
   opacity: 0;
   color: rgba(223, 245, 250, 0.92);
   background: rgba(7, 22, 31, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.34);
+  border: 1px solid rgba(200, 30, 30, 0.34);
   border-radius: 0.38rem;
   box-shadow:
     0 0.85rem 2rem rgba(0, 0, 0, 0.58),
@@ -633,7 +633,7 @@
 }
 
 #gev-voice-control .gev-voice-help-kicker {
-  color: rgba(54, 220, 255, 0.72);
+  color: rgba(200, 30, 30, 0.72);
   font-family: var(--font-mono);
   font-size: 0.46rem;
   font-weight: 600;

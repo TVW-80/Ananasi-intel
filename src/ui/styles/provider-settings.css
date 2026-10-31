@@ -20,7 +20,7 @@
     rgba(10, 27, 37, 0.92),
     rgba(7, 13, 22, 0.9)
   );
-  border: 1px solid rgba(54, 220, 255, 0.38);
+  border: 1px solid rgba(200, 30, 30, 0.38);
   border-radius: 0.42rem;
   box-shadow:
     0 0.4rem 1.6rem rgba(0, 0, 0, 0.5),
@@ -41,7 +41,7 @@
     rgba(14, 38, 51, 0.95),
     rgba(9, 18, 28, 0.93)
   );
-  border-color: rgba(54, 220, 255, 0.7);
+  border-color: rgba(200, 30, 30, 0.7);
   outline: none;
   transform: translateY(-1px);
 }
@@ -71,7 +71,7 @@
   background:
     linear-gradient(145deg, rgba(10, 27, 37, 0.97), rgba(7, 13, 22, 0.95)),
     rgba(7, 17, 25, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.42);
+  border: 1px solid rgba(200, 30, 30, 0.42);
   border-radius: 0.65rem;
   box-shadow:
     0 1.4rem 4.5rem rgba(0, 0, 0, 0.72),
@@ -105,10 +105,10 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(54, 220, 255, 0.8),
+    rgba(200, 30, 30, 0.8),
     transparent
   );
-  box-shadow: 0 0 1rem rgba(54, 220, 255, 0.45);
+  box-shadow: 0 0 1rem rgba(200, 30, 30, 0.45);
   pointer-events: none;
 }
 
@@ -126,7 +126,7 @@
 }
 
 .key-setup-kicker {
-  color: rgba(54, 220, 255, 0.86);
+  color: rgba(200, 30, 30, 0.86);
 }
 
 .key-setup-close {
@@ -146,7 +146,7 @@
 .key-setup-close:hover,
 .key-setup-close:focus-visible {
   color: rgba(225, 244, 248, 0.95);
-  border-color: rgba(54, 220, 255, 0.5);
+  border-color: rgba(200, 30, 30, 0.5);
   outline: none;
 }
 
@@ -173,7 +173,7 @@
 #key-setup-description code {
   padding: 0.05rem 0.25rem;
   font-size: 0.92em;
-  background: rgba(54, 220, 255, 0.08);
+  background: rgba(200, 30, 30, 0.08);
   border-radius: 0.2rem;
 }
 
@@ -185,7 +185,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgba(54, 220, 255, 0.45) transparent;
+  scrollbar-color: rgba(200, 30, 30, 0.45) transparent;
   scrollbar-gutter: stable;
 }
 
@@ -193,7 +193,7 @@
   width: 6px;
 }
 .key-setup-rows::-webkit-scrollbar-thumb {
-  background: rgba(54, 220, 255, 0.45);
+  background: rgba(200, 30, 30, 0.45);
   border-radius: 3px;
 }
 
@@ -253,7 +253,7 @@
 
 .key-setup-get {
   margin-left: auto;
-  color: rgba(54, 220, 255, 0.75);
+  color: rgba(200, 30, 30, 0.75);
   font-size: 0.58rem;
   letter-spacing: 0.08rem;
   text-decoration: none;
@@ -262,7 +262,7 @@
 
 .key-setup-get:hover,
 .key-setup-get:focus-visible {
-  color: rgba(54, 220, 255, 1);
+  color: rgba(200, 30, 30, 1);
   text-decoration: underline;
   outline: none;
 }
@@ -290,7 +290,7 @@
 }
 
 .key-setup-fields input:focus {
-  border-color: rgba(54, 220, 255, 0.65);
+  border-color: rgba(200, 30, 30, 0.65);
   outline: none;
 }
 
@@ -314,19 +314,19 @@
 .key-setup-cloud-auth-toggle {
   margin-left: auto;
   padding: 0.28rem 0.55rem;
-  color: rgba(54, 220, 255, 0.9);
+  color: rgba(200, 30, 30, 0.9);
   font-family: var(--font-mono);
   font-size: 0.55rem;
   letter-spacing: 0.06rem;
-  background: rgba(54, 220, 255, 0.08);
-  border: 1px solid rgba(54, 220, 255, 0.28);
+  background: rgba(200, 30, 30, 0.08);
+  border: 1px solid rgba(200, 30, 30, 0.28);
   border-radius: 0.32rem;
   cursor: pointer;
 }
 
 .key-setup-cloud-auth-toggle:hover,
 .key-setup-cloud-auth-toggle:focus-visible {
-  border-color: rgba(54, 220, 255, 0.65);
+  border-color: rgba(200, 30, 30, 0.65);
   outline: none;
 }
 

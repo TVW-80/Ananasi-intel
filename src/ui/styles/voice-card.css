@@ -19,7 +19,7 @@
   padding: 0.62rem 0.72rem 0.7rem;
   color: rgba(223, 245, 250, 0.92);
   background: rgba(7, 22, 31, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.34);
+  border: 1px solid rgba(200, 30, 30, 0.34);
   border-radius: 0.38rem;
   box-shadow:
     0 0.85rem 2rem rgba(0, 0, 0, 0.58),
@@ -83,7 +83,7 @@
 }
 
 .gev-voice-card-kicker {
-  color: rgba(54, 220, 255, 0.72);
+  color: rgba(200, 30, 30, 0.72);
 }
 
 .gev-voice-card-phase {
@@ -101,7 +101,7 @@
   padding: 0;
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(54, 220, 255, 0.24);
+  border: 1px solid rgba(200, 30, 30, 0.24);
   border-radius: 0.2rem;
   font-size: 0.72rem;
   line-height: 1;
@@ -114,7 +114,7 @@
 .gev-voice-card-dismiss:hover,
 .gev-voice-card-dismiss:focus-visible {
   color: var(--text-primary);
-  border-color: rgba(54, 220, 255, 0.6);
+  border-color: rgba(200, 30, 30, 0.6);
 }
 
 .gev-voice-card-caption {
@@ -133,7 +133,7 @@
 }
 
 .gev-voice-card-caption[data-role='assistant'] .gev-voice-card-who {
-  color: rgba(54, 220, 255, 0.72);
+  color: rgba(200, 30, 30, 0.72);
 }
 
 .gev-voice-card-caption[data-role='user'] .gev-voice-card-text {
@@ -152,13 +152,13 @@
 }
 
 .gev-voice-card-pointer .gev-voice-card-who {
-  color: rgba(54, 220, 255, 0.72);
+  color: rgba(200, 30, 30, 0.72);
 }
 
 .gev-voice-card-pointer-label {
   padding: 0.06rem 0.32rem;
   color: var(--text-primary);
-  border: 1px solid rgba(54, 220, 255, 0.34);
+  border: 1px solid rgba(200, 30, 30, 0.34);
   border-radius: 0.18rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -243,7 +243,7 @@
 .gev-voice-card-chip {
   padding: 0.08rem 0.3rem;
   color: var(--text-secondary);
-  border: 1px solid rgba(54, 220, 255, 0.3);
+  border: 1px solid rgba(200, 30, 30, 0.3);
   border-radius: 0.18rem;
   font-family: var(--font-mono);
   font-size: 0.44rem;
@@ -289,7 +289,7 @@
   display: inline-block;
   min-width: 0.9rem;
   margin-right: 0.3rem;
-  color: rgba(54, 220, 255, 0.72);
+  color: rgba(200, 30, 30, 0.72);
   font-family: var(--font-mono);
   font-size: 0.52rem;
 }
@@ -332,7 +332,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  background: rgba(54, 220, 255, 0.85);
+  background: rgba(200, 30, 30, 0.85);
   transform: translate(-50%, -50%);
 }
 
@@ -346,7 +346,7 @@
   width: 2.6rem;
   height: 2.6rem;
   background: none;
-  border: 1px dashed rgba(54, 220, 255, 0.35);
+  border: 1px dashed rgba(200, 30, 30, 0.35);
   border-radius: 50%;
 }
 
@@ -406,7 +406,7 @@ body.recording-mode .gev-pointer-reticle {
   padding: 0.6rem 0.7rem 0.65rem;
   color: rgba(223, 245, 250, 0.92);
   background: rgba(7, 22, 31, 0.96);
-  border: 1px solid rgba(54, 220, 255, 0.34);
+  border: 1px solid rgba(200, 30, 30, 0.34);
   border-radius: 0.6rem;
   box-shadow:
     0 0.85rem 2rem rgba(0, 0, 0, 0.58),

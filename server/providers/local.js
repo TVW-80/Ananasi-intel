@@ -31,6 +31,7 @@ import { cycloneProxy } from './cyclones.js';
 import { windProxy } from './wind.js';
 import { aiSecIntelProxy } from './anansi/ai-sec-intel.js';
 import { flipperSerialProxy } from './anansi/flipper-serial.js';
+import { n8nProxy } from './anansi/n8n.js';
 
 /**
  * Construct the local provider plugins in their established order.
@@ -71,6 +72,7 @@ function localProviderPlugins({ realtime, gemini } = {}) {
     // Anansi providers
     aiSecIntelProxy(),
     flipperSerialProxy(),
+    n8nProxy(),
     keySetupEndpoint(),
   ];
 }

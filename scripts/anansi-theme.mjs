@@ -27,10 +27,14 @@ const FILES = [
 const CYAN_RGB = /rgba?\(\s*0\s*,\s*212\s*,\s*255\s*(,\s*[\d.]+\s*)?\)/gi;
 const CYAN_HEX = /#00d4ff\b/gi;
 const CYAN_SPACE = /rgba?\(\s*0\s+212\s+255\s*(\/\s*[\d.]+%?\s*)?\)/gi;
+// Upstream's secondary sky-cyan (dock, first-run, voice card, key setup).
+// Its teal "live" shades (65,220,231 and 34,230,230) stay, as in Anansi 0.1.x.
+const SKY_RGB = /rgba?\(\s*54\s*,\s*220\s*,\s*255\s*(,\s*[\d.]+\s*)?\)/gi;
 
 export function recolor(css) {
   return css
     .replace(CYAN_RGB, (_m, alpha) => (alpha ? `rgba(200, 30, 30${alpha.replace(/\s+/g, ' ').replace(/^,\s*/, ', ')})` : 'rgb(200, 30, 30)'))
+    .replace(SKY_RGB, (_m, alpha) => (alpha ? `rgba(200, 30, 30${alpha.replace(/\s+/g, ' ').replace(/^,\s*/, ', ')})` : 'rgb(200, 30, 30)'))
     .replace(CYAN_HEX, '#c81e1e')
     .replace(CYAN_SPACE, (_m, alpha) => (alpha ? `rgb(200 30 30 ${alpha.trim()})` : 'rgb(200 30 30)'));
 }
@@ -42,7 +46,7 @@ function main() {
   for (const file of FILES) {
     const before = readFileSync(file, 'utf8');
     const after = recolor(before);
-    const hits = [CYAN_RGB, CYAN_HEX, CYAN_SPACE].reduce((n, re) => n + (before.match(re) || []).length, 0);
+    const hits = [CYAN_RGB, SKY_RGB, CYAN_HEX, CYAN_SPACE].reduce((n, re) => n + (before.match(re) || []).length, 0);
     if (check) {
       remaining += hits;
       if (hits) console.log(`${path.relative(root, file)}: ${hits} cyan value(s)`);

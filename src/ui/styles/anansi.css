@@ -17,6 +17,14 @@
   --text-dim: #a8842a;
 }
 
+/* Intelligence HUD: gold readouts, red frame (matches HUD_COLORS._default in
+   src/hud.js; per-style palettes such as Surveillance still override inline). */
+#intel-hud {
+  --hud-color: rgba(212, 175, 55, 0.92);
+  --hud-glow: rgba(212, 175, 55, 0.4);
+  --hud-border: rgba(200, 30, 30, 0.15);
+}
+
 /* Spider-mark logo is square (God's Eye View's eye was 775 × 520). */
 .brand-logo {
   aspect-ratio: 1 / 1;

@@ -931,7 +931,8 @@
       "src/anansi/locations.js",
       "src/data/hamptonRoads757.js",
       "src/data/aiSecIntelFeed.js",
-      "src/data/aiSecIntel.js"
+      "src/data/aiSecIntel.js",
+      "src/data/hamptonRoadsMaritime.js"
     ],
     "external": [
       "cesium"
@@ -2835,7 +2836,8 @@
       "src/hudFrame.js",
       "src/graticule.js",
       "src/cameraControl.js",
-      "src/data/flipperDetectionsLayer.js"
+      "src/data/flipperDetectionsLayer.js",
+      "src/data/hamptonRoadsMaritime.js"
     ],
     "external": [
       "hls.js",
@@ -3623,7 +3625,8 @@
       "src/anansi/panels.js",
       "src/data/hamptonRoads757.js",
       "src/data/aiSecIntelFeed.js",
-      "src/data/aiSecIntel.js"
+      "src/data/aiSecIntel.js",
+      "src/data/hamptonRoadsMaritime.js"
     ],
     "external": []
   },

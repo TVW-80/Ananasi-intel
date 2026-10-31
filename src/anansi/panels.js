@@ -137,6 +137,13 @@ export class AnansiPanels {
       const sev = Number.isFinite(meta.severity) ? `SEV ${meta.severity}` : null;
       return [road, sev].filter(Boolean).join(' · ') || 'TomTom';
     }
+    if (kind === 'roadwork') {
+      return [meta.crossingName || meta.road, String(item.severity || meta.severity || '').toUpperCase()].filter(Boolean).join(' · ') || 'VDOT 511';
+    }
+    if (kind === 'ships') {
+      const speed = Number.isFinite(meta.speedKn) && meta.underway ? `${meta.speedKn.toFixed(1)} kn` : null;
+      return [meta.shipType, meta.zoneName, speed].filter(Boolean).join(' · ') || 'AISStream';
+    }
     if (kind === 'news') {
       const ago = meta.pubDate ? formatRelativeTime(new Date(meta.pubDate).getTime()) : null;
       return [meta.source, ago].filter(Boolean).join(' · ');
@@ -159,7 +166,7 @@ export class AnansiPanels {
 
     const kindEl = document.createElement('span');
     kindEl.className = 'hampton-roads-item-kind';
-    const KIND_LABELS = { traffic: '🚦 traffic', weather: '⛈️ weather', news: '📰 news' };
+    const KIND_LABELS = { traffic: '🚦 traffic', weather: '⛈️ weather', news: '📰 news', roadwork: '🚧 roadwork', ships: '🚢 ships' };
     kindEl.textContent = KIND_LABELS[kind] ?? KIND_LABELS.news;
 
     const labelEl = document.createElement('span');
@@ -193,7 +200,7 @@ export class AnansiPanels {
    * @returns {void}
    */
   _renderHamptonRoadsFeed(state) {
-    const CAP = { traffic: 15, weather: 10, news: 10 };
+    const CAP = { traffic: 15, weather: 10, news: 10, roadwork: 10, ships: 10 };
     const list = this._hamptonRoadsFeedEl;
     if (list) {
       list.innerHTML = '';
@@ -205,7 +212,10 @@ export class AnansiPanels {
         .sort((a, b) => new Date(b?.metadata?.pubDate || 0) - new Date(a?.metadata?.pubDate || 0))
         .slice(0, CAP.news);
 
-      const sections = [['traffic', traffic], ['weather', weather], ['news', news]];
+      // Roadwork and ships arrive pre-ranked by severity (VDOT WZDx / AIS port zones).
+      const roadwork = (state.roadwork || []).slice(0, CAP.roadwork);
+      const ships = (state.ships || []).slice(0, CAP.ships);
+      const sections = [['traffic', traffic], ['roadwork', roadwork], ['weather', weather], ['ships', ships], ['news', news]];
       let rendered = 0;
       for (const [kind, items] of sections) {
         for (const item of items) {
@@ -224,7 +234,11 @@ export class AnansiPanels {
     }
 
     if (this._hamptonRoadsMetaEl) {
-      const counts = `${(state.traffic || []).length} traffic · ${(state.weather || []).length} weather · ${(state.news || []).length} news`;
+      const extra = [
+        (state.roadwork || []).length ? `${state.roadwork.length} roadwork` : null,
+        (state.ships || []).length ? `${state.ships.length} ships` : null,
+      ].filter(Boolean).map((part) => ` · ${part}`).join('');
+      const counts = `${(state.traffic || []).length} traffic · ${(state.weather || []).length} weather · ${(state.news || []).length} news${extra}`;
       const status = state.loading
         ? 'syncing…'
         : state.error
