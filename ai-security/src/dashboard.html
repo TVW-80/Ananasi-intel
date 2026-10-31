@@ -71,12 +71,16 @@
   .triage tr.row { cursor: pointer; }
   .triage tr.row:hover td { background: var(--panel-2); }
   .triage tr.open td { background: var(--panel-2); }
-  .triage th:first-child { width: 42%; }
+  .triage th:first-child { width: 36%; }
+  .triage td, .triage th { padding-left: 12px; padding-right: 12px; }
+  section.panel { min-width: 0; overflow: hidden; }
+  .detail-body dd, .detail-body p { overflow-wrap: anywhere; }
   .prod { color: var(--text); font-weight: 600; }
   .cve { display: block; font-size: 11px; color: var(--text-dim); }
-  .ver { white-space: nowrap; }
+  .ver { min-width: 120px; overflow-wrap: anywhere; }
   .ver b { color: var(--gold-bright); font-weight: 600; }
   .ver .none { color: var(--red-bright); }
+  .ver .dim { color: var(--text-dim); }
 
   .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
     padding: 2px 8px; border: 1px solid currentColor; white-space: nowrap; text-transform: uppercase; }
@@ -89,6 +93,17 @@
   .cvss small { display: block; white-space: nowrap; font-family: var(--mono); font-weight: 400; font-size: 10px; color: var(--text-dim); }
   .bar { height: 3px; background: rgba(255,255,255,.07); margin-top: 5px; width: 64px; }
   .bar i { display: block; height: 100%; background: var(--red-bright); }
+
+  .epss { font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--gold-bright); }
+  .epss small { display: block; white-space: nowrap; font-family: var(--mono); font-weight: 400; font-size: 10px; color: var(--text-dim); }
+  .epss.na, .cvss.na { color: var(--text-dim); }
+  .bar.gold i { background: var(--gold-bright); }
+  .flag { display: inline-block; font-size: 9.5px; font-weight: 600; letter-spacing: .08em; padding: 0 5px; margin-left: 6px;
+    border: 1px solid var(--gold-dim); color: var(--gold-bright); vertical-align: 1px; }
+  .flag.new { border-color: var(--red-bright); color: var(--red-bright); }
+  .autonote { font-size: 11.5px; color: var(--gold-dim); margin: 0 0 10px; }
+  .pulse.warn { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .change b { color: var(--gold-bright); font-weight: 500; }
 
   tr.detail td { padding: 0 14px 16px; background: var(--panel-2); }
   .detail-body { border-left: 2px solid var(--red); padding: 4px 0 2px 16px; }
@@ -119,7 +134,8 @@
   @media (max-width: 1040px) { .grid { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 640px) {
     .shell { padding: 0 16px 40px; } .kpis { grid-template-columns: repeat(2, 1fr); }
-    .search { width: 100%; } .triage th:nth-child(4), .triage td:nth-child(4) { display: none; }
+    .search { width: 100%; }
+    .triage th:nth-child(4), .triage td:nth-child(4), .triage th:nth-child(5), .triage td.ver { display: none; }
     .detail-body dl { grid-template-columns: 1fr; }
   }
 </style>
@@ -144,7 +160,7 @@
       </div>
     </div>
     <div class="status">
-      <span><i class="pulse"></i><b id="health">—</b></span>
+      <span><i class="pulse" id="pulse"></i><b id="health">—</b></span>
       <span>LAST REFRESH: <b id="refresh">—</b></span>
       <span>HISTORY: <b id="history">—</b></span>
     </div>
@@ -171,7 +187,7 @@
         </div>
       </div>
       <table class="triage">
-        <thead><tr><th>Product &amp; risk</th><th>Exploitation</th><th>CVSS</th><th>Affected → fixed</th></tr></thead>
+        <thead><tr><th>Product &amp; risk</th><th>Exploitation</th><th>CVSS</th><th title="FIRST.org Exploit Prediction Scoring System: probability of exploitation activity in the next 30 days">EPSS</th><th>Affected → fixed</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </section>
@@ -181,6 +197,7 @@
         <button role="tab" data-t="research" aria-selected="true">RESEARCH</button>
         <button role="tab" data-t="models" aria-selected="false">MODELS</button>
         <button role="tab" data-t="orders" aria-selected="false">POLICY</button>
+        <button role="tab" data-t="changes" aria-selected="false">CHANGES</button>
       </div>
       <div class="feed" id="feed"></div>
     </aside>
@@ -189,7 +206,9 @@
   <div class="notice">
     <b>Use notice:</b> a dated, source-linked snapshot — not a substitute for vendor advisories or your own asset inventory.
     Verify affected versions and mitigations against each primary source before acting.
-    Data adapted from <a id="upstream" href="#" target="_blank" rel="noopener">CYBERMED1C / AI-Tracker</a>.
+    Refreshed daily from the <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener">CISA KEV catalog</a>,
+    official CVE records, and <a href="https://www.first.org/epss/" target="_blank" rel="noopener">FIRST.org EPSS</a>; entries marked AUTO have not been hand-reviewed.
+    Curated content adapted from <a id="upstream" href="#" target="_blank" rel="noopener">CYBERMED1C / AI-Tracker</a>.
   </div>
 </div>
 
@@ -200,6 +219,10 @@
   const RANK = { kev: 0, public: 1, disclosed: 2 };
   const LABEL = { kev: 'CISA KEV', public: 'Public PoC', disclosed: 'Disclosed' };
   const state = { data: null, filter: 'all', q: '', tab: 'research', open: null };
+  const num = (v) => (typeof v === 'number' && isFinite(v) ? v : -1);
+  const byPriority = (x, y) => RANK[x.status] - RANK[y.status] || num(y.epss && y.epss.score) - num(x.epss && x.epss.score) || num(y.cvss) - num(x.cvss);
+  const pct = (v) => (v * 100 >= 10 ? (v * 100).toFixed(0) : (v * 100).toFixed(1)) + '%';
+  const isNew = (a, ref) => { const d = a.addedAt || a.kevAdded; return d && (ref - new Date(d + 'T00:00:00Z')) / 864e5 <= 7; };
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   const fmtDate = (d) => new Date(d + (d.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -215,6 +238,7 @@
   function renderMeta(d) {
     const m = d.meta;
     $('#health').textContent = m.health.toUpperCase();
+    $('#pulse').classList.toggle('warn', !/^healthy$/i.test(m.health));
     $('#refresh').textContent = new Date(m.lastRefresh).toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
     $('#history').textContent = m.historyDays + ' DAYS';
     $('#upstream').href = m.upstream;
@@ -231,24 +255,37 @@
     const list = state.data.advisories
       .filter(a => state.filter === 'all' || a.status === state.filter)
       .filter(a => !q || [a.product, a.title, a.id, a.summary].join(' ').toLowerCase().includes(q))
-      .sort((x, y) => RANK[x.status] - RANK[y.status] || y.cvss - x.cvss);
+      .sort(byPriority);
 
-    if (!list.length) { $('#rows').innerHTML = '<tr><td colspan="4" class="empty">No advisories match this filter.</td></tr>'; return; }
+    if (!list.length) { $('#rows').innerHTML = '<tr><td colspan="5" class="empty">No advisories match this filter.</td></tr>'; return; }
 
     $('#rows').innerHTML = list.map(a => {
-      const fixed = /not established/i.test(a.fixed) ? `<span class="none">no fix yet</span>` : `<b>${esc(a.fixed)}</b>`;
+      const fixed = /not established/i.test(a.fixed) ? `<span class="none">no fix yet</span>`
+        : /advisory/i.test(a.fixed) ? `<span class="dim">see advisory</span>` : `<b>${esc(a.fixed)}</b>`;
       const open = state.open === a.id;
+      const ref = new Date(state.data.meta.lastRefresh);
+      const flags = (isNew(a, ref) ? '<span class="flag new">NEW</span>' : '') +
+        (a.auto ? '<span class="flag" title="Added automatically from CISA KEV — not yet hand-reviewed">AUTO</span>' : '');
+      const cvss = typeof a.cvss === 'number'
+        ? `<span class="cvss">${a.cvss.toFixed(1)}<small>${esc(a.severity)} · v${esc(a.cvssVersion)}</small></span><div class="bar"><i style="width:${a.cvss * 10}%"></i></div>`
+        : `<span class="cvss na">—<small>Unscored</small></span>`;
+      const epss = a.epss
+        ? `<span class="epss">${pct(a.epss.score)}<small>top ${pct(Math.max(1 - a.epss.percentile, 0.001))}</small></span><div class="bar gold"><i style="width:${Math.max(a.epss.score * 100, 2)}%"></i></div>`
+        : `<span class="epss na">—<small>no score</small></span>`;
       const row = `<tr class="row${open ? ' open' : ''}" data-id="${esc(a.id)}" tabindex="0" aria-expanded="${open}">
-        <td><span class="prod">${esc(a.product)}</span> — ${esc(a.title)}<span class="cve">${esc(a.id)} · published ${fmtDate(a.published)}</span></td>
+        <td><span class="prod">${esc(a.product)}</span> — ${esc(a.title)}${flags}<span class="cve">${esc(a.id)} · published ${fmtDate(a.published)}</span></td>
         <td><span class="badge b-${a.status}">${LABEL[a.status]}</span></td>
-        <td><span class="cvss">${a.cvss.toFixed(1)}<small>${esc(a.severity)} · v${esc(a.cvssVersion)}</small></span><div class="bar"><i style="width:${a.cvss * 10}%"></i></div></td>
+        <td>${cvss}</td>
+        <td>${epss}</td>
         <td class="ver">${esc(a.affected)} → ${fixed}</td></tr>`;
-      const detail = !open ? '' : `<tr class="detail"><td colspan="4"><div class="detail-body">
+      const detail = !open ? '' : `<tr class="detail"><td colspan="5"><div class="detail-body">
+        ${a.auto ? `<p class="autonote">Auto-added from CISA KEV${a.kevAdded ? ' on ' + fmtDate(a.kevAdded) : ''}. Not yet hand-reviewed — confirm versions and fixes in the vendor advisory.</p>` : ''}
         <p>${esc(a.summary)}</p>
         <dl><dt>Exposed if</dt><dd>${esc(a.exposedIf)}</dd>
             <dt>Do now</dt><dd>${esc(a.doNow)}</dd>
             <dt>Look for</dt><dd>${esc(a.lookFor)}</dd>
-            <dt>Exploitation</dt><dd>${esc(a.exploitation)}</dd></dl>
+            <dt>Exploitation</dt><dd>${esc(a.exploitation)}</dd>
+            ${a.epss ? `<dt>EPSS</dt><dd>${pct(a.epss.score)} estimated chance of exploitation activity in the next 30 days — higher than ${pct(a.epss.percentile)} of all scored CVEs${a.epss.date ? ' (' + fmtDate(a.epss.date) + ')' : ''}.</dd>` : ''}</dl>
         <div class="src">${a.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join('')}</div>
       </div></td></tr>`;
       return row + detail;
@@ -261,7 +298,15 @@
       research: d.research.map(r => ({ meta: `<b>${esc(r.org)}</b> · ${fmtDate(r.date)}`, title: r.title, body: r.summary, url: r.url })),
       models:   d.models.map(m => ({ meta: `<b>${esc(m.org)}</b> · ${fmtDate(m.date)}`, title: m.name, body: m.note, url: m.url })),
       orders:   d.orders.map(o => ({ meta: `<b>${esc(o.id)}</b> · signed ${fmtDate(o.date)}`, title: o.title, body: o.note, url: o.url })),
+      changes:  [],
     }[state.tab];
+    if (state.tab === 'changes') {
+      const changes = d.meta.changes || [];
+      $('#feed').innerHTML = changes.length
+        ? changes.map(c => `<article class="item change"><div class="meta"><b>${esc(c.id)}</b> · ${fmtDate(c.date)}</div><p>${esc(c.text)}</p></article>`).join('')
+        : `<div class="empty">No changes in the last ${esc(d.meta.historyDays)} days.</div>`;
+      return;
+    }
     $('#feed').innerHTML = items.map(i => `<article class="item"><div class="meta">${i.meta}</div><h3>${esc(i.title)}</h3>
       <p>${esc(i.body)}</p><a href="${esc(i.url)}" target="_blank" rel="noopener">Primary source ↗</a></article>`).join('');
   }
@@ -285,7 +330,7 @@
 
   load().then(d => {
     state.data = d;
-    state.open = ([...d.advisories].sort((x, y) => RANK[x.status] - RANK[y.status] || y.cvss - x.cvss)[0] || {}).id || null;
+    state.open = ([...d.advisories].sort(byPriority)[0] || {}).id || null;
     renderMeta(d); renderRows(); renderFeed(); wire();
   });
 })();

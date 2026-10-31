@@ -487,6 +487,48 @@
     </figure>
   </div>
 
+  <div class="logentry">
+    <span class="tag">ENTRY 009 — AUTOMATION</span>
+    <h3>AI Security Goes Live: Daily CISA KEV + EPSS Refresh</h3>
+    <p>The dashboard stopped being a hand-maintained snapshot. A scheduled GitHub Action runs
+    <code>scripts/update_intel.py</code> every morning: it pulls the full CISA Known Exploited
+    Vulnerabilities catalog, keeps only AI/ML products (MLflow, Ray, Langflow, LiteLLM, Kubeflow,
+    Jupyter, Ollama, vLLM and others), and enriches each new entry from the official CVE record —
+    CVSS score, affected version ranges, fix versions, and maintainer advisory links. Every advisory
+    then gets an <b>EPSS</b> score from FIRST.org, the estimated probability of exploitation activity
+    in the next 30 days.</p>
+    <p>The first pass against the live catalog found <b>nine exploited AI/ML vulnerabilities</b> the
+    hand-curated board was missing — six in Langflow and three in LiteLLM. Auto-added entries carry
+    an <b>AUTO</b> flag until reviewed; curated text is never overwritten, only upgraded when CISA
+    confirms exploitation. The board now ranks by exploitation evidence, then EPSS, then CVSS, and a
+    <b>Changes</b> tab keeps a rolling 30-day history.</p>
+    <p>Same lesson as the NOAA pipeline: the script sends a descriptive <code>User-Agent</code>, falls
+    back to CISA's official GitHub mirror if the primary feed is down, and if EPSS is unreachable it
+    keeps yesterday's scores and flags the dashboard <b>Degraded</b> instead of failing silently.
+    GitHub Actions was chosen over n8n here because the dashboard is a static GitHub Pages site — the
+    refresh has to run whether or not the home server is on.</p>
+  </div>
+
+  <div class="logentry">
+    <span class="tag">ENTRY 010 — MARITIME INTEL</span>
+    <h3>Hampton Roads Maritime — AIS Ship Tracking</h3>
+    <p>Hampton Roads is one of the busiest harbors on the East Coast and home to the world's largest
+    naval base, so ship traffic was the obvious next layer. The base platform already had a live AIS
+    vessel provider (AISStream) — the work was making it regional. The AIS subscription is now
+    bounded to Hampton Roads, the lower Chesapeake Bay and the Cape Henry approaches, and a new
+    <code>hamptonRoadsMaritime.js</code> module feeds the 757 panel.</p>
+    <p>The module places every vessel into a port zone — Naval Station Norfolk, Norfolk International
+    Terminals, Virginia International Gateway, both bridge-tunnels, Thimble Shoal Channel, the
+    Elizabeth and James Rivers — and ranks what's worth surfacing: search &amp; rescue and law
+    enforcement first, then tankers and cargo ships actually moving through the tunnel crossings,
+    then other commercial traffic. Moored ships and pleasure craft are counted in the summary
+    headline but kept out of the feed. It reuses the 757 panel's hard-won failure behavior: a bad
+    poll keeps the last good picture and backs off instead of switching the feed off.</p>
+    <p>Tested end to end by pushing sample AISStream messages through the platform's own vessel store
+    and into the module. One honest caveat: Navy warships generally don't broadcast AIS, so the
+    "military" count only reflects vessels that choose to transmit.</p>
+  </div>
+
   <h2 style="margin-top:34px;">System Architecture</h2>
   <pre class="schematic">TRACK 1 — n8n (Docker, self-hosted)
   ├── Traffic  → TomTom Incident API   ─┐
@@ -508,7 +550,15 @@ TRACK 3 — AI Security Intel module
   └── Frontier-model releases, executive orders       ─┘          │
                                                           build.py (seed embed)
                                                                     ▼
-                    AI Security dashboard (triage board + right-rail intel feed)</pre>
+                    AI Security dashboard (triage board + right-rail intel feed)
+                                    ▲
+        GitHub Actions, daily ── CISA KEV (AI/ML filter) + CVE records + FIRST.org EPSS
+
+TRACK 4 — Hampton Roads Maritime
+  AISStream (server-side key, Hampton Roads box) → /api/vessels → port-zone ranking
+                                              │
+                                              ▼
+                    Hampton Roads 757 panel + Live Vessels layer on the globe</pre>
   <p style="margin-top:16px;">The n8n track is fully webhook-triggered rather than cron-scheduled
   — upstream APIs only get called when the panel's actually being viewed. The native track (TomTom
   flow, Overpass) runs independently inside the platform itself, with its own self-hosted proxy
@@ -563,8 +613,9 @@ TRACK 3 — AI Security Intel module
     before/after trend queries instead of only showing current state.</li>
     <li>Add a lightweight alerting hook (Discord/Telegram webhook) for high-severity weather or
     traffic events.</li>
-    <li>Automate the AI Security module's daily refresh with an n8n workflow that pulls CISA KEV and
-    maintainer advisories into <code>ai-security.json</code>, keeping a rolling 30-day history.</li>
+    <li>Route <code>high</code>-severity maritime events (search &amp; rescue, law enforcement) and
+    new AI/ML KEV entries into the same alerting hook.</li>
+    <li>Add NOAA tide and water-level data (Sewells Point) to pair flooding with weather alerts.</li>
     <li>Link the AI Security module into the main globe UI as its own panel.</li>
   </ul>
 </section>
@@ -584,6 +635,11 @@ TRACK 3 — AI Security Intel module
     by changing one variable at a time instead of guessing.</li>
     <li><b>Self-hosted infrastructure</b> — Docker-based deployment, container persistence, local
     network configuration on Windows.</li>
+    <li><b>Data pipeline automation</b> — a scheduled, self-healing ETL job that merges three
+    authoritative sources (CISA KEV, CVE Program records, FIRST.org EPSS) without clobbering curated
+    content.</li>
+    <li><b>Maritime / geospatial analysis</b> — AIS ship-type decoding and port-zone classification
+    for a real harbor.</li>
     <li><b>Threat intelligence &amp; vulnerability management</b> — an AI/ML advisory board
     prioritized by exploitation evidence (CISA KEV, public PoC) rather than CVSS alone.</li>
     <li><b>Product / UI work</b> — end-to-end rebrand including original logo design, color
@@ -615,7 +671,11 @@ ai-security/index.html             (new)
 ai-security/src/dashboard.html     (new)
 ai-security/data/ai-security.json  (new)
 ai-security/build.py               (new)
-images/ai-security-dashboard.png   (new)</pre>
+images/ai-security-dashboard.png   (new)
+ai-security/scripts/update_intel.py                         (new — KEV/EPSS updater)
+.github/workflows/update-ai-security.yml                    (new — daily refresh)
+integrations/hampton-roads-maritime/hamptonRoadsMaritime.js (new)
+integrations/hampton-roads-maritime/*.test.mjs, README, env (new)</pre>
 </section>
 
 <section>
