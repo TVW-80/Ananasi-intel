@@ -27,6 +27,10 @@ jobs:
 
       - name: Refresh intel
         working-directory: ai-security
+        env:
+          # Optional. Add under Settings → Secrets and variables → Actions to
+          # enable exposure counts. Never printed; counts only, no IPs stored.
+          SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
         run: python3 scripts/update_intel.py
 
       - name: Commit changes

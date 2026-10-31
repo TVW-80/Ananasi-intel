@@ -8,7 +8,10 @@
    "kev" status when CISA confirms exploitation. Curated text is never
    overwritten.
 3. Adds an EPSS exploit-likelihood score (FIRST.org) to every advisory.
-4. Records what changed in a rolling 30-day history, then rebuilds index.html.
+4. Optionally (SHODAN_API_KEY set) counts internet-exposed AI/ML services
+   with Shodan's count endpoint. Only totals and country tallies are kept —
+   never IP addresses or hostnames.
+5. Records what changed in a rolling 30-day history, then rebuilds index.html.
 
 Standard library only. Usage:
     python3 scripts/update_intel.py                 # live run
@@ -20,6 +23,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -60,7 +64,9 @@ CVE_RE = re.compile(r"^CVE-(\d{4})-(\d{4,})$")
 # --------------------------------------------------------------------------- #
 # Fetching
 # --------------------------------------------------------------------------- #
-def fetch_json(url: str, retries: int = 2, timeout: int = 60):
+def fetch_json(url: str, retries: int = 2, timeout: int = 60, label: str | None = None):
+    """GET JSON. `label` replaces the URL in error messages (use it when the
+    URL carries a secret, so keys never reach public Action logs)."""
     last = None
     for attempt in range(retries + 1):
         try:
@@ -71,7 +77,10 @@ def fetch_json(url: str, retries: int = 2, timeout: int = 60):
             last = exc
             if attempt < retries:
                 time.sleep(2 * (attempt + 1))
-    raise RuntimeError(f"{url}: {last}")
+    detail = getattr(last, "code", None) or getattr(last, "reason", None) or type(last).__name__
+    if label is None:
+        detail = last
+    raise RuntimeError(f"{label or url}: {detail}")
 
 
 def load_kev(kev_file: str | None) -> dict:
@@ -119,6 +128,59 @@ def load_cve_record(cve: str) -> dict | None:
     except RuntimeError as exc:
         log(f"warn: no CVE record for {cve} — {exc}")
         return None
+
+
+SHODAN_COUNT_URL = "https://api.shodan.io/shodan/host/count"
+
+# Aggregate exposure queries. Counts only: the count endpoint returns totals
+# and facets, never host records, and it does not use Shodan query credits.
+EXPOSURE_QUERIES = [
+    {"id": "ray", "label": "Ray dashboards", "query": 'http.title:"Ray Dashboard"'},
+    {"id": "mlflow", "label": "MLflow servers", "query": 'http.title:"MLflow"'},
+    {"id": "ollama", "label": "Ollama APIs", "query": '"Ollama is running"'},
+    {"id": "langflow", "label": "Langflow instances", "query": 'http.title:"Langflow"'},
+    {"id": "kubeflow", "label": "Kubeflow dashboards", "query": 'http.title:"Kubeflow Central Dashboard"'},
+]
+
+
+def load_exposure(previous: dict | None, shodan_file: str | None, today: str) -> dict | None:
+    """Returns the exposure block, or None when Shodan isn't configured."""
+    key = os.environ.get("SHODAN_API_KEY", "").strip()
+    canned = json.loads(pathlib.Path(shodan_file).read_text()) if shodan_file else None
+    if not key and canned is None:
+        return previous  # not configured: keep whatever was there (or nothing)
+    old = {i["id"]: i for i in (previous or {}).get("items", [])}
+    items, failures = [], 0
+    for q in EXPOSURE_QUERIES:
+        try:
+            if canned is not None:
+                body = canned[q["id"]]
+            else:
+                params = urllib.parse.urlencode({"key": key, "query": q["query"], "facets": "country:3"})
+                body = fetch_json(f"{SHODAN_COUNT_URL}?{params}", retries=1, timeout=30, label=f"Shodan count ({q['id']})")
+            total = int(body["total"])
+            countries = [
+                {"value": str(c["value"]), "count": int(c["count"])}
+                for c in (body.get("facets") or {}).get("country", [])[:3]
+            ]
+        except (RuntimeError, KeyError, TypeError, ValueError) as exc:
+            failures += 1
+            log(f"warn: exposure count failed for {q['id']} — {exc}")
+            if q["id"] in old:
+                items.append({**old[q["id"]], "stale": True})
+            continue
+        prev = old.get(q["id"], {})
+        items.append({
+            **q,
+            "total": total,
+            "previous": prev.get("total") if prev.get("date") != today else prev.get("previous"),
+            "topCountries": countries,
+            "date": today,
+        })
+        time.sleep(1)  # Shodan asks for at most 1 request per second
+    if not items:
+        return previous
+    return {"source": "Shodan", "date": today, "items": items, "partial": failures > 0}
 
 
 # --------------------------------------------------------------------------- #
@@ -310,6 +372,7 @@ def main() -> int:
     ap.add_argument("--kev-file", help="Use a local KEV JSON file instead of downloading")
     ap.add_argument("--epss-file", help="Use a local EPSS API response instead of downloading")
     ap.add_argument("--no-cve-records", action="store_true", help="Skip CVE record enrichment")
+    ap.add_argument("--shodan-file", help="Use canned Shodan count responses ({id: response}) for testing")
     ap.add_argument("--dry-run", action="store_true", help="Print changes without writing files")
     args = ap.parse_args()
 
@@ -332,6 +395,12 @@ def main() -> int:
         epss, health = None, "Degraded (EPSS unavailable)"
 
     changes = merge(data, kev, epss, today, fetch_records=not args.no_cve_records)
+
+    exposure = load_exposure(data.get("exposure"), args.shodan_file, today)
+    if exposure is not None:
+        data["exposure"] = exposure
+        if exposure.get("partial") and health == "Healthy":
+            health = "Degraded (some exposure counts unavailable)"
     data["meta"]["lastRefresh"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     data["meta"]["health"] = health
 

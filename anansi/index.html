@@ -529,6 +529,30 @@
     "military" count only reflects vessels that choose to transmit.</p>
   </div>
 
+  <div class="logentry">
+    <span class="tag">ENTRY 011 — EXPANSION</span>
+    <h3>VDOT 511, Exposure Counts, and 3D Buildings Without Google Billing</h3>
+    <p><b>VDOT 511 Virginia.</b> VDOT publishes its SmarterRoads work-zone feed in the federal WZDx v4
+    standard, so the new n8n workflow normalizes it like every other 757 pipeline: statewide feed in,
+    active Hampton Roads work zones out, with any closure or restriction at the HRBT, Monitor-Merrimac,
+    Downtown/Midtown Tunnels, James River Bridge or CBBT escalated to high severity. The n8n Code node
+    is generated from the same tested JavaScript module, and it bakes in the lessons from the first
+    n8n build — continue-on-error on the HTTP node and Always Output Data on the Code node, so a bad
+    token returns an empty, flagged result instead of silently halting.</p>
+    <p><b>Exposure counts.</b> The AI Security job can now ask Shodan how many internet-facing Ray
+    dashboards, MLflow servers, Ollama APIs, Langflow instances and Kubeflow dashboards it sees —
+    counts and top countries only, never an IP address or hostname. The count endpoint doesn't use
+    query credits, and the key is redacted from error messages so it can't leak into public Action
+    logs (verified by forcing failures with a dummy key).</p>
+    <p><b>3D buildings.</b> The open Google 3D Tiles billing item has a cleaner answer than expected:
+    the current base platform can load the same Google Photorealistic tiles through Cesium ion with a
+    free ion token. As a fallback, a new module adds Cesium OSM Buildings styled in the Anansi palette.
+    Compiling that style against real CesiumJS 1.124 caught a bug before it shipped — footprints with
+    no recorded height made the style expression throw.</p>
+    <p>An audit of the base platform also showed that radar, lightning, hurricane tracks, USGS
+    earthquakes, NASA FIRMS fires and NASA GIBS imagery already exist upstream and only need switching on.</p>
+  </div>
+
   <h2 style="margin-top:34px;">System Architecture</h2>
   <pre class="schematic">TRACK 1 — n8n (Docker, self-hosted)
   ├── Traffic  → TomTom Incident API   ─┐
@@ -558,7 +582,10 @@ TRACK 4 — Hampton Roads Maritime
   AISStream (server-side key, Hampton Roads box) → /api/vessels → port-zone ranking
                                               │
                                               ▼
-                    Hampton Roads 757 panel + Live Vessels layer on the globe</pre>
+                    Hampton Roads 757 panel + Live Vessels layer on the globe
+
+TRACK 5 — VDOT 511 (n8n, webhook-triggered like Track 1)
+  SmarterRoads WZDx v4 work zones → Hampton Roads filter + crossing check → 757 panel</pre>
   <p style="margin-top:16px;">The n8n track is fully webhook-triggered rather than cron-scheduled
   — upstream APIs only get called when the panel's actually being viewed. The native track (TomTom
   flow, Overpass) runs independently inside the platform itself, with its own self-hosted proxy
@@ -608,7 +635,9 @@ TRACK 4 — Hampton Roads Maritime
   <div class="sec-tag">05 // FUTURE OPERATIONS</div>
   <h2>What's Next</h2>
   <ul class="debrief">
-    <li>Enable the Google Photorealistic 3D Tiles imagery layer once billing's sorted out.</li>
+    <li>Enable Google Photorealistic 3D Tiles through Cesium ion (free token, no Google billing);
+    fall back to the new OSM Buildings module if needed.</li>
+    <li>Add VDOT incident and camera feeds once their SmarterRoads formats are confirmed.</li>
     <li>Persist historical snapshots of each layer (SQLite/Postgres) to support basic
     before/after trend queries instead of only showing current state.</li>
     <li>Add a lightweight alerting hook (Discord/Telegram webhook) for high-severity weather or
@@ -675,7 +704,9 @@ images/ai-security-dashboard.png   (new)
 ai-security/scripts/update_intel.py                         (new — KEV/EPSS updater)
 .github/workflows/update-ai-security.yml                    (new — daily refresh)
 integrations/hampton-roads-maritime/hamptonRoadsMaritime.js (new)
-integrations/hampton-roads-maritime/*.test.mjs, README, env (new)</pre>
+integrations/hampton-roads-maritime/*.test.mjs, README, env (new)
+integrations/vdot-511/ (normalizer, n8n workflow, tests)     (new)
+integrations/osm-buildings/ (module, tests)                 (new)</pre>
 </section>
 
 <section>

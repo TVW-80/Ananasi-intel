@@ -22,6 +22,7 @@ A source-linked view of what defenders need to act on across the AI ecosystem.
 - **Filters and search** by exploitation status, product, or CVE.
 - **Summary counts** for exploited issues, public PoCs, and advisories with no fixed release.
 - **EPSS scores** (FIRST.org) on every advisory: the estimated chance of exploitation activity in the next 30 days.
+- **Exposure counts** (optional, Shodan): how many internet-facing Ray dashboards, MLflow servers, Ollama APIs, Langflow, and Kubeflow instances Shodan sees. These are aggregate counts only; no IPs or hostnames are stored. To enable, add a `SHODAN_API_KEY` repository secret under Settings → Secrets and variables → Actions. Count queries don't use Shodan query credits, but search filters may need a Shodan Membership-level key.
 - **Right-rail intel feed** with tabs for AI security research, frontier-model releases, AI-related executive orders, and a 30-day **change history**.
 
 ### Daily automation
@@ -31,8 +32,9 @@ A [GitHub Action](.github/workflows/update-ai-security.yml) runs every morning (
 1. Pulls the **CISA Known Exploited Vulnerabilities** catalog and keeps AI/ML products (MLflow, Ray, Langflow, LiteLLM, Kubeflow, Jupyter, Ollama, vLLM, …).
 2. Adds new matches as advisories, filling in CVSS, affected versions, and fix versions from the official **CVE record**. These entries are flagged **AUTO** until reviewed.
 3. Upgrades existing advisories to "exploited" when CISA confirms exploitation, without overwriting hand-written text.
-4. Adds **EPSS** scores to every advisory and records changes in a rolling 30-day history.
-5. Rebuilds `index.html` and commits only if something changed.
+4. Adds **EPSS** scores to every advisory and, if a Shodan key is set, refreshes the exposure counts.
+5. Records changes in a rolling 30-day history.
+6. Rebuilds `index.html` and commits the result.
 
 If the CISA feed is down it falls back to CISA's GitHub mirror. If EPSS is unreachable it keeps the previous scores and shows the dashboard as **Degraded**.
 
@@ -55,6 +57,15 @@ The AI Security module is a remake of the **AI Security Intelligence Dashboard**
 > This is an intelligence and educational resource, not a substitute for vendor advisories or your own asset inventory. Verify affected versions and mitigations against each primary source.
 
 ---
+
+## Integrations for the globe
+
+Each folder in [`integrations/`](integrations/) has a setup guide and tests:
+
+- **[Hampton Roads Maritime](integrations/hampton-roads-maritime/):** live AIS ship tracking ranked for the 757 panel.
+- **[VDOT 511 Virginia](integrations/vdot-511/):** WZDx work zones and lane closures, with bridge-tunnel restrictions flagged. Includes an n8n workflow.
+- **[3D buildings](integrations/osm-buildings/):** Google 3D through Cesium ion with no Google billing, or Cesium OSM Buildings in the Anansi palette.
+- **[Already built in](integrations/README.md#already-in-the-base-platform-just-turn-them-on):** radar, lightning, hurricane tracks, USGS earthquakes, NASA FIRMS, NASA GIBS imagery, and GDELT. These only need switching on.
 
 ## Hampton Roads Maritime (AIS)
 

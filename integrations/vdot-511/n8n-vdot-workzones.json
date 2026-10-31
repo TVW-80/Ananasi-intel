@@ -1,0 +1,132 @@
+{
+  "name": "Anansi — VDOT 511 work zones (Hampton Roads)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "vdot-workzones",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "5b0f3a52-1c7e-4d0a-9a51-757000000511"
+    },
+    {
+      "parameters": {
+        "url": "https://data.511-atis-ttrip-prod.iteriscloud.com/smarterRoads/workzone/workZoneJSON/current/workZone.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "={{ $env.VDOT_SMARTERROADS_TOKEN }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Anansi/1.0 (Hampton Roads situational awareness)"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "name": "VDOT WZDx feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generated from integrations/vdot-511/vdotWorkZones.js — edit there, then run build-n8n.mjs\nfunction normalizeWzdx(feed, options) {\n  const opts = options || {};\n  const now = opts.now ? new Date(opts.now) : new Date();\n  const maxItems = opts.maxItems || 40;\n  const SOURCE = 'VDOT 511 (SmarterRoads WZDx)';\n\n  // Hampton Roads + Historic Triangle: [south, west, north, east]\n  const REGION = opts.region || [36.55, -76.95, 37.45, -75.85];\n\n  // Crossings where a closure backs up the whole region. Boxes are approximate.\n  const CROSSINGS = [\n    { id: 'hrbt', name: 'Hampton Roads Bridge-Tunnel (I-64)', box: [36.96, -76.335, 37.03, -76.28] },\n    { id: 'mmmbt', name: 'Monitor-Merrimac Bridge-Tunnel (I-664)', box: [36.88, -76.43, 36.97, -76.37] },\n    { id: 'elizabeth-tunnels', name: 'Downtown / Midtown Tunnels', box: [36.82, -76.32, 36.87, -76.285] },\n    { id: 'james-river-bridge', name: 'James River Bridge (US-17)', box: [36.95, -76.5, 37.02, -76.44] },\n    { id: 'cbbt', name: 'Chesapeake Bay Bridge-Tunnel (US-13)', box: [36.94, -76.15, 37.1, -75.95] },\n  ];\n\n  const inBox = (lat, lng, b) => lat >= b[0] && lat <= b[2] && lng >= b[1] && lng <= b[3];\n\n  // GeoJSON coordinates are [lng, lat]; flatten LineString / MultiPoint / Point.\n  const pointsOf = (geometry) => {\n    if (!geometry || !geometry.coordinates) return [];\n    const c = geometry.coordinates;\n    if (geometry.type === 'Point') return [c];\n    if (geometry.type === 'LineString' || geometry.type === 'MultiPoint') return c;\n    if (geometry.type === 'MultiLineString') return c.flat();\n    return [];\n  };\n\n  const CLOSED = new Set(['all-lanes-closed']);\n  const RESTRICTED = new Set([\n    'some-lanes-closed', 'some-lanes-closed-merge-left', 'some-lanes-closed-merge-right',\n    'some-lanes-closed-split', 'alternating-one-way', 'flagging', 'temporary-traffic-signal',\n  ]);\n  const IMPACT_TEXT = {\n    'all-lanes-closed': 'all lanes closed',\n    'some-lanes-closed': 'lane closure',\n    'some-lanes-closed-merge-left': 'lane closure, merge left',\n    'some-lanes-closed-merge-right': 'lane closure, merge right',\n    'some-lanes-closed-split': 'lane closure, split',\n    'alternating-one-way': 'alternating one-way traffic',\n    flagging: 'flagging operation',\n    'temporary-traffic-signal': 'temporary signal',\n    'all-lanes-open': 'all lanes open',\n    'all-lanes-open-shift-left': 'lanes shifted left',\n    'all-lanes-open-shift-right': 'lanes shifted right',\n    unknown: 'impact unknown',\n  };\n  const DIR = { northbound: 'NB', southbound: 'SB', eastbound: 'EB', westbound: 'WB', 'inner-loop': 'Inner Loop', 'outer-loop': 'Outer Loop', undefined: '', unknown: '' };\n  const RANK = { high: 0, medium: 1, low: 2 };\n\n  const features = (feed && Array.isArray(feed.features)) ? feed.features : [];\n  const items = [];\n  let skippedInactive = 0;\n  let skippedOutside = 0;\n\n  for (const f of features) {\n    const p = (f && f.properties) || {};\n    const core = p.core_details || {};\n    if (core.event_type && core.event_type !== 'work-zone') continue; // detours are linked events\n\n    const start = p.start_date ? new Date(p.start_date) : null;\n    const end = p.end_date ? new Date(p.end_date) : null;\n    if ((start && start > now) || (end && end < now)) { skippedInactive += 1; continue; }\n\n    const pts = pointsOf(f.geometry).filter((c) => Array.isArray(c) && isFinite(c[0]) && isFinite(c[1]));\n    const inRegion = pts.filter(([lng, lat]) => inBox(lat, lng, REGION));\n    if (!inRegion.length) { skippedOutside += 1; continue; }\n\n    const crossing = CROSSINGS.find((x) => inRegion.some(([lng, lat]) => inBox(lat, lng, x.box))) || null;\n    const impact = p.vehicle_impact || 'unknown';\n    let severity = 'low';\n    if (CLOSED.has(impact)) severity = 'high';\n    else if (RESTRICTED.has(impact)) severity = crossing ? 'high' : 'medium';\n    else if (crossing) severity = 'medium';\n\n    const [lng, lat] = inRegion[Math.floor(inRegion.length / 2)];\n    const road = (core.road_names || []).filter(Boolean).join(' / ') || 'Unnamed road';\n    const dir = !core.direction ? '' : (core.direction in DIR ? DIR[core.direction] : core.direction);\n    const where = crossing ? crossing.name\n      : [p.beginning_cross_street, p.ending_cross_street].filter(Boolean).join(' to ');\n    const label = `${road}${dir ? ' ' + dir : ''} — ${IMPACT_TEXT[impact] || impact}${where ? ' · ' + where : ''}`;\n\n    items.push({\n      lat, lng, label,\n      type: 'roadwork',\n      source: SOURCE,\n      severity,\n      timestamp: core.update_date || p.start_date || null,\n      metadata: {\n        source: SOURCE,\n        severity,\n        timestamp: core.update_date || p.start_date || null,\n        id: f.id || null,\n        road,\n        direction: core.direction || null,\n        vehicleImpact: impact,\n        crossing: crossing ? crossing.id : null,\n        crossingName: crossing ? crossing.name : null,\n        description: core.description || null,\n        start: p.start_date || null,\n        end: p.end_date || null,\n        workersPresent: p.worker_presence ? !!p.worker_presence.are_workers_present : null,\n        reducedSpeedMph: isFinite(p.reduced_speed_limit_kph) ? Math.round(p.reduced_speed_limit_kph * 0.621371) : null,\n      },\n    });\n  }\n\n  items.sort((a, b) =>\n    RANK[a.severity] - RANK[b.severity] ||\n    (b.metadata.crossing ? 1 : 0) - (a.metadata.crossing ? 1 : 0) ||\n    String(b.timestamp || '').localeCompare(String(a.timestamp || '')));\n\n  const crossingsAffected = [...new Set(items.filter((i) => i.metadata.crossing && i.severity !== 'low').map((i) => i.metadata.crossingName))];\n  return {\n    items: items.slice(0, maxItems),\n    summary: {\n      active: items.length,\n      closures: items.filter((i) => i.metadata.vehicleImpact === 'all-lanes-closed').length,\n      crossingsAffected,\n      skippedInactive,\n      skippedOutside,\n      feedUpdated: (feed && feed.feed_info && feed.feed_info.update_date) || null,\n      headline: crossingsAffected.length\n        ? `${items.length} active work zones · restrictions at ${crossingsAffected.join(', ')}`\n        : `${items.length} active work zones in Hampton Roads · no restrictions at the crossings`,\n    },\n  };\n}\n\nconst feed = $input.first().json || {};\nif (!Array.isArray(feed.features)) {\n  // Upstream failed (bad token, timeout, outage): answer with an empty, flagged\n  // result instead of halting, so the panel keeps its last good data.\n  return [{ json: { items: [], summary: null, error: feed.error ? String(feed.error.message || feed.error) : 'VDOT feed returned no features' } }];\n}\nreturn [{ json: { ...normalizeWzdx(feed, {}), error: null } }];\n"
+      },
+      "name": "Normalize to panel items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "VDOT WZDx feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VDOT WZDx feed": {
+      "main": [
+        [
+          {
+            "node": "Normalize to panel items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize to panel items": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

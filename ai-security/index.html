@@ -105,6 +105,18 @@
   .pulse.warn { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
   .change b { color: var(--gold-bright); font-weight: 500; }
 
+  .exposure { margin-top: 20px; }
+  .exposure[hidden] { display: none; }
+  .xgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .xtile { padding: 16px; border-right: 1px solid var(--line); min-width: 0; }
+  .xtile:last-child { border-right: 0; }
+  .xtile .n { font-family: var(--display); font-size: 28px; font-weight: 700; line-height: 1; color: var(--text); }
+  .xtile .l { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-bright); margin-top: 8px; }
+  .xtile .d { font-size: 11px; margin-top: 4px; color: var(--text-dim); }
+  .xtile .d .up { color: var(--red-bright); } .xtile .d .down { color: #2bd96b; }
+  .xtile .q { font-size: 10.5px; color: var(--text-dim); margin-top: 8px; overflow-wrap: anywhere; }
+  .xnote { padding: 10px 16px; border-top: 1px solid var(--line); font-size: 11px; color: var(--text-dim); }
+
   tr.detail td { padding: 0 14px 16px; background: var(--panel-2); }
   .detail-body { border-left: 2px solid var(--red); padding: 4px 0 2px 16px; }
   .detail-body p { margin: 0 0 10px; color: var(--body); }
@@ -131,7 +143,8 @@
   .notice { margin-top: 20px; border: 1px solid var(--line); padding: 12px 16px; font-size: 11.5px; color: var(--text-dim); }
   .notice b { color: var(--gold-bright); font-weight: 500; }
 
-  @media (max-width: 1040px) { .grid { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1040px) { .grid { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(3, 1fr); }
+    .xgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .xtile { border-bottom: 1px solid var(--line); } }
   @media (max-width: 640px) {
     .shell { padding: 0 16px 40px; } .kpis { grid-template-columns: repeat(2, 1fr); }
     .search { width: 100%; }
@@ -202,6 +215,13 @@
       <div class="feed" id="feed"></div>
     </aside>
   </div>
+
+  <section class="panel exposure" id="exposure" hidden aria-label="Internet exposure">
+    <div class="panel-head"><span class="tag">02 // EXPOSURE — INTERNET-FACING AI INFRASTRUCTURE</span><span class="tag" id="x-date" style="color:var(--text-dim)"></span></div>
+    <div class="xgrid" id="x-tiles"></div>
+    <div class="xnote">Aggregate counts from Shodan's index — how many hosts match each fingerprint. No IP addresses or hostnames are collected or published.
+      A match means the service answers on the internet, not that it is vulnerable; some instances are deliberately public or protected by authentication.</div>
+  </section>
 
   <div class="notice">
     <b>Use notice:</b> a dated, source-linked snapshot — not a substitute for vendor advisories or your own asset inventory.
@@ -292,6 +312,26 @@
     }).join('');
   }
 
+  function renderExposure() {
+    const x = state.data.exposure;
+    if (!x || !x.items || !x.items.length) return;
+    $('#exposure').hidden = false;
+    $('#x-date').textContent = 'SHODAN · ' + fmtDate(x.date).toUpperCase();
+    const fmt = (n) => n.toLocaleString('en-US');
+    $('#x-tiles').innerHTML = x.items.map(i => {
+      let delta = '';
+      if (typeof i.previous === 'number' && i.previous > 0) {
+        const pctChange = ((i.total - i.previous) / i.previous) * 100;
+        const cls = pctChange > 0 ? 'up' : pctChange < 0 ? 'down' : '';
+        delta = `<span class="${cls}">${pctChange > 0 ? '▲' : pctChange < 0 ? '▼' : '■'} ${Math.abs(pctChange).toFixed(1)}%</span> vs. last refresh`;
+      }
+      const top = (i.topCountries || []).map(c => `${esc(c.value)} ${fmt(c.count)}`).join(' · ');
+      return `<div class="xtile"><div class="n">${fmt(i.total)}</div><div class="l">${esc(i.label)}</div>
+        <div class="d">${delta || '&nbsp;'}${i.stale ? ' · stale' : ''}</div>
+        ${top ? `<div class="d">Top: ${top}</div>` : ''}<div class="q">${esc(i.query)}</div></div>`;
+    }).join('');
+  }
+
   function renderFeed() {
     const d = state.data;
     const items = {
@@ -331,7 +371,7 @@
   load().then(d => {
     state.data = d;
     state.open = ([...d.advisories].sort(byPriority)[0] || {}).id || null;
-    renderMeta(d); renderRows(); renderFeed(); wire();
+    renderMeta(d); renderRows(); renderFeed(); renderExposure(); wire();
   });
 })();
 </script>
