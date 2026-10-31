@@ -1,0 +1,46 @@
+name: Update AI Security intel
+
+# Daily refresh: CISA KEV (AI/ML filter) + CVE records + EPSS scores,
+# then rebuild ai-security/index.html and commit if anything changed.
+on:
+  schedule:
+    - cron: "17 11 * * *"   # 11:17 UTC daily (7:17 AM Eastern during DST)
+  workflow_dispatch: {}     # "Run workflow" button for manual refreshes
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-ai-security
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh intel
+        working-directory: ai-security
+        env:
+          # Optional. Add under Settings → Secrets and variables → Actions to
+          # enable exposure counts. Never printed; counts only, no IPs stored.
+          SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
+        run: python3 scripts/update_intel.py
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- ai-security; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ai-security
+          git commit -m "AI Security intel: daily refresh $(date -u +%Y-%m-%d)"
+          git push
