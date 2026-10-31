@@ -2738,7 +2738,6 @@
   "SAVE KEYS": "保存密钥",
   "ESC to close": "按 ESC 关闭",
   "The Google Maps key buys the photorealistic planet — everything else stacks on top.": "Google Maps 密钥提供照片级逼真 3D 地球，其余数据源都叠加在其上。",
-  "NO PLACE LEFT BEHIND": "不遗漏任何地方",
   "ACTIVE STYLE": "当前样式",
   "Globe actions": "地球操作",
   "Turn off all selected data layers": "关闭所有已选数据图层",
@@ -2863,5 +2862,8 @@
   "{count} placemarks": {
     "other": "{count} 个地标"
   },
-  "S2 Underground publishes these KMZ products to GitHub. New uploads are detected within seconds and replace the previous edition automatically. Click a marker for its report.": "S2 Underground 在 GitHub 发布这些 KMZ 产品。新上传的内容会在数秒内被检测到，并自动替换旧版本。点击标记查看报告。"
+  "S2 Underground publishes these KMZ products to GitHub. New uploads are detected within seconds and replace the previous edition automatically. Click a marker for its report.": "S2 Underground 在 GitHub 发布这些 KMZ 产品。新上传的内容会在数秒内被检测到，并自动替换旧版本。点击标记查看报告。",
+  "Flipper Detections": "Flipper 探测",
+  "Hampton Roads (757)": "汉普顿锚地 (757)",
+  "Williamsburg": "威廉斯堡"
 }

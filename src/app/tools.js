@@ -10,6 +10,7 @@ import { installScopeMask, destroyScopeMask } from '../scopeMask.js';
 import { installHudFrame, destroyHudFrame } from '../hudFrame.js';
 import { installGraticule, destroyGraticule } from '../graticule.js';
 import { createCameraControlPanel } from '../cameraControl.js';
+import { installConsoleScene } from '../anansi/consoleScene.js';
 import { installLayerReleaseTrim } from '../sceneCommandRelease.js';
 import {
   installRenderGovernor,
@@ -134,6 +135,7 @@ export function createApplicationTools({
   defer(() => destroyHudFrame());
   installGraticule(viewer);
   defer(() => destroyGraticule());
+  defer(installConsoleScene());
   const removeViewControl = createCameraControlPanel(viewer);
   defer(() => removeViewControl?.());
 

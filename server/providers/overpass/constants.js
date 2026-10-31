@@ -5,10 +5,8 @@ import { createHash } from 'node:crypto';
 // Overpass API proxy constants and cache state
 // ---------------------------------------------------------------------------
 /** Stable application identity for operator-configured Overpass instances. */
-// Anansi: field testing (2026-09-04) found overpass-api.de's WAF 406-ing
-// proxy-looking User-Agents; a short, honest app identifier passes.
 const OVERPASS_USER_AGENT =
-  'Anansi/1.0 (+https://github.com/TVW-80/Ananasi-intel)';
+  'gods-eye-view/0.1 (+https://github.com/bilawalsidhu/gods-eye-view)';
 
 /** Parse only operator-supplied HTTP(S) endpoints; private instances are allowed. */
 function parseOverpassUpstreams(raw) {

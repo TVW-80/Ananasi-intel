@@ -1382,7 +1382,7 @@ body.cockpit-mode #view-switcher button {
 .cockpit-utility-control.is-expanded .cockpit-utility-divider {
   background: linear-gradient(
     90deg,
-    rgb(0 212 255 / 28%),
+    rgb(200 30 30 / 28%),
     rgba(200, 30, 30, 0.18) 58%,
     transparent
   );

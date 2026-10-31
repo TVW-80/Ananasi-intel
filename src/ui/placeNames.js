@@ -26,6 +26,8 @@ const PLACE_NAME_KEYS = new Map(
     msg('Washington DC'),
     msg('Tallinn'),
     msg('Los Angeles'),
+    msg('Hampton Roads (757)'),
+    msg('Williamsburg'),
   ].map((key) => [key, key]),
 );
 

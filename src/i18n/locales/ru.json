@@ -829,7 +829,6 @@
   "Reset camera and return to full globe view": "Сбросить камеру и вернуть полный вид глобуса",
   "Visible map targets": "Видимые цели на карте",
   "Globe actions": "Действия с глобусом",
-  "NO PLACE LEFT BEHIND": "НИ ОДНА ТОЧКА НЕ ОСТАНЕТСЯ ПОЗАДИ",
   "ACTIVE STYLE": "АКТИВНЫЙ СТИЛЬ",
   "Choose your first view": "Выберите первый вид",
   "Tip: the GEV MIC button in the dock lets you talk to the map.": "Совет: кнопка «МИК» в доке позволяет говорить с картой.",
@@ -3070,5 +3069,8 @@
   "Your choice applies now, but could not be saved.": "Ваш выбор применён, но сохранить его не удалось.",
   "Voice replies appear here.": "Здесь появляются голосовые ответы.",
   "Preview is off.": "Предпросмотр отключён.",
-  "Automatic stop is unavailable for this voice connection.": "Автоматическая остановка недоступна для этого голосового подключения."
+  "Automatic stop is unavailable for this voice connection.": "Автоматическая остановка недоступна для этого голосового подключения.",
+  "Flipper Detections": "Обнаружения Flipper",
+  "Hampton Roads (757)": "Хэмптон-Роудс (757)",
+  "Williamsburg": "Уильямсберг"
 }

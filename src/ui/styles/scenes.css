@@ -96,7 +96,7 @@
 #left-panel-stack > [data-panel-id]:not(.collapsed) .panel-divider {
   background: linear-gradient(
     90deg,
-    rgb(0 212 255 / 28%),
+    rgb(200 30 30 / 28%),
     rgba(200, 30, 30, 0.18) 58%,
     transparent
   );
@@ -106,7 +106,7 @@
 #right-context-rail [data-panel-id]:not(.collapsed) .panel-divider {
   background: linear-gradient(
     90deg,
-    rgb(0 212 255 / 28%),
+    rgb(200 30 30 / 28%),
     rgba(200, 30, 30, 0.18) 58%,
     transparent
   );

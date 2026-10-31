@@ -246,10 +246,8 @@ body.console-mode:not(.cockpit-mode) #title-bar {
 body.console-mode:not(.cockpit-mode) #style-indicator {
   transform: rotate(5deg);
 }
-body.console-mode:not(.cockpit-mode) #command-dock {
-  transform-origin: 50% 100%;
-  transform: rotate(-2deg);
-}
+/* 0.3.0 port: the command dock no longer tilts — it sits beside the required
+   map attribution, whose placement model must be able to resolve it. */
 body.console-mode:not(.cockpit-mode) #intel-hud .hud-top-left {
   transform: translateX(-10px) rotate(-2deg);
 }
@@ -290,7 +288,6 @@ body.console-mode:not(.cockpit-mode) #right-context-rail > #global-context-panel
      media query or not. */
   body.console-mode #title-bar,
   body.console-mode #style-indicator,
-  body.console-mode #command-dock,
   body.console-mode #intel-hud .hud-top-left,
   body.console-mode #intel-hud .hud-top-right,
   body.console-mode #intel-hud .hud-bottom-left,

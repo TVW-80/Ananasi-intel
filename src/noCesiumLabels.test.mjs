@@ -8,6 +8,8 @@ import { parsers } from 'prettier/plugins/babel.mjs';
 const legacyFiles = new Set([
   'src/scenes/dataPacks/presentation.js',
   'src/layers/directions/index.js',
+  // Anansi: Flipper detections still draw entity labels (ported from 0.1.x).
+  'src/data/flipperDetectionsLayer.js',
 ]);
 const root = fileURLToPath(new URL('../', import.meta.url));
 const propertyName = (node) => node?.name ?? node?.value;

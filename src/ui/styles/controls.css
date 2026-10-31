@@ -1081,7 +1081,7 @@ body.ui-clean-view #scene-runtime.active {
 #param-slider-panel:not(.collapsed) .param-panel-divider {
   background: linear-gradient(
     90deg,
-    rgb(0 212 255 / 28%),
+    rgb(200 30 30 / 28%),
     rgba(200, 30, 30, 0.18) 58%,
     transparent
   );

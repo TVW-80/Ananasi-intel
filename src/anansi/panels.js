@@ -10,8 +10,6 @@
 import hamptonRoads757Feed from '../data/hamptonRoads757.js';
 import aiSecIntelFeed from '../data/aiSecIntelFeed.js';
 import { withinWindow as aiSecWithinWindow } from '../data/aiSecIntel.js';
-import { setHudFrameEnabled } from '../hudFrame.js';
-import { setGraticuleEnabled } from '../graticule.js';
 
 /**
  * Elements console mode gives a small decorative `transform: rotate()` tilt
@@ -29,7 +27,6 @@ import { setGraticuleEnabled } from '../graticule.js';
 const CONSOLE_MODE_ROTATED_SELECTOR = [
   '#title-bar',
   '#style-indicator',
-  '#command-dock',
   '#intel-hud .hud-top-left',
   '#intel-hud .hud-top-right',
   '#intel-hud .hud-bottom-left',
@@ -162,7 +159,8 @@ export class AnansiPanels {
 
     const kindEl = document.createElement('span');
     kindEl.className = 'hampton-roads-item-kind';
-    kindEl.textContent = kind === 'traffic' ? '🚦 traffic' : kind === 'weather' ? '⛈️ weather' : '📰 news';
+    const KIND_LABELS = { traffic: '🚦 traffic', weather: '⛈️ weather', news: '📰 news' };
+    kindEl.textContent = KIND_LABELS[kind] ?? KIND_LABELS.news;
 
     const labelEl = document.createElement('span');
     labelEl.className = 'hampton-roads-item-label';
@@ -536,8 +534,7 @@ export class AnansiPanels {
     };
     const apply = (active) => {
       document.body.classList.toggle('console-mode', active);
-      setHudFrameEnabled(active);
-      setGraticuleEnabled(active);
+      // HUD frame + graticule follow this class: src/anansi/consoleScene.js
       this._consoleModeBtn.classList.toggle('active', active);
       this._consoleModeBtn.setAttribute('aria-pressed', String(active));
       syncHamptonRoadsDetachment();

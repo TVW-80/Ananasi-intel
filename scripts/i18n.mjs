@@ -422,7 +422,13 @@ export function findUnmarked() {
 
 // Text that never reaches the page as UI: tool results and descriptions for
 // AI clients (MCP and the voice model).
-const NOT_UI = [/^src\/tools\//];
+const NOT_UI = [
+  /^src\/tools\//,
+  // Anansi modules are English-only by design (regional ops tooling).
+  /^src\/anansi\//,
+  /^src\/data\/(aiSecIntel|aiSecIntelFeed|flipperDetections|flipperDetectionsLayer|hamptonRoads757)\.js$/,
+  /^src\/(cameraControl|hudFrame|graticule)\.js$/,
+];
 
 function sourceFiles() {
   return trackedFiles(
