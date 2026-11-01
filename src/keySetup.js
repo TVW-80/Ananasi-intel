@@ -215,7 +215,7 @@ export function stripKeylessBasemapFromHash(hash) {
   }
 }
 
-const TIER_DOTS = Object.freeze({ metered: '🔴', paid: '🔴', free: '🟡' });
+const TIER_DOTS = Object.freeze({ metered: '🔴', paid: '🔴', free: '🟡', optional: '⚪' });
 
 function updateCloudVoiceAuthControl(auth, busy = false) {
   const mode = readStoredCloudVoiceAuthMode();
@@ -261,7 +261,9 @@ function buildRow(documentRef, key) {
       ? t('Metered — a billing-enabled account')
       : key.tier === 'paid'
         ? t('Optional paid token — public access works without one')
-        : t('Free key — register, paste, done');
+        : key.tier === 'optional'
+          ? t('Optional free key — works without one, raises limits')
+          : t('Free key — register, paste, done');
   head.append(led, title, tier);
   if (key.clientExposed) {
     const exposed = documentRef.createElement('span');

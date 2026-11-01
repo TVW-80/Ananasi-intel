@@ -120,7 +120,7 @@ export function createThreatIntelMiddleware({
     }
     const req = feed.request(envSource, now);
     if (!req) {
-      return { feed: name, status: 'key-required', keyEnv: feed.keyEnv, updatedAt: null, error: `Set ${feed.keyEnv} in .env`, points: [], total: 0 };
+      return { feed: name, status: 'key-required', keyEnv: feed.keyEnv, updatedAt: null, error: `Needs ${feed.keyEnv} — paste it in POWER UP (bottom-right chip)`, points: [], total: 0 };
     }
     const label = req.redact ? `${name} upstream` : req.url;
     let res;
@@ -154,7 +154,9 @@ export function createThreatIntelMiddleware({
         name,
         load(name, feed)
           .then((body) => {
-            if (['ok', 'key-required', 'no-data'].includes(body.status)) cache.set(name, { at: clock(), body });
+            // key-required is never cached: a key pasted in POWER UP lands in
+            // process.env live and must take effect on the very next poll.
+            if (['ok', 'no-data'].includes(body.status)) cache.set(name, { at: clock(), body });
             return body;
           })
           .catch((err) => {

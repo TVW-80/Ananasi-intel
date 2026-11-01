@@ -32,3 +32,10 @@ test('fetchFeeds merges feeds, dedupes points, and surfaces a missing key only w
   assert.equal(keyed.keyRequired, true);
   assert.match(keyed.error, /ABUSEIPDB_API_KEY/);
 });
+
+test('keyed Cyber layers name a real POWER UP entry and report it on the row', async () => {
+  const { KEY_SETUP_KEYS } = await import('../keySetupCore.mjs');
+  const keyed = THREAT_LAYERS.filter((l) => l.keyId);
+  assert.deepEqual(keyed.map((l) => l.id).sort(), ['cyber-ics-exposure', 'cyber-outage-reports', 'cyber-reported-attackers']);
+  for (const l of keyed) assert.ok(KEY_SETUP_KEYS.some((k) => k.id === l.keyId && !k.hidden), l.keyId);
+});

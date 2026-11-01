@@ -12,14 +12,18 @@ import * as Cesium from 'cesium';
 import { registerPickOwner, unregisterPickOwner, resolvePickId } from '../data/pickRegistry.js';
 import { governorRequestRender } from '../renderGovernor.js';
 
-/** Layer definitions: id, feeds it merges, look, and attribution. */
+/**
+ * Layer definitions: id, feeds it merges, look, and attribution. `keyId` names
+ * the POWER UP registry entry (src/keySetupCore.mjs) a layer needs, so its row
+ * says which key to paste when the feed reports key-required.
+ */
 export const THREAT_LAYERS = Object.freeze([
   { id: 'cyber-botnet-c2', name: 'Botnet C2 Servers', icon: '☣', feeds: ['feodo'], color: '#ff2b2b', source: 'abuse.ch Feodo Tracker', updateInterval: 15 * 60_000 },
-  { id: 'cyber-reported-attackers', name: 'Reported Attackers', icon: '⚑', feeds: ['abuseipdb'], color: '#ff8a1f', source: 'AbuseIPDB', updateInterval: 60 * 60_000 },
+  { id: 'cyber-reported-attackers', name: 'Reported Attackers', icon: '⚑', feeds: ['abuseipdb'], keyId: 'abuseipdb', color: '#ff8a1f', source: 'AbuseIPDB', updateInterval: 60 * 60_000 },
   { id: 'cyber-ransomware', name: 'Ransomware Victims', icon: '☠', feeds: ['ransomware'], color: '#e0457b', source: 'ransomware.live', updateInterval: 30 * 60_000 },
   { id: 'cyber-internet-outages', name: 'Internet Outages', icon: '⚡', feeds: ['ioda', 'ioda-us'], color: '#f4cf5e', source: 'IODA · Georgia Tech', updateInterval: 10 * 60_000 },
-  { id: 'cyber-outage-reports', name: 'Outage Reports', icon: '⚠', feeds: ['cloudflare'], color: '#e8d9a8', source: 'Cloudflare Radar', updateInterval: 30 * 60_000 },
-  { id: 'cyber-ics-exposure', name: 'Exposed ICS (757)', icon: '⚙', feeds: ['shodan-ics'], color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
+  { id: 'cyber-outage-reports', name: 'Outage Reports', icon: '⚠', feeds: ['cloudflare'], keyId: 'cloudflare-radar', color: '#e8d9a8', source: 'Cloudflare Radar', updateInterval: 30 * 60_000 },
+  { id: 'cyber-ics-exposure', name: 'Exposed ICS (757)', icon: '⚙', feeds: ['shodan-ics'], keyId: 'shodan', color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
   // History: a dataset you supply (src/data/local_data/sundown). Icons are colored by evidence level.
   { id: 'history-sundown-towns', name: 'Sundown Towns (historical)', icon: '◐', feeds: ['sundown'], color: '#c81e1e', source: 'Your sundown-towns research file (local)', updateInterval: 5 * 60_000 },
 ]);
@@ -152,6 +156,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
   let _count = 0;
   let _lastUpdate = null;
   let _lastError = null;
+  let _keyRequired = false;
   const overlayId = `anansi-${def.id}`;
   const ownedIds = new Set();
   const color = Cesium.Color.fromCssColorString(def.color);
@@ -168,6 +173,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
     icon: def.icon,
     source: def.source,
     updateInterval: def.updateInterval,
+    requiresKeyId: def.keyId || null,
 
     init(viewer) {
       _viewer = viewer;
@@ -203,7 +209,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
       const request = new AbortController();
       _request = request;
       try {
-        const { points, error } = await fetchFeeds(def.feeds, { fetchImpl, signal: request.signal });
+        const { points, error, keyRequired } = await fetchFeeds(def.feeds, { fetchImpl, signal: request.signal });
         if (request.signal.aborted || !_enabled) return false;
         clearOwned();
         _dataSource.entities.removeAll();
@@ -250,6 +256,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
         _count = points.length;
         _lastUpdate = Date.now();
         _lastError = error;
+        _keyRequired = Boolean(keyRequired && def.keyId);
         governorRequestRender(`anansi:${def.id}`);
         return true;
       } catch (e) {
@@ -270,7 +277,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
     },
 
     getStats() {
-      return { count: _count, lastUpdate: _lastUpdate, error: _lastError };
+      return { count: _count, lastUpdate: _lastUpdate, error: _keyRequired ? 'KEY REQUIRED' : _lastError, keyRequired: _keyRequired };
     },
   };
 }

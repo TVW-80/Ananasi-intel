@@ -30,7 +30,8 @@ export const KEY_SETUP_APPEND_HEADER =
  * Provider credentials, in display order — most magic per
  * minute first. `tier` mirrors the README's color legend: 'metered' (🔴) is a
  * billing-enabled account, 'free' (🟡) is a register-and-paste key, and
- * 'paid' (🔴) is an optional paid higher-rate token.
+ * 'paid' (🔴) is an optional paid higher-rate token, and 'optional' (⚪) is
+ * a free key that is not needed but lifts a rate limit.
  * `clientExposed` marks the keys that are injected into the browser
  * bundle by design (restrict them at the provider, per SECURITY.md).
  * `hidden` keeps advanced configuration out of the panel and missing-key count.
@@ -134,6 +135,57 @@ export const KEY_SETUP_KEYS = Object.freeze([
     getUrl: 'https://thespacedevs.com/supportus',
     envVars: Object.freeze(['LL2_API_TOKEN']),
     tier: 'paid',
+  }),
+  // ── Anansi: Cyber layers and the AI Security panel ──
+  Object.freeze({
+    id: 'abuseipdb',
+    title: 'ABUSEIPDB', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Reported Attackers layer: IPs flagged for attacks, grouped by country. Free account; refreshed a few times a day.',
+    ),
+    getUrl: 'https://www.abuseipdb.com/account/api',
+    envVars: Object.freeze(['ABUSEIPDB_API_KEY']),
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'cloudflare-radar',
+    title: 'CLOUDFLARE RADAR', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Outage Reports layer: verified internet outages and their causes. Free account; create an API token with Radar read access.',
+    ),
+    getUrl: 'https://dash.cloudflare.com/profile/api-tokens',
+    envVars: Object.freeze(['CLOUDFLARE_API_TOKEN']),
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'shodan',
+    title: 'SHODAN', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.',
+    ),
+    getUrl: 'https://account.shodan.io/',
+    envVars: Object.freeze(['SHODAN_API_KEY']),
+    tier: 'metered',
+  }),
+  Object.freeze({
+    id: 'abusech',
+    title: 'ABUSE.CH', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.',
+    ),
+    getUrl: 'https://auth.abuse.ch/',
+    envVars: Object.freeze(['ABUSECH_AUTH_KEY']),
+    tier: 'optional',
+  }),
+  Object.freeze({
+    id: 'github',
+    title: 'GITHUB', // i18n-ignore: provider product name
+    unlocks: msg(
+      'AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.',
+    ),
+    getUrl: 'https://github.com/settings/tokens',
+    envVars: Object.freeze(['GITHUB_TOKEN']),
+    tier: 'optional',
   }),
 ]);
 

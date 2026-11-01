@@ -135,3 +135,28 @@ test('a first failure reports error with no points', async () => {
   assert.equal(r.body.status, 'error');
   assert.match(r.body.error, /HTTP 503/);
 });
+
+test('a key pasted in POWER UP is used on the very next poll', async () => {
+  const envSource = {};
+  let calls = 0;
+  const mw = createThreatIntelMiddleware({
+    envSource,
+    fetchImpl: async () => {
+      calls += 1;
+      return json({ data: [] });
+    },
+  });
+  assert.equal((await call(mw, '/abuseipdb')).body.status, 'key-required');
+  envSource.ABUSEIPDB_API_KEY = 'pasted-key'; // what /api/setup does to process.env
+  assert.equal((await call(mw, '/abuseipdb')).body.status, 'ok');
+  assert.equal(calls, 1);
+});
+
+test('every keyed feed and optional feed key has a POWER UP entry', async () => {
+  const { KEY_SETUP_KEYS } = await import('../../../src/keySetupCore.mjs');
+  const panelVars = new Set(KEY_SETUP_KEYS.filter((k) => !k.hidden).flatMap((k) => k.envVars));
+  for (const [name, feed] of Object.entries(FEEDS)) {
+    if (feed.keyEnv) assert.ok(panelVars.has(feed.keyEnv), `${name}: ${feed.keyEnv} missing from POWER UP`);
+  }
+  for (const optional of ['ABUSECH_AUTH_KEY', 'GITHUB_TOKEN']) assert.ok(panelVars.has(optional), optional);
+});
