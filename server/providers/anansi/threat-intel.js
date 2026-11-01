@@ -171,7 +171,7 @@ export function createThreatIntelMiddleware({
     return inflight.get(name);
   }
 
-  return async function threatIntelMiddleware(req, res) {
+  async function threatIntelMiddleware(req, res) {
     const send = (status, body) => {
       if (res.headersSent) return;
       res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -185,11 +185,21 @@ export function createThreatIntelMiddleware({
     } catch (err) {
       return send(500, { error: `threat-intel error: ${err?.message || err}` });
     }
-  };
+  }
+  /** Other Anansi providers (the attack map) read feeds through the same cache. */
+  threatIntelMiddleware.get = (name) => (Object.hasOwn(feeds, name) ? get(name) : Promise.resolve(null));
+  return threatIntelMiddleware;
+}
+
+let _shared = null;
+/** One process-wide instance, so the Cyber layers and the attack map share upstream calls and quotas. */
+export function sharedThreatIntel() {
+  _shared ??= createThreatIntelMiddleware();
+  return _shared;
 }
 
 export function threatIntelProxy() {
-  const middleware = createThreatIntelMiddleware();
+  const middleware = sharedThreatIntel();
   return {
     name: 'anansi-threat-intel',
     configureServer(server) {

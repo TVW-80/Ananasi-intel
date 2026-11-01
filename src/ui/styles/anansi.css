@@ -834,3 +834,112 @@ body.console-mode #command-dock.angular-panel {
   overflow-wrap: anywhere;
 }
 .threat-popover-more, .threat-popover-source { margin-top: 6px; color: var(--text-secondary); font-size: 10px; }
+
+/* ── Attack Map HUD + FortiGuard ticker (src/anansi/attackMap.js) ──────────── */
+.attack-map-hud {
+  position: fixed;
+  z-index: 300;
+  left: 52px;
+  bottom: 178px;
+  width: min(280px, calc(100vw - 32px));
+  padding: 10px 12px 10px;
+  background: rgba(10, 9, 8, 0.82);
+  border: 1px solid rgba(255, 43, 43, 0.55);
+  box-shadow: 0 0 22px rgba(255, 43, 43, 0.25), inset 0 0 30px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+.attack-map-hud-head {
+  display: flex;
+  justify-content: space-between;
+  letter-spacing: 0.22em;
+  font-size: 10px;
+  color: #ff5a4a;
+}
+.attack-map-live { animation: attack-map-blink 1.2s steps(2, start) infinite; }
+@keyframes attack-map-blink { to { visibility: hidden; } }
+.attack-map-counter {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ff2b2b;
+  text-shadow: 0 0 12px rgba(255, 43, 43, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+.attack-map-basis { color: var(--text-secondary); font-size: 9px; line-height: 1.35; }
+.attack-map-sub {
+  margin: 9px 0 3px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  letter-spacing: 0.2em;
+  font-size: 9px;
+  color: #d4af37;
+}
+.attack-map-list { margin: 0; padding: 0; list-style: none; }
+.attack-map-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 1px 0 1px 7px;
+  border-left: 2px solid var(--bar, #ff8a1f);
+}
+.attack-map-list b { font-weight: 600; color: #f4cf5e; font-variant-numeric: tabular-nums; }
+.attack-map-status { margin-top: 7px; font-size: 9px; color: var(--text-secondary); }
+.attack-map-status[data-state='stale'],
+.attack-map-status[data-state='error'] { color: #ff8a1f; }
+
+.attack-map-ticker {
+  position: fixed;
+  z-index: 300;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 104px;
+  width: min(900px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  height: 26px;
+  overflow: hidden;
+  background: rgba(10, 9, 8, 0.86);
+  border: 1px solid rgba(255, 43, 43, 0.5);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+}
+.attack-map-ticker-tag {
+  flex: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: #c81e1e;
+  color: #0b0a08;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  font-size: 10px;
+}
+.attack-map-ticker-track { position: relative; flex: 1; overflow: hidden; height: 100%; }
+.attack-map-ticker-lane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  white-space: nowrap;
+  animation: attack-map-scroll var(--ticker-seconds, 60s) linear infinite;
+}
+.attack-map-ticker:hover .attack-map-ticker-lane { animation-play-state: paused; }
+@keyframes attack-map-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.attack-map-ticker-item { padding: 0 28px 0 0; color: var(--text-primary); text-decoration: none; }
+a.attack-map-ticker-item:hover { color: #f4cf5e; text-decoration: underline; }
+.attack-map-ticker-item em { font-style: normal; color: #ff5a4a; letter-spacing: 0.08em; }
+@media (prefers-reduced-motion: reduce) {
+  .attack-map-ticker-lane, .attack-map-live { animation: none; }
+}
+@media (max-width: 720px) {
+  .attack-map-hud { left: 16px; bottom: 140px; }
+}

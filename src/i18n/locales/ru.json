@@ -3086,5 +3086,6 @@
   "Outage Reports layer: verified internet outages and their causes. Free account; create an API token with Radar read access.": "Слой «Отчёты о сбоях»: подтверждённые сбои интернета и их причины. Бесплатный аккаунт; создайте API-токен с доступом на чтение Radar.",
   "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "Слой «Открытые АСУ ТП (757)»: промышленные системы управления в районе Хэмптон-Роудс, доступные из интернета. Для фильтров поиска нужно членство Shodan.",
   "Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.": "Слой «C2-серверы ботнетов» работает без ключа. Добавьте бесплатный Auth-Key abuse.ch, если загрузки начнут его требовать.",
-  "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "Бюллетени панели «Безопасность ИИ» работают без ключа. Бесплатный токен GitHub (без прав доступа) снимает лимит в 60 запросов в час."
+  "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "Бюллетени панели «Безопасность ИИ» работают без ключа. Бесплатный токен GitHub (без прав доступа) снимает лимит в 60 запросов в час.",
+  "Attack Map": "Карта атак"
 }

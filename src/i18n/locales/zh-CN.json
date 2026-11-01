@@ -2879,5 +2879,6 @@
   "Outage Reports layer: verified internet outages and their causes. Free account; create an API token with Radar read access.": "“中断报告”图层：经核实的互联网中断及其原因。免费账户；创建具有 Radar 读取权限的 API 令牌。",
   "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "“暴露的工控系统 (757)”图层：汉普顿路斯一带可从互联网访问的工业控制系统。搜索过滤器需要 Shodan 会员。",
   "Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.": "“僵尸网络 C2 服务器”图层无需密钥。如果下载开始要求密钥，请添加免费的 abuse.ch Auth-Key。",
-  "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "“AI 安全”面板的公告无需密钥。免费的 GitHub 令牌（无需任何权限）可解除每小时 60 次请求的限制。"
+  "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "“AI 安全”面板的公告无需密钥。免费的 GitHub 令牌（无需任何权限）可解除每小时 60 次请求的限制。",
+  "Attack Map": "攻击地图"
 }

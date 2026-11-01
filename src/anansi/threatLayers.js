@@ -127,6 +127,16 @@ function detachClick() {
   }
 }
 
+/** Shared with the Attack Map layer, so every Cyber icon opens the same popover. */
+export const attachThreatClick = attachClick;
+export const detachThreatClick = detachClick;
+export function registerThreatPoint(entityId, layer, point) {
+  _pointsById.set(String(entityId), { layer, point });
+}
+export function forgetThreatPoint(entityId) {
+  _pointsById.delete(String(entityId));
+}
+
 // ── layer factory ────────────────────────────────────────────────────────────
 export async function fetchFeeds(feeds, { fetchImpl = globalThis.fetch, signal } = {}) {
   const bodies = await Promise.all(

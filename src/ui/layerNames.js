@@ -31,6 +31,7 @@ export const LAYER_NAME_KEYS = Object.freeze({
   'local-firms': msg('FIRMS Active Fires'),
   'local-adsb': msg('Local ADS-B'),
   'flipper-detections': msg('Flipper Detections'),
+  'cyber-attack-map': msg('Attack Map'),
   'cyber-botnet-c2': msg('Botnet C2 Servers'),
   'cyber-reported-attackers': msg('Reported Attackers'),
   'cyber-ransomware': msg('Ransomware Victims'),
