@@ -7,6 +7,7 @@
  *  - AI SECURITY INTEL: /api/ai-sec-intel snapshot (server/providers/anansi)
  *  - CONSOLE mode: porthole HUD frame + graticule + angular panel skin
  */
+import { initSettingsMenu } from './settingsMenu.js';
 import hamptonRoads757Feed from '../data/hamptonRoads757.js';
 import aiSecIntelFeed from '../data/aiSecIntelFeed.js';
 import { withinWindow as aiSecWithinWindow } from '../data/aiSecIntel.js';
@@ -99,12 +100,14 @@ export class AnansiPanels {
     this._initHamptonRoadsPanel();
     this._initAiSecPanel();
     this._initConsoleModeToggle();
+    this._disposeSettingsMenu = initSettingsMenu();
     return this;
   }
 
   destroy() {
     this._hamptonRoadsUnsubscribe?.();
     this._aiSecUnsubscribe?.();
+    this._disposeSettingsMenu?.();
   }
 
   /**

@@ -5,11 +5,19 @@
   <!-- Bottom-right HUD row: the POWER UP chip (while keys are missing) and
        the language picker that src/ui/localePicker.js renders into #locale-picker. -->
   <div id="corner-actions">
-    <button id="key-setup-chip" type="button" hidden aria-haspopup="dialog" aria-controls="key-setup">
-      <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
-      <span data-key-setup-chip-label data-i18n>POWER UP</span>
+    <!-- Ananzi: POWER UP is the small gold classic-Anansi spider; the label
+         stays for screen readers and the tooltip. -->
+    <button id="key-setup-chip" class="ananzi-powerup" type="button" hidden aria-haspopup="dialog" aria-controls="key-setup">
+      <img class="ananzi-powerup-mark" src="/power-up.svg" alt="" aria-hidden="true" />
+      <span class="ananzi-sr-only" data-key-setup-chip-label data-i18n>POWER UP</span>
     </button>
     <div id="locale-picker"></div>
+    <!-- Ananzi: the gold spider is the game-style SETTINGS button. Closed, the
+         screen is just the globe and the bottom dock; open, every panel and
+         control returns (src/anansi/settingsMenu.js). -->
+    <button id="ananzi-settings" class="ananzi-settings-btn" type="button" aria-expanded="false" aria-label="Settings" title="Settings" data-i18n-aria-label data-i18n-title>
+      <img src="/ananzi-settings.png" alt="" aria-hidden="true" />
+    </button>
   </div>
   <aside id="key-setup" role="dialog" aria-labelledby="key-setup-title" aria-describedby="key-setup-description" hidden>
     <div class="key-setup-scanline" aria-hidden="true"></div>

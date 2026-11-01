@@ -977,3 +977,120 @@ a.attack-map-ticker-item:hover { color: #f4cf5e; text-decoration: underline; }
 
 /* The 757 list panel belongs to the "Hampton Roads 757" data layer. */
 #hampton-roads-panel.layer-off { display: none !important; }
+
+/* ── Ananzi SETTINGS menu (src/anansi/settingsMenu.js) ─────────────────────────
+   Closed: only the globe, HUD readouts, the bottom dock and the corner
+   spiders. Open: every panel and control fades back in place. */
+body:not(.ananzi-menu-open) :is(
+  #data-panel,
+  #cctv-panel,
+  #street-level-panel,
+  #scene-panel,
+  #radio-panel,
+  #right-context-rail,
+  #pp-toggles,
+  #param-slider-panel,
+  #top-center-actions,
+  #view-control-toggle,
+  #view-control-panel
+) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+:is(
+  #data-panel,
+  #cctv-panel,
+  #street-level-panel,
+  #scene-panel,
+  #radio-panel,
+  #right-context-rail,
+  #pp-toggles,
+  #param-slider-panel,
+  #top-center-actions,
+  #view-control-toggle,
+  #view-control-panel
+) {
+  transition:
+    opacity 0.22s ease,
+    visibility 0.22s ease;
+}
+body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
+
+/* The Cesium ion / Google credit line stays on screen in both states: both
+   providers' terms require it whenever their imagery or tiles are showing
+   (pinned by src/creditAttribution.test.mjs). */
+
+#corner-actions { align-items: center; }
+
+.ananzi-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+}
+
+/* The gold spider SETTINGS button. */
+.ananzi-settings-btn {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.45));
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease;
+}
+.ananzi-settings-btn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.ananzi-settings-btn:hover,
+.ananzi-settings-btn:focus-visible {
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 16px rgba(244, 207, 94, 0.75));
+  outline: none;
+}
+.ananzi-settings-btn[aria-expanded='true'] {
+  transform: rotate(-12deg) scale(1.04);
+  filter: drop-shadow(0 0 18px rgba(244, 207, 94, 0.85));
+}
+
+/* POWER UP: the small gold classic Anansi spider, pulsing while keys wait. */
+#corner-actions #key-setup-chip.ananzi-powerup {
+  width: 38px;
+  height: 38px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26, 22, 14, 0.95), rgba(8, 7, 6, 0.95));
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  animation: ananzi-powerup-pulse 2.4s ease-in-out infinite;
+  overflow: hidden;
+}
+#corner-actions #key-setup-chip.ananzi-powerup[hidden] { display: none; }
+#corner-actions #key-setup-chip.ananzi-powerup:hover,
+#corner-actions #key-setup-chip.ananzi-powerup:focus-visible {
+  border-color: #f4cf5e;
+  box-shadow: 0 0 16px rgba(244, 207, 94, 0.7);
+  transform: scale(1.08);
+}
+.ananzi-powerup-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@keyframes ananzi-powerup-pulse {
+  50% { box-shadow: 0 0 18px rgba(244, 207, 94, 0.65); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #corner-actions #key-setup-chip.ananzi-powerup { animation: none; }
+}
