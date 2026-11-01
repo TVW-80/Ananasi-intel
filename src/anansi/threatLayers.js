@@ -20,6 +20,8 @@ export const THREAT_LAYERS = Object.freeze([
   { id: 'cyber-internet-outages', name: 'Internet Outages', icon: '⚡', feeds: ['ioda', 'ioda-us'], color: '#f4cf5e', source: 'IODA · Georgia Tech', updateInterval: 10 * 60_000 },
   { id: 'cyber-outage-reports', name: 'Outage Reports', icon: '⚠', feeds: ['cloudflare'], color: '#e8d9a8', source: 'Cloudflare Radar', updateInterval: 30 * 60_000 },
   { id: 'cyber-ics-exposure', name: 'Exposed ICS (757)', icon: '⚙', feeds: ['shodan-ics'], color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
+  // History: a dataset you supply (src/data/local_data/sundown). Icons are colored by evidence level.
+  { id: 'history-sundown-towns', name: 'Sundown Towns (historical)', icon: '◐', feeds: ['sundown'], color: '#c81e1e', source: 'Your sundown-towns research file (local)', updateInterval: 5 * 60_000 },
 ]);
 
 const LABEL_LIMIT = 40;
@@ -134,7 +136,7 @@ export async function fetchFeeds(feeds, { fetchImpl = globalThis.fetch, signal }
   for (const body of bodies) for (const p of body.points || []) if (!points.has(p.id)) points.set(p.id, p);
   const usable = bodies.filter((b) => b.status === 'ok' || b.status === 'stale');
   const keyMissing = bodies.find((b) => b.status === 'key-required');
-  const failed = bodies.find((b) => b.status === 'error' || b.status === 'stale');
+  const failed = bodies.find((b) => b.status === 'error' || b.status === 'stale' || (b.status === 'no-data' && b.error) || (b.error && !(b.points || []).length));
   return {
     points: [...points.values()],
     error: !usable.length && keyMissing ? keyMissing.error : failed?.error || null,
@@ -216,7 +218,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
               position,
               point: {
                 pixelSize: 7 + Math.round((p.severity || 0) * 13),
-                color: color.withAlpha(0.85),
+                color: (p.color ? Cesium.Color.fromCssColorString(p.color) : color).withAlpha(0.85),
                 outlineColor: Cesium.Color.BLACK.withAlpha(0.9),
                 outlineWidth: 2,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -230,7 +232,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
             position,
             variant: 'label',
             title: `${def.icon} ${p.title}`,
-            accent: def.color,
+            accent: p.color || def.color,
             priority: Math.round((p.severity || 0) * 1000) + Math.min(999, p.count || 0),
             collisionGroup: 'ambient-label',
             paintLane: 'ambient-label',

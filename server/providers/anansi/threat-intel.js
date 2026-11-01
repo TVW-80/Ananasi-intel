@@ -1,6 +1,6 @@
 // Anansi: threat-intel feeds for the Cyber map layers.
 //
-//   GET /api/threat/<feed>   feed = feodo | abuseipdb | ransomware | ioda | ioda-us | cloudflare | shodan-ics
+//   GET /api/threat/<feed>   feed = feodo | abuseipdb | ransomware | ioda | ioda-us | cloudflare | shodan-ics | sundown
 //
 // Each response is { feed, status, updatedAt, error, keyEnv, points, total }:
 //   status 'ok'           fresh data
@@ -18,6 +18,7 @@ import {
   normalizeRansomware,
   normalizeShodan,
 } from './threat-feeds.js';
+import { loadSundownFeed } from './sundown.js';
 
 const USER_AGENT = 'Anansi/1.0 (personal threat-intel dashboard)';
 const TIMEOUT_MS = 30_000;
@@ -28,6 +29,12 @@ const env = (name, e) => String(e[name] || '').trim();
 
 /** Feed table. `request(e, now)` returns {url, headers} or null when its key is missing. */
 export const FEEDS = Object.freeze({
+  // Local research file (no network) — see server/providers/anansi/sundown.js.
+  sundown: {
+    ttl: 60_000,
+    keyEnv: null,
+    local: loadSundownFeed,
+  },
   feodo: {
     ttl: 30 * MIN,
     keyEnv: null, // abuse.ch downloads are keyless; ABUSECH_AUTH_KEY is sent if you set one
@@ -107,6 +114,10 @@ export function createThreatIntelMiddleware({
 
   async function load(name, feed) {
     const now = clock();
+    if (feed.local) {
+      const { points = [], total = 0, error = null, empty = false } = feed.local();
+      return { feed: name, status: empty ? 'no-data' : 'ok', keyEnv: null, updatedAt: new Date(now).toISOString(), error, points, total };
+    }
     const req = feed.request(envSource, now);
     if (!req) {
       return { feed: name, status: 'key-required', keyEnv: feed.keyEnv, updatedAt: null, error: `Set ${feed.keyEnv} in .env`, points: [], total: 0 };
@@ -143,7 +154,7 @@ export function createThreatIntelMiddleware({
         name,
         load(name, feed)
           .then((body) => {
-            if (body.status === 'ok' || body.status === 'key-required') cache.set(name, { at: clock(), body });
+            if (['ok', 'key-required', 'no-data'].includes(body.status)) cache.set(name, { at: clock(), body });
             return body;
           })
           .catch((err) => {

@@ -101,6 +101,11 @@ const PANEL_GROUPS = [
     ],
   },
   {
+    // Anansi: historical research layers from files you supply.
+    label: msg('Historical'),
+    ids: ['history-sundown-towns'],
+  },
+  {
     label: msg('Utilities'),
     ids: ['directions', 'radio'],
   },

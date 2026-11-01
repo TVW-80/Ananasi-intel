@@ -32,3 +32,7 @@ changelog.d/.assembling/
 # Flipper Spider Sense field captures (user data, keep samples/ only)
 src/data/local_data/flipper/*.csv
 src/data/local_data/flipper/*.gpx
+
+# Sundown-towns research data you supply (README stays)
+src/data/local_data/sundown/*
+!src/data/local_data/sundown/README.md
