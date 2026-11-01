@@ -22,6 +22,8 @@ import { createApplicationLaunches } from './layers/rocketLaunches.js';
 import { createApplicationAlpr } from './layers/alprCameras.js';
 import { createApplicationLocalAdsb } from './layers/localAdsb.js';
 import { createFlipperDetectionsLayer } from '../data/flipperDetectionsLayer.js';
+import { createThreatLayers } from '../anansi/threatLayers.js';
+import { overlayHost as anansiOverlayHost } from './layers/overlayHost.js';
 import { createApplicationAwareness } from './layers/militaryAwareness.js';
 import { createApplicationFirms } from './layers/firms.js';
 import { createApplicationEarthquakes } from './layers/earthquakes.js';
@@ -44,6 +46,13 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'local-adsb', disposition: 'local-only' }),
   // Anansi: Flipper / Spider Sense field sensor on this machine's serial port.
   Object.freeze({ id: 'flipper-detections', disposition: 'local-only' }),
+  // Anansi Cyber layers: personal threat-intel research, never in share links.
+  Object.freeze({ id: 'cyber-botnet-c2', disposition: 'local-only' }),
+  Object.freeze({ id: 'cyber-reported-attackers', disposition: 'local-only' }),
+  Object.freeze({ id: 'cyber-ransomware', disposition: 'local-only' }),
+  Object.freeze({ id: 'cyber-internet-outages', disposition: 'local-only' }),
+  Object.freeze({ id: 'cyber-outage-reports', disposition: 'local-only' }),
+  Object.freeze({ id: 'cyber-ics-exposure', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -182,6 +191,7 @@ export function createApplicationCatalog({
           feed: sources.firms,
         }),
         createFlipperDetectionsLayer(),
+        ...createThreatLayers({ overlayHost: anansiOverlayHost }),
       ],
       metadata,
     );

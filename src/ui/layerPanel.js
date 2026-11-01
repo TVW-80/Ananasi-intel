@@ -88,6 +88,19 @@ const PANEL_GROUPS = [
     ],
   },
   {
+    // Anansi: threat-intel research layers + the Flipper field sensor.
+    label: msg('Cyber'),
+    ids: [
+      'cyber-botnet-c2',
+      'cyber-reported-attackers',
+      'cyber-ransomware',
+      'cyber-internet-outages',
+      'cyber-outage-reports',
+      'cyber-ics-exposure',
+      'flipper-detections',
+    ],
+  },
+  {
     label: msg('Utilities'),
     ids: ['directions', 'radio'],
   },

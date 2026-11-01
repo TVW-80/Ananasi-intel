@@ -2617,7 +2617,7 @@
   "Tactical": "战术",
   "Operator": "操作员",
   "Minimal": "精简",
-  "Cyber": "赛博",
+  "Cyber": "网络安全",
   "Sonar": "声呐",
   "Cyber sonar contact scanner": "赛博声呐目标扫描器",
   "Rings": "圈数",
@@ -2865,5 +2865,11 @@
   "S2 Underground publishes these KMZ products to GitHub. New uploads are detected within seconds and replace the previous edition automatically. Click a marker for its report.": "S2 Underground 在 GitHub 发布这些 KMZ 产品。新上传的内容会在数秒内被检测到，并自动替换旧版本。点击标记查看报告。",
   "Flipper Detections": "Flipper 探测",
   "Hampton Roads (757)": "汉普顿锚地 (757)",
-  "Williamsburg": "威廉斯堡"
+  "Williamsburg": "威廉斯堡",
+  "Botnet C2 Servers": "僵尸网络 C2 服务器",
+  "Reported Attackers": "被举报的攻击者",
+  "Ransomware Victims": "勒索软件受害者",
+  "Internet Outages": "互联网中断",
+  "Outage Reports": "中断报告",
+  "Exposed ICS (757)": "暴露的工控系统 (757)"
 }

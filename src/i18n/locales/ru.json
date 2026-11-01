@@ -3072,5 +3072,11 @@
   "Automatic stop is unavailable for this voice connection.": "Автоматическая остановка недоступна для этого голосового подключения.",
   "Flipper Detections": "Обнаружения Flipper",
   "Hampton Roads (757)": "Хэмптон-Роудс (757)",
-  "Williamsburg": "Уильямсберг"
+  "Williamsburg": "Уильямсберг",
+  "Botnet C2 Servers": "C2-серверы ботнетов",
+  "Reported Attackers": "Атакующие из жалоб",
+  "Ransomware Victims": "Жертвы вымогателей",
+  "Internet Outages": "Сбои интернета",
+  "Outage Reports": "Сообщения о сбоях",
+  "Exposed ICS (757)": "Открытые АСУ ТП (757)"
 }

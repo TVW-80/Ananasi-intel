@@ -785,3 +785,52 @@ body.console-mode #command-dock.angular-panel {
   font-size: 11px;
   letter-spacing: 0.03em;
 }
+
+/* ── Cyber layers: click popover (src/anansi/threatLayers.js) ──────────────── */
+#threat-popover {
+  position: fixed;
+  z-index: 400;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(420px, calc(100vh - 24px));
+  overflow-y: auto;
+  padding: 10px 12px 12px;
+  background: rgba(10, 9, 8, 0.94);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 18px var(--accent-glow), inset 0 0 24px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+  backdrop-filter: blur(12px);
+}
+#threat-popover[hidden] { display: none; }
+.threat-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(200, 30, 30, 0.35);
+  color: var(--threat-color, var(--text-primary));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.threat-popover-close {
+  background: none;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--text-primary);
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.threat-popover-title { font-size: 14px; font-weight: 600; color: #f4cf5e; }
+.threat-popover-meta { margin: 2px 0 8px; color: var(--text-secondary); }
+.threat-popover-items { margin: 0; padding: 0; list-style: none; }
+.threat-popover-items li {
+  padding: 5px 0;
+  border-top: 1px dashed rgba(212, 175, 55, 0.15);
+  overflow-wrap: anywhere;
+}
+.threat-popover-more, .threat-popover-source { margin-top: 6px; color: var(--text-secondary); font-size: 10px; }

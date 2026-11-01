@@ -2838,7 +2838,8 @@
       "src/cameraControl.js",
       "src/data/flipperDetectionsLayer.js",
       "src/data/hamptonRoadsMaritime.js",
-      "src/anansi/sceneTheme.js"
+      "src/anansi/sceneTheme.js",
+      "src/anansi/threatLayers.js"
     ],
     "external": [
       "hls.js",
@@ -3422,7 +3423,8 @@
       "src/data/geoImportImages.js",
       "src/data/geoImportPins.js",
       "src/data/geoFileImport.js",
-      "src/data/flipperDetectionsLayer.js"
+      "src/data/flipperDetectionsLayer.js",
+      "src/anansi/threatLayers.js"
     ],
     "external": [
       "hls.js",

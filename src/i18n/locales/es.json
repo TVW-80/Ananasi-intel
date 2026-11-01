@@ -3003,5 +3003,11 @@
   "Automatic stop is unavailable for this voice connection.": "La parada automática no está disponible para esta conexión de voz.",
   "Flipper Detections": "Detecciones de Flipper",
   "Hampton Roads (757)": "Hampton Roads (757)",
-  "Williamsburg": "Williamsburg"
+  "Williamsburg": "Williamsburg",
+  "Botnet C2 Servers": "Servidores C2 de botnets",
+  "Reported Attackers": "Atacantes denunciados",
+  "Ransomware Victims": "Víctimas de ransomware",
+  "Internet Outages": "Cortes de Internet",
+  "Outage Reports": "Informes de cortes",
+  "Exposed ICS (757)": "ICS expuestos (757)"
 }

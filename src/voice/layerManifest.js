@@ -425,6 +425,12 @@ export const VOICE_OFF_LAYERS = Object.freeze({
   'bhote-koshi-2026': 'scene-driven event layer (control_scene)',
   'bhote-koshi-locator': 'scene-driven event layer (control_scene)',
   'flipper-detections': 'Anansi: local hardware sensor on this machine (not shareable)',
+  'cyber-botnet-c2': 'Anansi: personal threat-intel research layer',
+  'cyber-reported-attackers': 'Anansi: personal threat-intel research layer',
+  'cyber-ransomware': 'Anansi: personal threat-intel research layer',
+  'cyber-internet-outages': 'Anansi: personal threat-intel research layer',
+  'cyber-outage-reports': 'Anansi: personal threat-intel research layer',
+  'cyber-ics-exposure': 'Anansi: personal threat-intel research layer',
 });
 
 const TYPE_NAMES = Object.freeze({

@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { THREAT_LAYERS, fetchFeeds, slotPosition } from './threatLayers.js';
+
+test('layer ids are unique and every layer names its feeds and source', () => {
+  const ids = THREAT_LAYERS.map((l) => l.id);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const l of THREAT_LAYERS) assert.ok(l.feeds.length && l.source && l.color && l.updateInterval > 0, l.id);
+});
+
+test('country-level points get distinct offsets per layer; exact points stay put', () => {
+  const a = slotPosition(37, -95, 0, true);
+  const b = slotPosition(37, -95, 2, true);
+  assert.notDeepEqual(a, b);
+  assert.ok(Math.abs(a.lat - 37) < 2 && Math.abs(b.lat - 37) < 2);
+  assert.deepEqual(slotPosition(36.9, -76.2, 3, false), { lat: 36.9, lon: -76.2 });
+  const wrapped = slotPosition(10, 179.5, 0, true);
+  assert.ok(wrapped.lon <= 180 && wrapped.lon >= -180);
+});
+
+test('fetchFeeds merges feeds, dedupes points, and surfaces a missing key only when nothing loaded', async () => {
+  const bodies = {
+    ioda: { status: 'ok', points: [{ id: 'x' }, { id: 'y' }] },
+    'ioda-us': { status: 'ok', points: [{ id: 'y' }, { id: 'z' }] },
+    abuseipdb: { status: 'key-required', error: 'Set ABUSEIPDB_API_KEY in .env', points: [] },
+  };
+  const fetchImpl = async (url) => ({ ok: true, json: async () => bodies[url.split('/').pop()] });
+  const merged = await fetchFeeds(['ioda', 'ioda-us'], { fetchImpl });
+  assert.deepEqual(merged.points.map((p) => p.id), ['x', 'y', 'z']);
+  assert.equal(merged.error, null);
+  const keyed = await fetchFeeds(['abuseipdb'], { fetchImpl });
+  assert.equal(keyed.keyRequired, true);
+  assert.match(keyed.error, /ABUSEIPDB_API_KEY/);
+});

@@ -32,6 +32,7 @@ import { windProxy } from './wind.js';
 import { aiSecIntelProxy } from './anansi/ai-sec-intel.js';
 import { flipperSerialProxy } from './anansi/flipper-serial.js';
 import { n8nProxy } from './anansi/n8n.js';
+import { threatIntelProxy } from './anansi/threat-intel.js';
 
 /**
  * Construct the local provider plugins in their established order.
@@ -73,6 +74,7 @@ function localProviderPlugins({ realtime, gemini } = {}) {
     aiSecIntelProxy(),
     flipperSerialProxy(),
     n8nProxy(),
+    threatIntelProxy(),
     keySetupEndpoint(),
   ];
 }
