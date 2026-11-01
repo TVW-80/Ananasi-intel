@@ -2840,7 +2840,8 @@
       "src/data/hamptonRoadsMaritime.js",
       "src/anansi/sceneTheme.js",
       "src/anansi/threatLayers.js",
-      "src/anansi/attackMap.js"
+      "src/anansi/attackMap.js",
+      "src/anansi/hamptonRoadsLayer.js"
     ],
     "external": [
       "hls.js",
@@ -3426,7 +3427,10 @@
       "src/data/geoFileImport.js",
       "src/data/flipperDetectionsLayer.js",
       "src/anansi/threatLayers.js",
-      "src/anansi/attackMap.js"
+      "src/anansi/attackMap.js",
+      "src/anansi/hamptonRoadsLayer.js",
+      "src/data/hamptonRoads757.js",
+      "src/data/hamptonRoadsMaritime.js"
     ],
     "external": [
       "hls.js",

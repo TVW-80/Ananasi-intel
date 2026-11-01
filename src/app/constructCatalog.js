@@ -24,6 +24,7 @@ import { createApplicationLocalAdsb } from './layers/localAdsb.js';
 import { createFlipperDetectionsLayer } from '../data/flipperDetectionsLayer.js';
 import { createThreatLayers } from '../anansi/threatLayers.js';
 import { createAttackMapLayer } from '../anansi/attackMap.js';
+import { createHamptonRoadsLayer } from '../anansi/hamptonRoadsLayer.js';
 import { overlayHost as anansiOverlayHost } from './layers/overlayHost.js';
 import { createApplicationAwareness } from './layers/militaryAwareness.js';
 import { createApplicationFirms } from './layers/firms.js';
@@ -48,6 +49,7 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   // Anansi: Flipper / Spider Sense field sensor on this machine's serial port.
   Object.freeze({ id: 'flipper-detections', disposition: 'local-only' }),
   // Anansi Cyber layers: personal threat-intel research, never in share links.
+  Object.freeze({ id: 'local-hampton-roads-757', disposition: 'local-only' }),
   Object.freeze({ id: 'cyber-attack-map', disposition: 'local-only' }),
   Object.freeze({ id: 'cyber-botnet-c2', disposition: 'local-only' }),
   Object.freeze({ id: 'cyber-reported-attackers', disposition: 'local-only' }),
@@ -194,6 +196,7 @@ export function createApplicationCatalog({
           feed: sources.firms,
         }),
         createFlipperDetectionsLayer(),
+        createHamptonRoadsLayer({ overlayHost: anansiOverlayHost }),
         createAttackMapLayer({ overlayHost: anansiOverlayHost }),
         ...createThreatLayers({ overlayHost: anansiOverlayHost }),
       ],

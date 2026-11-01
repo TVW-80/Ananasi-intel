@@ -120,7 +120,8 @@ export class AnansiPanels {
     this._hamptonRoadsUnsubscribe = hamptonRoads757Feed.subscribe((state) => {
       this._renderHamptonRoadsFeed(state);
     });
-    hamptonRoads757Feed.start();
+    // Polling starts and stops with the "Hampton Roads 757" data layer
+    // (src/anansi/hamptonRoadsLayer.js), which also shows/hides this panel.
   }
 
   /**

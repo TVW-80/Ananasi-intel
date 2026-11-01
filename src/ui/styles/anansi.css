@@ -836,44 +836,80 @@ body.console-mode #command-dock.angular-panel {
 .threat-popover-more, .threat-popover-source { margin-top: 6px; color: var(--text-secondary); font-size: 10px; }
 
 /* ── Attack Map HUD + FortiGuard ticker (src/anansi/attackMap.js) ──────────── */
+/* A slim strip docked top-center, clear of the Data Layers column, the right
+   rail and the bottom dock; draggable by its header (position remembered),
+   foldable to the counter, double-click the header to re-dock. */
 .attack-map-hud {
   position: fixed;
   z-index: 300;
-  left: 52px;
-  bottom: 178px;
-  width: min(280px, calc(100vw - 32px));
-  padding: 10px 12px 10px;
-  background: rgba(10, 9, 8, 0.82);
+  top: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, calc(100vw - 520px));
+  min-width: 300px;
+  padding: 8px 10px 8px;
+  background: rgba(10, 9, 8, 0.86);
   border: 1px solid rgba(255, 43, 43, 0.55);
   box-shadow: 0 0 22px rgba(255, 43, 43, 0.25), inset 0 0 30px rgba(0, 0, 0, 0.6);
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-primary);
   backdrop-filter: blur(10px);
-  pointer-events: none;
 }
+.attack-map-hud.dragging { opacity: 0.85; }
 .attack-map-hud-head {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   letter-spacing: 0.22em;
   font-size: 10px;
   color: #ff5a4a;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.attack-map-hud.dragging .attack-map-hud-head { cursor: grabbing; }
+.attack-map-title { flex: 1; text-align: right; }
+.attack-map-fold {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  line-height: 1;
+  background: none;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
 }
 .attack-map-live { animation: attack-map-blink 1.2s steps(2, start) infinite; }
 @keyframes attack-map-blink { to { visibility: hidden; } }
 .attack-map-counter {
-  margin: 4px 0 0;
-  font-size: 28px;
+  margin: 2px 0 0;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #ff2b2b;
   text-shadow: 0 0 12px rgba(255, 43, 43, 0.6);
   font-variant-numeric: tabular-nums;
 }
+.attack-map-main {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 12px;
+}
+.attack-map-col { min-width: 0; }
+.attack-map-detail .attack-map-sub { margin-top: 4px; padding-top: 0; border-top: 0; }
+.attack-map-hud.folded { width: auto; min-width: 0; }
+.attack-map-hud.folded .attack-map-main { display: block; }
+.attack-map-hud.folded .attack-map-detail,
+.attack-map-hud.folded .attack-map-basis,
+.attack-map-hud.folded .attack-map-status,
+.attack-map-hud.folded .attack-map-ticker { display: none; }
+.attack-map-hud.folded .attack-map-counter { font-size: 18px; }
 .attack-map-basis { color: var(--text-secondary); font-size: 9px; line-height: 1.35; }
 .attack-map-sub {
-  margin: 9px 0 3px;
-  padding-top: 6px;
+  margin: 8px 0 3px;
+  padding-top: 5px;
   border-top: 1px solid rgba(212, 175, 55, 0.25);
   letter-spacing: 0.2em;
   font-size: 9px;
@@ -888,38 +924,31 @@ body.console-mode #command-dock.angular-panel {
   border-left: 2px solid var(--bar, #ff8a1f);
 }
 .attack-map-list b { font-weight: 600; color: #f4cf5e; font-variant-numeric: tabular-nums; }
-.attack-map-status { margin-top: 7px; font-size: 9px; color: var(--text-secondary); }
+.attack-map-status { margin-top: 6px; font-size: 9px; color: var(--text-secondary); }
 .attack-map-status[data-state='stale'],
 .attack-map-status[data-state='error'] { color: #ff8a1f; }
 
+/* FortiGuard ticker: a strip inside the HUD, not a screen-wide bar. */
 .attack-map-ticker {
-  position: fixed;
-  z-index: 300;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 104px;
-  width: min(900px, calc(100vw - 32px));
   display: flex;
   align-items: center;
-  height: 26px;
+  height: 22px;
+  margin-top: 8px;
   overflow: hidden;
-  background: rgba(10, 9, 8, 0.86);
-  border: 1px solid rgba(255, 43, 43, 0.5);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-primary);
+  border: 1px solid rgba(255, 43, 43, 0.45);
+  font-size: 10px;
 }
 .attack-map-ticker-tag {
   flex: none;
   height: 100%;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 6px;
   background: #c81e1e;
   color: #0b0a08;
   font-weight: 700;
-  letter-spacing: 0.18em;
-  font-size: 10px;
+  letter-spacing: 0.12em;
+  font-size: 8px;
 }
 .attack-map-ticker-track { position: relative; flex: 1; overflow: hidden; height: 100%; }
 .attack-map-ticker-lane {
@@ -934,12 +963,17 @@ body.console-mode #command-dock.angular-panel {
 }
 .attack-map-ticker:hover .attack-map-ticker-lane { animation-play-state: paused; }
 @keyframes attack-map-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.attack-map-ticker-item { padding: 0 28px 0 0; color: var(--text-primary); text-decoration: none; }
+.attack-map-ticker-item { padding: 0 24px 0 6px; color: var(--text-primary); text-decoration: none; }
 a.attack-map-ticker-item:hover { color: #f4cf5e; text-decoration: underline; }
 .attack-map-ticker-item em { font-style: normal; color: #ff5a4a; letter-spacing: 0.08em; }
 @media (prefers-reduced-motion: reduce) {
   .attack-map-ticker-lane, .attack-map-live { animation: none; }
 }
-@media (max-width: 720px) {
-  .attack-map-hud { left: 16px; bottom: 140px; }
+@media (max-width: 900px) {
+  .attack-map-hud { width: calc(100vw - 32px); min-width: 0; }
+  .attack-map-main { grid-template-columns: 1fr 1fr; }
+  .attack-map-detail:last-child { display: none; }
 }
+
+/* The 757 list panel belongs to the "Hampton Roads 757" data layer. */
+#hampton-roads-panel.layer-off { display: none !important; }

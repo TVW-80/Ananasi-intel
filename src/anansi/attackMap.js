@@ -11,7 +11,7 @@
 import * as Cesium from 'cesium';
 import { registerPickOwner, unregisterPickOwner } from '../data/pickRegistry.js';
 import { governorRequestRender, holdContinuousRender, releaseContinuousRender } from '../renderGovernor.js';
-import { attachThreatClick, detachThreatClick, forgetThreatPoint, registerThreatPoint } from './threatLayers.js';
+import { POINT_LIFT_M, attachThreatClick, detachThreatClick, forgetThreatPoint, registerThreatPoint } from './threatLayers.js';
 
 export const ATTACK_MAP_LAYER = Object.freeze({
   id: 'cyber-attack-map',
@@ -88,13 +88,108 @@ function el(tag, cls, text) {
   return node;
 }
 
-// ── HUD (counter, ports, sources) and ticker ─────────────────────────────────
+// ── HUD (counter, sources, ports, FortiGuard ticker) ─────────────────────────
+// Docked top-center as a slim strip by default; drag the header to move it, "–" folds it to
+// the counter. Position and fold state are remembered in this browser.
+const HUD_STORAGE_KEY = 'anansi.attackMapHud';
+
+function readHudPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(HUD_STORAGE_KEY) || '{}') || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeHudPrefs(patch) {
+  try {
+    localStorage.setItem(HUD_STORAGE_KEY, JSON.stringify({ ...readHudPrefs(), ...patch }));
+  } catch {
+    // storage unavailable: the panel still works, it just won't remember
+  }
+}
+
+/** Keep a dragged position on screen (the window may have shrunk since). */
+export function clampHudPosition({ x, y }, { width, height }, viewport) {
+  const pad = 8;
+  return {
+    x: Math.round(Math.min(Math.max(pad, x), Math.max(pad, viewport.width - width - pad))),
+    y: Math.round(Math.min(Math.max(pad, y), Math.max(pad, viewport.height - height - pad))),
+  };
+}
+
+function placeHud(hud) {
+  const prefs = readHudPrefs();
+  hud.classList.toggle('folded', Boolean(prefs.folded));
+  const fold = hud.querySelector('.attack-map-fold');
+  if (fold) fold.textContent = prefs.folded ? '+' : '–';
+  if (!Number.isFinite(prefs.x) || !Number.isFinite(prefs.y)) {
+    hud.style.left = hud.style.top = hud.style.transform = '';
+    return;
+  }
+  const rect = hud.getBoundingClientRect();
+  const at = clampHudPosition(prefs, rect, { width: window.innerWidth, height: window.innerHeight });
+  hud.style.left = `${at.x}px`;
+  hud.style.top = `${at.y}px`;
+  hud.style.right = hud.style.bottom = 'auto';
+  hud.style.transform = 'none';
+}
+
+function wireHudChrome(hud, head, fold) {
+  fold.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const folded = !hud.classList.contains('folded');
+    hud.classList.toggle('folded', folded);
+    fold.textContent = folded ? '+' : '–';
+    fold.title = folded ? 'Expand' : 'Minimize';
+    writeHudPrefs({ folded });
+  });
+  let drag = null;
+  head.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 || event.target === fold) return;
+    const rect = hud.getBoundingClientRect();
+    drag = { dx: event.clientX - rect.left, dy: event.clientY - rect.top, rect };
+    head.setPointerCapture?.(event.pointerId);
+    hud.classList.add('dragging');
+  });
+  head.addEventListener('pointermove', (event) => {
+    if (!drag) return;
+    const at = clampHudPosition(
+      { x: event.clientX - drag.dx, y: event.clientY - drag.dy },
+      drag.rect,
+      { width: window.innerWidth, height: window.innerHeight },
+    );
+    hud.style.left = `${at.x}px`;
+    hud.style.top = `${at.y}px`;
+    hud.style.right = hud.style.bottom = 'auto';
+  hud.style.transform = 'none';
+  });
+  const end = () => {
+    if (!drag) return;
+    drag = null;
+    hud.classList.remove('dragging');
+    writeHudPrefs({ x: parseFloat(hud.style.left), y: parseFloat(hud.style.top) });
+  };
+  head.addEventListener('pointerup', end);
+  head.addEventListener('pointercancel', end);
+  head.addEventListener('dblclick', () => {
+    // Double-click the header to send it back to its dock.
+    writeHudPrefs({ x: null, y: null });
+    hud.style.left = hud.style.top = hud.style.right = hud.style.bottom = hud.style.transform = '';
+  });
+}
+
 function createHud() {
   const hud = el('aside', 'attack-map-hud');
   hud.id = 'attack-map-hud';
   hud.setAttribute('aria-label', 'Attack map');
   const head = el('div', 'attack-map-hud-head');
-  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'));
+  const fold = el('button', 'attack-map-fold', '–');
+  fold.type = 'button';
+  fold.title = 'Minimize';
+  fold.setAttribute('aria-label', 'Minimize attack map panel');
+  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), fold);
+  head.title = 'Drag to move';
   const counter = el('div', 'attack-map-counter', '—');
   const basis = el('div', 'attack-map-basis', 'waiting for DShield…');
   const sourcesTitle = el('div', 'attack-map-sub', 'TOP SOURCES');
@@ -102,16 +197,24 @@ function createHud() {
   const portsTitle = el('div', 'attack-map-sub', 'MOST TARGETED PORTS');
   const ports = el('ol', 'attack-map-list');
   const status = el('div', 'attack-map-status');
-  hud.append(head, counter, basis, sourcesTitle, sources, portsTitle, ports, status);
+  const main = el('div', 'attack-map-main');
+  const counterCol = el('div', 'attack-map-col attack-map-col-counter');
+  counterCol.append(counter, basis, status);
+  const sourcesCol = el('div', 'attack-map-col attack-map-detail');
+  sourcesCol.append(sourcesTitle, sources);
+  const portsCol = el('div', 'attack-map-col attack-map-detail');
+  portsCol.append(portsTitle, ports);
+  main.append(counterCol, sourcesCol, portsCol);
 
   const ticker = el('div', 'attack-map-ticker');
-  ticker.id = 'attack-map-ticker';
   ticker.setAttribute('aria-label', 'FortiGuard alerts');
   const tag = el('span', 'attack-map-ticker-tag', 'FORTIGUARD');
   const track = el('div', 'attack-map-ticker-track');
   const lane = el('div', 'attack-map-ticker-lane');
   track.append(lane);
   ticker.append(tag, track);
+  hud.append(head, main, ticker);
+  wireHudChrome(hud, head, fold);
 
   let rate = 0;
   let value = 0;
@@ -119,7 +222,8 @@ function createHud() {
 
   return {
     mount() {
-      document.body.append(hud, ticker);
+      document.body.append(hud);
+      placeHud(hud);
       timer ??= setInterval(() => {
         if (!rate) return;
         // Poisson-ish jitter around the average so it feels live without lying about the mean.
@@ -131,17 +235,17 @@ function createHud() {
       clearInterval(timer);
       timer = null;
       hud.remove();
-      ticker.remove();
     },
     update(body) {
       rate = Number(body?.rate?.perMinute) || 0;
       value = Math.max(value, counterStart(rate));
       counter.textContent = rate ? fmt(value) : '—';
+      basis.title = body?.rate?.basis || '';
       basis.textContent = rate
-        ? `≈${fmt(rate)} reports/min · est. since 00:00 UTC · ${body.rate.basis}`
+        ? `≈${fmt(rate)}/min · estimate since 00:00 UTC`
         : 'no DShield data yet';
       sources.replaceChildren(
-        ...(body.sources || []).slice(0, 6).map((s) => {
+        ...(body.sources || []).slice(0, 4).map((s) => {
           const li = el('li');
           li.append(el('span', null, s.name), el('b', null, s.reports ? fmt(s.reports) : `${fmt(s.abuse)} rep.`));
           li.style.setProperty('--bar', arcColor(s.weight));
@@ -149,7 +253,7 @@ function createHud() {
         }),
       );
       ports.replaceChildren(
-        ...(body.ports || []).slice(0, 6).map((p) => {
+        ...(body.ports || []).slice(0, 4).map((p) => {
           const li = el('li');
           li.append(el('span', null, `${p.port}${p.service ? ` · ${p.service}` : ''}`), el('b', null, fmt(p.records)));
           return li;
@@ -199,7 +303,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
   }
 
   function addTarget(target) {
-    const position = Cesium.Cartesian3.fromDegrees(target.lon, target.lat);
+    const position = Cesium.Cartesian3.fromDegrees(target.lon, target.lat, POINT_LIFT_M.local);
     _ds.entities.add({
       id: `${ID_PREFIX}target`,
       position,
@@ -208,14 +312,17 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         color: Cesium.Color.fromCssColorString('#ff2b2b').withAlpha(0.35),
         outlineColor: Cesium.Color.fromCssColorString('#ff2b2b'),
         outlineWidth: 2,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       },
     });
   }
 
   function addArc(source, target, index) {
     const pts = arcPoints(source, target);
-    const positions = pts.map((p) => Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height));
+    const last = pts.length - 1;
+    // Ends meet the (lifted) markers so the depth-tested arc doesn't dive into terrain.
+    const positions = pts.map((p, i) =>
+      Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.height + POINT_LIFT_M.world + ((POINT_LIFT_M.local - POINT_LIFT_M.world) * i) / last),
+    );
     const css = arcColor(source.weight);
     const color = Cesium.Color.fromCssColorString(css);
     const w = source.weight || 0;
@@ -244,21 +351,19 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
           color: Cesium.Color.WHITE.withAlpha(0.95),
           outlineColor: color,
           outlineWidth: 3,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
+          },
       });
     }
     // Source marker (clickable).
     const markerId = `${ID_PREFIX}src:${source.country}`;
     _ds.entities.add({
       id: markerId,
-      position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat),
+      position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
       point: {
         pixelSize: 7 + w * 11,
         color: color.withAlpha(0.85),
         outlineColor: Cesium.Color.BLACK.withAlpha(0.9),
         outlineWidth: 2,
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
       },
     });
     ownedIds.add(markerId);

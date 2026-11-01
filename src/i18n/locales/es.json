@@ -3018,5 +3018,6 @@
   "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "Capa ICS expuestos (757): sistemas de control industrial accesibles desde internet en Hampton Roads. Los filtros de búsqueda requieren una membresía de Shodan.",
   "Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.": "La capa Servidores C2 de botnets funciona sin clave. Añade una Auth-Key gratuita de abuse.ch si las descargas empiezan a pedirla.",
   "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "Los avisos del panel de Seguridad de IA funcionan sin clave. Un token gratuito de GitHub (sin permisos) eleva el límite de 60 solicitudes por hora.",
-  "Attack Map": "Mapa de ataques"
+  "Attack Map": "Mapa de ataques",
+  "Hampton Roads 757": "Hampton Roads 757"
 }

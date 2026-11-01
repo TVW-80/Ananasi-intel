@@ -43,6 +43,14 @@ export function slotPosition(lat, lon, slot, approximate) {
 }
 const ID_PREFIX = 'threat:';
 
+/**
+ * Icons are depth-tested so the globe hides the ones on its far side. They sit
+ * a little above the ground so terrain doesn't swallow them: country-level
+ * points clear the highest plateaus, exact local points stay close.
+ */
+export const POINT_LIFT_M = Object.freeze({ world: 9000, local: 400 });
+export const liftFor = (approximate) => (approximate ? POINT_LIFT_M.world : POINT_LIFT_M.local);
+
 // ── shared click popover ─────────────────────────────────────────────────────
 const _pointsById = new Map(); // entity id -> { layer, point }
 let _popover = null;
@@ -227,7 +235,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
         for (const p of points) {
           const entityId = `${ID_PREFIX}${p.id}`;
           const at = slotPosition(p.lat, p.lon, slot, p.approximate);
-          const position = Cesium.Cartesian3.fromDegrees(at.lon, at.lat);
+          const position = Cesium.Cartesian3.fromDegrees(at.lon, at.lat, liftFor(p.approximate));
           _dataSource.entities.add(
             new Cesium.Entity({
               id: entityId,
@@ -237,7 +245,6 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
                 color: (p.color ? Cesium.Color.fromCssColorString(p.color) : color).withAlpha(0.85),
                 outlineColor: Cesium.Color.BLACK.withAlpha(0.9),
                 outlineWidth: 2,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
               },
             }),
           );

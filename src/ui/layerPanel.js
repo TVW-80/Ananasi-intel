@@ -88,6 +88,11 @@ const PANEL_GROUPS = [
     ],
   },
   {
+    // Anansi: the local 757 picture from your n8n flows + AIS.
+    label: msg('Hampton Roads 757'),
+    ids: ['local-hampton-roads-757'],
+  },
+  {
     // Anansi: threat-intel research layers + the Flipper field sensor.
     label: msg('Cyber'),
     ids: [
