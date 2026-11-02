@@ -318,7 +318,13 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
     },
 
     getStats() {
-      return { count: _count, lastUpdate: _lastUpdate, error: _keyRequired ? 'KEY REQUIRED' : _lastError, keyRequired: _keyRequired };
+      // Honest chip state without crying wolf: a missing key is always
+      // surfaced; while the layer is still showing records, a failed or stale
+      // refresh reads STALE (data on screen is just older), not DEGRADED; only
+      // a layer with nothing to show reports the hard error.
+      if (_keyRequired) return { count: _count, lastUpdate: _lastUpdate, error: 'KEY REQUIRED', keyRequired: true };
+      if (_count > 0) return { count: _count, lastUpdate: _lastUpdate, stale: Boolean(_lastError), note: _lastError || null };
+      return { count: _count, lastUpdate: _lastUpdate, error: _lastError };
     },
   };
 }

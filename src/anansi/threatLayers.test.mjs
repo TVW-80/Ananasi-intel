@@ -59,3 +59,13 @@ test('757 focus keeps US entries and points inside Hampton Roads; WORLD keeps ev
   const focused = await fetchFeeds(['shodan-ics'], { fetchImpl, focus: '757' });
   assert.equal(focused.points.length, 1, 'server-focused feeds are not filtered twice');
 });
+
+import { layerFeedState } from '../data/feedState.js';
+
+test('a cyber layer that still shows records reads ON or STALE, never DEGRADED', () => {
+  // The getStats() contract in createThreatLayer maps to these feed states.
+  assert.equal(layerFeedState({ count: 12, lastUpdate: Date.now() }), 'nominal');
+  assert.equal(layerFeedState({ count: 12, lastUpdate: Date.now(), stale: true, note: 'ransomware.live: HTTP 429' }), 'stale');
+  assert.equal(layerFeedState({ count: 0, error: 'ransomware.live: HTTP 500' }), 'unavailable');
+  assert.equal(layerFeedState({ count: 0, error: 'KEY REQUIRED', keyRequired: true }), 'unavailable');
+});

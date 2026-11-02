@@ -132,8 +132,8 @@ export function normalizeRansomware(payload) {
       const group = str(r.group || r.group_name);
       const sector = str(r.activity || r.sector);
       return {
-        country: r.country,
-        time: toTime(r.attackdate || r.discovered || r.published || r.date),
+        country: r.country || r.countrycode || r.country_code,
+        time: toTime(r.attackdate || r.discovered || r.published || r.date || r.discovered_at),
         text: `${victim}${group ? ` — ${group}` : ''}${sector ? ` · ${sector}` : ''}`,
       };
     });
