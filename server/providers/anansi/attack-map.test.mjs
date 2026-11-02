@@ -311,3 +311,68 @@ test('world-wide extras: BGP hijacks, phishing, C2 toolkits, SSLBL, breaches, Po
   assert.equal(mb.init.body, 'query=get_recent&selector=time');
   assert.equal(mb.init.headers['Auth-Key'], 'ac');
 });
+
+test('Shodan InternetDB enriches attacker IPs and the free count scoreboard loads', async () => {
+  const json = (o, status = 200) => ({ ok: status < 400, status, text: async () => JSON.stringify(o) });
+  const fetchImpl = async (url) => {
+    if (url.includes('/topips/')) return json([{ rank: 1, source: '198.051.100.007', reports: 9000, targets: 100 }]);
+    if (url.includes('/topports/')) return json(TOP_PORTS);
+    const m = url.match(/\/api\/ip\/([\d.]+)\?json/);
+    if (m) return json({ ip: { ascountry: 'CN', asname: 'SAMPLE-AS' } });
+    if (url.startsWith('https://internetdb.shodan.io/198.51.100.7')) {
+      return json({ ip: '198.51.100.7', ports: [22, 3389], vulns: ['CVE-2019-0708'], cpes: ['cpe:2.3:o:microsoft:windows:*'], tags: ['rdp'], hostnames: [] });
+    }
+    if (url.includes('/shodan/host/count')) {
+      return json({ total: 5000, facets: { country: [{ value: 'US', count: 3000 }, { value: 'CN', count: 2000 }] } });
+    }
+    if (url.endsWith('.xml')) return json({});
+    return { ok: false, status: 404, text: async () => '' };
+  };
+  const service = createAttackMapService({
+    fetchImpl,
+    envSource: { SHODAN_API_KEY: 'SHODANKEY' },
+    clock: () => Date.UTC(2026, 10, 2, 12),
+    sleep: async () => {},
+    threatIntel: () => null,
+    resolve4: async () => [],
+  });
+  const body = await service.get();
+
+  // Enrichment reached the Chinese source's single IP.
+  const cn = body.sources.find((s) => s.country === 'CN');
+  const lines = cn.ips[0].lines.map((l) => l.text).join(' | ');
+  assert.match(lines, /Open ports: 22, 3389/);
+  assert.match(lines, /Known vulnerabilities: CVE-2019-0708/);
+
+  // Free exposure scoreboard, highest total first, with top countries.
+  assert.ok(body.exposure.length >= 2);
+  assert.ok(body.exposure[0].total >= body.exposure[1].total, 'sorted by total');
+  assert.deepEqual(body.exposure[0].top.map((t) => t.country), ['US', 'CN']);
+  const feedIds = Object.fromEntries(body.feeds.map((f) => [f.id, f.status]));
+  assert.equal(feedIds.internetdb, 'ok');
+  assert.equal(feedIds.exposure, 'ok');
+  assert.ok(!JSON.stringify(body).includes('SHODANKEY'), 'the Shodan key never leaves the server');
+});
+
+test('with no Shodan key the exposure scoreboard is key-required, enrichment still runs', async () => {
+  const json = (o, status = 200) => ({ ok: status < 400, status, text: async () => JSON.stringify(o) });
+  const service = createAttackMapService({
+    fetchImpl: async (url) => {
+      if (url.includes('/topips/')) return json([{ source: '198.051.100.007', reports: 10, targets: 1 }]);
+      if (url.includes('/topports/')) return json(TOP_PORTS);
+      if (url.match(/\/api\/ip\//)) return json({ ip: { ascountry: 'CN' } });
+      if (url.startsWith('https://internetdb.shodan.io/')) return json({ ip: '198.51.100.7', ports: [23], vulns: [], cpes: [], tags: [], hostnames: [] });
+      return { ok: false, status: 404, text: async () => '' };
+    },
+    envSource: {},
+    clock: () => 0,
+    sleep: async () => {},
+    threatIntel: () => null,
+    resolve4: async () => [],
+  });
+  const body = await service.get();
+  const feedIds = Object.fromEntries(body.feeds.map((f) => [f.id, f.status]));
+  assert.equal(feedIds.exposure, 'key-required');
+  assert.equal(feedIds.internetdb, 'ok', 'InternetDB is keyless');
+  assert.equal(body.exposure.length, 0);
+});

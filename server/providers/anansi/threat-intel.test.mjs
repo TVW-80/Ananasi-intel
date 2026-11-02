@@ -162,7 +162,7 @@ test('every keyed feed and optional feed key has a POWER UP entry', async () => 
   for (const optional of ['ABUSECH_AUTH_KEY', 'GITHUB_TOKEN']) assert.ok(panelVars.has(optional), optional);
 });
 
-test('Shodan layers: WORLD uses the free count API per country, 757 searches around Norfolk', async () => {
+test('Shodan layers default to the free count API in every focus; host/search is opt-in', async () => {
   const urls = [];
   const fetchImpl = async (url) => {
     urls.push(url);
@@ -181,9 +181,23 @@ test('Shodan layers: WORLD uses the free count API per country, 757 searches aro
   const local = (await call(mw, '/shodan-cameras?focus=757')).body;
   assert.deepEqual(local.points.map((p) => p.place), ['Norfolk', 'Elsewhere in the 757 area']);
   assert.ok(urls.some((u) => u.includes('/host/count') && decodeURIComponent(u).includes('geo:"36.85,-76.29,120"')));
-  const icsWorld = (await call(mw, '/shodan-ics')).body;
-  assert.equal(icsWorld.points[0].id, 'shodan-ics:US');
+  // ICS in 757 is counts-only by default — no paid host/search call.
   const icsLocal = (await call(mw, '/shodan-ics?focus=757')).body;
-  assert.equal(icsLocal.points[0].approximate, false);
-  assert.ok(!JSON.stringify([world, local, icsWorld]).includes('SECRET'));
+  assert.equal(icsLocal.points[0].approximate, true, 'count facet, not exact host points');
+  assert.equal(icsLocal.points[0].place, 'Norfolk');
+  assert.ok(!urls.some((u) => u.includes('/host/search')), 'no paid search without the opt-in');
+  assert.ok(!JSON.stringify([world, local, icsLocal]).includes('SECRET'));
+});
+
+test('SHODAN_EXPOSURE_SEARCH=1 opts the 757 ICS layer into exact host points', async () => {
+  const urls = [];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    return json({ matches: [{ ip_str: '203.0.113.5', port: 502, location: { latitude: 36.9, longitude: -76.2, country_code: 'US' } }], total: 1 });
+  };
+  const mw = createThreatIntelMiddleware({ envSource: { SHODAN_API_KEY: 'SECRET', SHODAN_EXPOSURE_SEARCH: '1' }, fetchImpl });
+  const body = (await call(mw, '/shodan-ics?focus=757')).body;
+  assert.equal(body.points[0].approximate, false);
+  assert.ok(urls.some((u) => u.includes('/host/search')));
+  assert.ok(!JSON.stringify(body).includes('SECRET'));
 });

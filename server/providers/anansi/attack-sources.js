@@ -37,7 +37,24 @@ export const URLS = Object.freeze({
   openphish: 'https://raw.githubusercontent.com/openphish/public_feed/main/feed.txt',
   c2intel: 'https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPC2s-30day.csv',
   malpedia: 'https://malpedia.caad.fkie.fraunhofer.de/api/get/families',
+  // Shodan InternetDB: keyless, free, no query credits — per-IP open ports,
+  // detected software (CPEs), hostnames, tags and known vulnerabilities (CVEs).
+  internetdb: (ip) => `https://internetdb.shodan.io/${ip}`,
+  // Shodan free count API (facets): how many hosts expose a service, never
+  // which hosts. No query credits.
+  shodanCount: (key, query, facets) =>
+    `https://api.shodan.io/shodan/host/count?${new URLSearchParams({ key, query, facets })}`,
 });
+
+/** The exposure scoreboard's services — each a free Shodan count query. */
+export const EXPOSURE_QUERIES = Object.freeze([
+  { id: 'rdp', label: 'Remote Desktop (RDP)', query: 'port:3389', plain: 'Windows Remote Desktop open to the internet — a top way ransomware crews break in.', technical: 'Shodan host/count port:3389.' },
+  { id: 'telnet', label: 'Telnet', query: 'port:23', plain: 'Old, unencrypted remote logins — the doorway IoT botnets like Mirai walk through.', technical: 'Shodan host/count port:23.' },
+  { id: 'smb', label: 'Windows file sharing (SMB)', query: 'port:445', plain: 'Windows file sharing exposed — how WannaCry spread.', technical: 'Shodan host/count port:445.' },
+  { id: 'databases', label: 'Open databases', query: 'product:MongoDB,Elastic,Redis', plain: 'Databases (MongoDB, Elasticsearch, Redis) reachable from the internet, often with no password.', technical: 'Shodan host/count product:MongoDB,Elastic,Redis.' },
+  { id: 'ics', label: 'Industrial control systems', query: 'tag:ics', plain: 'Factory, utility and port control systems answering openly online.', technical: 'Shodan host/count tag:ics.' },
+  { id: 'cameras', label: 'Cameras', query: 'screenshot.label:webcam', plain: 'Internet-exposed cameras, often on default passwords.', technical: 'Shodan host/count screenshot.label:webcam.' },
+]);
 
 const str = (v) => (v === null || v === undefined ? '' : String(v).trim());
 const num = (v) => {
@@ -450,4 +467,39 @@ export function normalizeMalpedia(payload) {
 }
 export function malpediaLookup(map, name) {
   return map?.get(normName(name)) || null;
+}
+
+// ── Shodan InternetDB (keyless per-IP enrichment) ────────────────────────────
+const CVE_RE = /^CVE-\d{4}-\d{4,}$/i;
+export function normalizeInternetDb(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  const arr = (v) => (Array.isArray(v) ? v : []);
+  const ports = arr(payload.ports).map((p) => Number(p)).filter((p) => Number.isInteger(p) && p > 0 && p <= 65535).slice(0, 24);
+  const vulns = arr(payload.vulns).map((v) => String(v).toUpperCase()).filter((v) => CVE_RE.test(v)).slice(0, 24);
+  const cpes = arr(payload.cpes).map((c) => String(c).trim()).filter(Boolean).slice(0, 12);
+  const tags = arr(payload.tags).map((t) => String(t).trim()).filter(Boolean).slice(0, 12);
+  const hostnames = arr(payload.hostnames).map((h) => String(h).trim()).filter(Boolean).slice(0, 6);
+  return { ports, vulns, cpes, tags, hostnames };
+}
+
+/** Human product names out of noisy CPE strings: cpe:2.3:a:apache:http_server:... → "apache http server". */
+export function prettyCpe(cpe) {
+  const parts = String(cpe).split(':');
+  const vendor = parts[3];
+  const product = parts[4];
+  if (!product || product === '*') return '';
+  return [vendor, product].filter((x) => x && x !== '*').join(' ').replace(/_/g, ' ');
+}
+
+// ── Shodan free count facets (exposure scoreboard) ───────────────────────────
+export function normalizeShodanCount(payload) {
+  const total = Number(payload?.total);
+  const facets = payload?.facets?.country;
+  const top = Array.isArray(facets)
+    ? facets
+        .map((f) => ({ country: String(f?.value || '').toUpperCase(), count: Number(f?.count) || 0 }))
+        .filter((f) => /^[A-Z]{2}$/.test(f.country) && f.count > 0)
+        .slice(0, 8)
+    : [];
+  return { total: Number.isFinite(total) ? total : top.reduce((s, f) => s + f.count, 0), top };
 }

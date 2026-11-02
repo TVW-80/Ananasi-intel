@@ -96,3 +96,27 @@ test('every attack type and common malware family has both voices', () => {
   assert.match(known.technical, /C2/);
   assert.ok(familyExplained('Brand New Family').plain);
 });
+
+import { EXPOSURE_QUERIES, normalizeInternetDb, normalizeShodanCount, prettyCpe } from './attack-sources.js';
+
+test('InternetDB payloads normalize to ports, vulns, products — junk dropped', () => {
+  const idb = normalizeInternetDb({
+    ip: '198.51.100.7',
+    ports: [22, 3389, 70000, -1, 'x'],
+    vulns: ['CVE-2021-1234', 'cve-2019-0708', 'not-a-cve'],
+    cpes: ['cpe:2.3:a:apache:http_server:2.4.49:*:*', 'cpe:2.3:o:microsoft:windows:*'],
+    tags: ['rdp'],
+    hostnames: ['host.example'],
+  });
+  assert.deepEqual(idb.ports, [22, 3389]);
+  assert.deepEqual(idb.vulns, ['CVE-2021-1234', 'CVE-2019-0708']);
+  assert.equal(prettyCpe(idb.cpes[0]), 'apache http server');
+  assert.equal(normalizeInternetDb(null), null);
+});
+
+test('Shodan count facets normalize to a total and top countries', () => {
+  const c = normalizeShodanCount({ total: 1234, facets: { country: [{ value: 'US', count: 900 }, { value: 'zz', count: 0 }, { value: 'CN', count: 334 }] } });
+  assert.equal(c.total, 1234);
+  assert.deepEqual(c.top.map((t) => t.country), ['US', 'CN']);
+  assert.ok(EXPOSURE_QUERIES.every((q) => q.id && q.query && q.plain && q.technical));
+});

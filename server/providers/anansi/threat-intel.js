@@ -94,15 +94,27 @@ export const FEEDS = Object.freeze({
     request: (e, _now, focus) => {
       const key = env('SHODAN_API_KEY', e);
       if (!key) return null;
-      if (focus === '757') {
-        // ICS/SCADA-tagged services within ~120 km of Norfolk (exact positions; these are machines, not people).
+      // Default is the free count API in every focus — no query credits, no
+      // paid membership. Only SHODAN_EXPOSURE_SEARCH=1 opts into the paid
+      // host/search that pins exact systems near Norfolk.
+      const exactPoints = focus === '757' && env('SHODAN_EXPOSURE_SEARCH', e) === '1';
+      if (exactPoints) {
         const query = env('SHODAN_ICS_QUERY', e) || 'tag:ics geo:"36.85,-76.29,120"';
         return { url: `https://api.shodan.io/shodan/host/search?${new URLSearchParams({ key, query, minify: 'true' })}`, headers: {}, redact: true };
       }
+      if (focus === '757') {
+        const query = `${env('SHODAN_ICS_WORLD_QUERY', e) || 'tag:ics'} geo:"36.85,-76.29,120"`;
+        return { url: `https://api.shodan.io/shodan/host/count?${new URLSearchParams({ key, query, facets: 'city:40' })}`, headers: {}, redact: true, countFacet: 'city' };
+      }
       const query = env('SHODAN_ICS_WORLD_QUERY', e) || 'tag:ics';
-      return { url: `https://api.shodan.io/shodan/host/count?${new URLSearchParams({ key, query, facets: 'country:100' })}`, headers: {}, redact: true };
+      return { url: `https://api.shodan.io/shodan/host/count?${new URLSearchParams({ key, query, facets: 'country:100' })}`, headers: {}, redact: true, countFacet: 'country' };
     },
-    normalize: (p, focus) => (focus === '757' ? normalizeShodan(p) : normalizeShodanFacets(p, { kind: 'ics', facet: 'country' })),
+    // Branch on the payload shape, so this never depends on env: host/search
+    // returns `matches`, host/count returns `facets`.
+    normalize: (p, focus) =>
+      Array.isArray(p?.matches)
+        ? normalizeShodan(p)
+        : normalizeShodanFacets(p, { kind: 'ics', facet: focus === '757' ? 'city' : 'country' }),
   },
   'shodan-cameras': {
     ttl: 12 * 60 * MIN, // count API: no query credits

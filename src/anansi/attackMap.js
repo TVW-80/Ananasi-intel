@@ -212,6 +212,7 @@ const ROTATING_VIEWS = Object.freeze([
   { id: 'industries', title: 'DDOS · HIT INDUSTRIES' },
   { id: 'targets', title: 'DDOS · TARGET COUNTRIES' },
   { id: 'exploited', title: 'EXPLOITED NOW' },
+  { id: 'exposure', title: 'EXPOSED WORLDWIDE' },
 ]);
 
 function createHud() {
@@ -313,6 +314,7 @@ function createHud() {
     if (id === 'industries') return (b.ddos?.industries || []).map((i) => li(i.name, `${i.value.toFixed(1)}%`, { color: '#e0457b', tip: twoVoice(i.plain, i.technical) }));
     if (id === 'targets') return (b.ddos?.targets || []).map((t) => li(t.name, `${t.value.toFixed(1)}%`, { color: '#e0457b', tip: twoVoice(`${t.name} was on the receiving end of ${t.value.toFixed(1)}% of blocked web attacks.`, `Cloudflare Radar L7 top target locations (zone billing country), 24h.`) }));
     if (id === 'exploited') return (b.exploited || []).map((x) => li(x.vulnerability || x.title, '', { color: '#ff8a1f', tip: twoVoice(x.plain, x.technical) }));
+    if (id === 'exposure') return (b.exposure || []).map((e) => li(e.label, fmt(e.total), { color: '#d4af37', tip: twoVoice(e.plain, e.technical) }));
     return [];
   }
   rotTitle.addEventListener('click', () => {
@@ -374,11 +376,20 @@ function createHud() {
       row.append(el('span', null, f.label), el('b', null, note));
       return row;
     });
-    panel.replaceChildren(
+    const exposure = (b.exposure || []).map((e) => {
+      const card = explain(`${e.label} — ${fmt(e.total)} exposed worldwide`, e.plain, e.technical, { color: '#d4af37' });
+      if (e.top?.length) card.append(el('p', 'attack-map-tech', `TOP: ${e.top.map((t) => `${t.country} ${fmt(t.count)}`).join(' · ')}`));
+      return card;
+    });
+    const sections = [
       section('ALERTS — PLAIN ENGLISH + TECHNICAL', alerts.length ? alerts : [el('p', 'attack-map-plain', 'No alerts yet — add keys in POWER UP or wait for the next refresh.')]),
+    ];
+    if (exposure.length) sections.push(section('EXPOSED TO THE INTERNET (Shodan counts, free)', exposure));
+    sections.push(
       section('WHAT YOU’RE LOOKING AT (full key: LEGEND, bottom-right)', legend),
       section('SOURCES', feeds),
     );
+    panel.replaceChildren(...sections);
   }
 
   return {

@@ -161,7 +161,7 @@ export const KEY_SETUP_KEYS = Object.freeze([
     id: 'shodan',
     title: 'SHODAN', // i18n-ignore: provider product name
     unlocks: msg(
-      'Exposed ICS and Exposed Cameras layers: industrial systems and cameras reachable from the internet — counts per country worldwide, or around Hampton Roads in 757 focus. Search filters need a Shodan membership.',
+      'Exposure counts (how many ICS, cameras, databases, RDP and more are exposed, per country) and the attack map’s exposure scoreboard. All free — no paid membership and no query credits. Exact system locations are an opt-in that needs a paid plan.',
     ),
     getUrl: 'https://account.shodan.io/',
     envVars: Object.freeze(['SHODAN_API_KEY']),

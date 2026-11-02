@@ -50,6 +50,10 @@ import {
   normalizeMalpedia,
   malpediaLookup,
   defang,
+  EXPOSURE_QUERIES,
+  normalizeInternetDb,
+  normalizeShodanCount,
+  prettyCpe,
 } from './attack-sources.js';
 import { resolve4 as dnsResolve4 } from 'node:dns/promises';
 import {
@@ -113,7 +117,10 @@ const SOURCE_TTL = Object.freeze({
   openphish: 6 * 60 * MIN, // the community feed updates every 12 hours
   c2intel: 6 * 60 * MIN,
   malpedia: 7 * 24 * 60 * MIN,
+  exposure: 6 * 60 * MIN, // free Shodan count facets
 });
+const INTERNETDB_TTL = 24 * 60 * MIN;
+const INTERNETDB_PER_REFRESH = 20; // keyless and rate-limited; enrich the top IPs
 const RETRY_MS = 5 * MIN;
 const KEY_REQUIRED = Symbol('key-required');
 
@@ -301,6 +308,25 @@ export function describeIp(ip) {
   if (ip.sslbl) lines.push({ text: `↳ ${SSLBL.label}`, plain: SSLBL.plain, tech: SSLBL.technical });
   const g = greyNoiseExplained(ip.greynoise);
   if (g) lines.push({ text: `↳ GreyNoise: ${g.label}`, plain: g.plain, tech: g.technical });
+  // Shodan InternetDB (free, keyless): what the attacker's own box looks like.
+  const idb = ip.internetdb;
+  if (idb) {
+    const products = [...new Set((idb.cpes || []).map(prettyCpe).filter(Boolean))].slice(0, 4);
+    if (idb.ports?.length) {
+      lines.push({
+        text: `↳ Open ports: ${idb.ports.slice(0, 10).join(', ')}`,
+        plain: 'Doors standing open on the attacker’s own machine — often itself a hacked, exposed box.',
+        tech: `Shodan InternetDB ports${products.length ? ` · ${products.join(', ')}` : ''}.`,
+      });
+    }
+    if (idb.vulns?.length) {
+      lines.push({
+        text: `↳ Known vulnerabilities: ${idb.vulns.slice(0, 6).join(', ')}${idb.vulns.length > 6 ? ` +${idb.vulns.length - 6}` : ''}`,
+        plain: 'Security holes already known in the attacker’s own machine — a sign it was hacked and is being reused to attack others.',
+        tech: `Shodan InternetDB vulns (${idb.vulns.length} CVEs).`,
+      });
+    }
+  }
   return lines;
 }
 
@@ -443,6 +469,7 @@ export function createAttackMapService({
   const epssCache = new Map(); // CVE -> { at, value }
   const gnCache = new Map(); // ip -> { at, info }
   const gnBudget = { day: '', used: 0 };
+  const idbCache = new Map(); // ip -> { at, info } (Shodan InternetDB)
   const sources = new Map(); // id -> { at, ok, status, value, error }
   let snapshot = null; // { at, body }
   let inflight = null;
@@ -546,6 +573,61 @@ export function createAttackMapService({
       }
     }
     return 'ok';
+  }
+
+  /** Enrich the top attacking IPs from Shodan InternetDB (keyless, free). */
+  async function internetDb(ips, errors) {
+    let asked = 0;
+    for (const ip of ips) {
+      const hit = idbCache.get(ip.ip);
+      if (hit && clock() - hit.at < INTERNETDB_TTL) {
+        if (hit.info) ip.internetdb = hit.info;
+        continue;
+      }
+      if (asked >= INTERNETDB_PER_REFRESH) continue;
+      asked += 1;
+      try {
+        const res = await request(URLS.internetdb(ip.ip), { headers: { Accept: 'application/json' } });
+        if (res.status === 404) {
+          idbCache.set(ip.ip, { at: clock(), info: null }); // not in Shodan — a real answer
+          continue;
+        }
+        if (res.status === 429) {
+          errors.push('InternetDB: rate limited');
+          try {
+            await res.body?.cancel();
+          } catch {
+            /* no-op */
+          }
+          break;
+        }
+        if (!res.ok) {
+          errors.push(`InternetDB: HTTP ${res.status}`);
+          break;
+        }
+        const info = normalizeInternetDb(JSON.parse((await res.text()) || '{}'));
+        idbCache.set(ip.ip, { at: clock(), info });
+        if (info) ip.internetdb = info;
+      } catch (err) {
+        errors.push(`InternetDB: ${err.message}`);
+        break;
+      }
+    }
+  }
+
+  /** Free Shodan exposure scoreboard: how many hosts expose each risky service. */
+  async function exposureScoreboard() {
+    const key = env('SHODAN_API_KEY');
+    if (!key) return KEY_REQUIRED;
+    const results = await Promise.allSettled(
+      EXPOSURE_QUERIES.map(async (q) => {
+        const body = normalizeShodanCount(await getJson(URLS.shodanCount(key, q.query, 'country:100')));
+        return { id: q.id, label: q.label, plain: q.plain, technical: q.technical, total: body.total, top: body.top };
+      }),
+    );
+    const rows = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    if (!rows.length) throw results[0]?.reason || new Error('no exposure data');
+    return rows.sort((a, b) => b.total - a.total);
   }
 
   async function dshield(errors) {
@@ -693,6 +775,7 @@ export function createAttackMapService({
     openphish: async () => parseOpenPhish(await getText(URLS.openphish)),
     c2intel: async () => parseC2Intel(await getText(URLS.c2intel)),
     malpedia: async () => normalizeMalpedia(await getJson(URLS.malpedia)),
+    exposure: exposureScoreboard,
   };
 
   async function resolveHosts(hosts, errors) {
@@ -789,6 +872,8 @@ export function createAttackMapService({
       if (!ip.services.length) ip.services = own;
     });
     const gnStatus = await greyNoise(dsh.ips.slice(0, 10), errors);
+    // Shodan InternetDB enrichment (keyless): the busiest sources first.
+    await internetDb([...dsh.ips].sort((a, b) => (b.reports || 0) - (a.reports || 0)).slice(0, INTERNETDB_PER_REFRESH), errors);
 
     const abusePoints = abuse && (abuse.status === 'ok' || abuse.status === 'stale') ? abuse.points || [] : [];
     const rows = buildSources(dsh.ips, abusePoints, blocklistIps);
@@ -832,6 +917,7 @@ export function createAttackMapService({
         targets: radar.targets,
       },
       exploited,
+      exposure: val('exposure') || [],
       ports: dsh.ports.map((p) => ({ ...p, ...portExplained(p.port, p.service) })),
       rate: {
         perMinute: Math.round((dailyReports / 1440) * 10) / 10,
@@ -862,6 +948,7 @@ export function createAttackMapService({
         ...ids.map((id) => ({ id, label: FEED_LABELS[id], status: src[id].status, error: src[id].error, keyEnv: FEED_KEYS[id] || null })),
         { id: 'epss', label: 'FIRST EPSS', status: errors.some((e) => e.startsWith('EPSS')) ? 'error' : 'ok' },
         { id: 'greynoise', label: env('GREYNOISE_API_KEY') ? 'GreyNoise' : 'GreyNoise (no key, smaller daily allowance)', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
+        { id: 'internetdb', label: 'Shodan InternetDB (keyless)', status: errors.some((e) => e.startsWith('InternetDB')) ? 'error' : 'ok' },
       ],
       errors,
     };
@@ -911,6 +998,7 @@ const FEED_LABELS = Object.freeze({
   openphish: 'OpenPhish',
   c2intel: 'C2IntelFeeds',
   malpedia: 'Malpedia',
+  exposure: 'Shodan exposure counts (free)',
 });
 const FEED_KEYS = Object.freeze({
   radar: 'CLOUDFLARE_API_TOKEN',
@@ -920,6 +1008,7 @@ const FEED_KEYS = Object.freeze({
   shadowserver: 'SHADOWSERVER_API_KEY',
   bgp: 'CLOUDFLARE_API_TOKEN',
   malwarebazaar: 'ABUSECH_AUTH_KEY',
+  exposure: 'SHODAN_API_KEY',
 });
 
 /** EPSS line for a CVE, as an alert detail. */
