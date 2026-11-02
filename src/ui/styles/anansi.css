@@ -30,12 +30,25 @@
   aspect-ratio: 1 / 1;
 }
 
+/* Ananzi: the credit line floats on a transparent background with a gold glow.
+   It stays fully visible and legible (Google / Cesium attribution terms). */
 #cesium-credits {
-  color: var(--text-secondary);
+  background: transparent;
+  color: #e8d9a8;
+  text-shadow:
+    0 0 6px rgba(212, 175, 55, 0.85),
+    0 0 14px rgba(212, 175, 55, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.9);
 }
 #cesium-credits a,
 #cesium-credits .cesium-credit-expand-link {
-  color: var(--text-primary);
+  color: #f4cf5e;
+  background: transparent;
+}
+#cesium-credits img,
+#cesium-credits .cesium-credit-logoContainer {
+  background: transparent;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.9)) drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
 }
 
 /* The Anansi panels are right-rail citizens like the CONTEXT panel. */
