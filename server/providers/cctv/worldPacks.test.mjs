@@ -97,3 +97,56 @@ test('every network is well-formed and packs gate by env correctly', () => {
     }
   }
 });
+
+import { TRAVELIQ_NETWORKS, travelIqCameraToSource, travelIqPacks } from './worldPacks.js';
+
+const va = TRAVELIQ_NETWORKS.find((n) => n.id === 'virginia');
+
+test('a TravelIQ camera becomes a source from its first allowed, enabled view', () => {
+  const cam = {
+    Id: 1234,
+    Location: 'I-64 at Mallory St',
+    Roadway: 'I-64',
+    Direction: 'Eastbound',
+    Latitude: 36.99,
+    Longitude: -76.33,
+    Views: [
+      { Id: 1, Status: 'Disabled', Url: 'https://www.nvroads.com/map/Cctv/1' },
+      { Id: 2, Status: 'Enabled', Url: 'https://www.nvroads.com/map/Cctv/1234' },
+    ],
+  };
+  const s = travelIqCameraToSource(cam, va);
+  assert.equal(s.id, 'virginia-1234');
+  assert.equal(s.city, 'Virginia (VDOT 511)');
+  assert.equal(s.url, 'https://www.nvroads.com/map/Cctv/1234');
+  assert.match(s.name, /I-64 at Mallory St · I-64 · Eastbound/);
+  // Off-list image host is refused even if the camera is in-bounds.
+  assert.equal(travelIqCameraToSource({ ...cam, Views: [{ Status: 'Enabled', Url: 'https://evil.example/x.jpg' }] }, va), null);
+  // Out-of-state is dropped.
+  assert.equal(travelIqCameraToSource({ ...cam, Latitude: 33.4, Longitude: -112 }, va), null);
+  // No usable view.
+  assert.equal(travelIqCameraToSource({ ...cam, Views: [] }, va), null);
+});
+
+test('TravelIQ packs are BYOK: off with no key, on when the key is set, kill switch wins', () => {
+  const vaPack = travelIqPacks().find((p) => p.name === 'virginia');
+  const prev = { ...process.env };
+  try {
+    delete process.env.CCTV_VIRGINIA_KEY;
+    delete process.env.CCTV_VIRGINIA_ENABLED;
+    assert.equal(vaPack.enabled(), false, 'no key → no request');
+    process.env.CCTV_VIRGINIA_KEY = 'demo-key';
+    assert.equal(vaPack.enabled(), true, 'key present → enabled');
+    process.env.CCTV_VIRGINIA_ENABLED = '0';
+    assert.equal(vaPack.enabled(), false, 'kill switch overrides a present key');
+  } finally {
+    for (const k of ['CCTV_VIRGINIA_KEY', 'CCTV_VIRGINIA_ENABLED']) {
+      if (prev[k] === undefined) delete process.env[k];
+      else process.env[k] = prev[k];
+    }
+  }
+  for (const n of TRAVELIQ_NETWORKS) {
+    assert.ok(n.url.startsWith('https://') && n.url.endsWith('/api/v2/get/cameras'), n.id);
+    assert.ok(n.imageHosts.length && n.bounds && n.license, n.id);
+  }
+});

@@ -217,6 +217,37 @@ export const KEY_SETUP_KEYS = Object.freeze([
     envVars: Object.freeze(['GITHUB_TOKEN']),
     tier: 'optional',
   }),
+  // ── Ananzi: US state 511 traffic cameras (TravelIQ platform, BYOK) ──
+  Object.freeze({
+    id: 'cctv-virginia',
+    title: '511VIRGINIA CAMERAS', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Adds Virginia DOT 511 traffic cameras (Hampton Roads first) to the Cameras layer. Free developer key from the 511Virginia site.',
+    ),
+    getUrl: 'https://www.511virginia.org/developers',
+    envVars: Object.freeze(['CCTV_VIRGINIA_KEY']),
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'cctv-arizona',
+    title: 'AZ511 CAMERAS', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Adds Arizona DOT (AZ511) traffic cameras to the Cameras layer. Free developer key from the AZ511 site.',
+    ),
+    getUrl: 'https://az511.com/developers/doc',
+    envVars: Object.freeze(['CCTV_ARIZONA_KEY']),
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'cctv-ncarolina',
+    title: 'DRIVENC CAMERAS', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Adds North Carolina DOT (DriveNC) traffic cameras to the Cameras layer. Free developer key from the DriveNC site.',
+    ),
+    getUrl: 'https://drivenc.gov/developers/doc',
+    envVars: Object.freeze(['CCTV_NCAROLINA_KEY']),
+    tier: 'free',
+  }),
 ]);
 
 /** Hostnames a Provider Settings request may arrive under or originate from. */

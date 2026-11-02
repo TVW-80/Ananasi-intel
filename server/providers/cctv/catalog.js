@@ -6,7 +6,7 @@ import { loadGroundHeights, joinGroundHeights } from './groundHeights.js';
 import { cameraRegion, normalizeSourceItem } from './normalize.js';
 import { loadLithuaniaSources } from './lithuania.js';
 import { loadTaiwanSources } from './taiwan.js';
-import { worldPacks } from './worldPacks.js';
+import { travelIqPacks, worldPacks } from './worldPacks.js';
 import {
   loadAustinSourcesFromOpenData,
   loadCaltransSourcesFromOpenData,
@@ -170,6 +170,9 @@ const LIVE_PACKS = [
   // config-driven, SSRF-safe loader per country. Open-licence networks load by
   // default; the rest wait for their CCTV_<ID>_ENABLED=1 opt-in.
   ...worldPacks(),
+  // US state 511 networks on the TravelIQ platform (Virginia, Arizona, North
+  // Carolina). BYOK: each loads only once its own CCTV_<ID>_KEY is set.
+  ...travelIqPacks(),
 ];
 /**
  * Load CCTV sources from a local JSON file (CCTV_SOURCES_FILE env or default).

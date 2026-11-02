@@ -2885,5 +2885,8 @@
   "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。无需密钥即可使用；密钥（仅限工作邮箱账户）可提高每日限额。",
   "Exposed ICS": "暴露的工控系统",
   "Exposed Cameras": "暴露的摄像头",
-  "Exposed ICS and Exposed Cameras layers: industrial systems and cameras reachable from the internet — counts per country worldwide, or around Hampton Roads in 757 focus. Search filters need a Shodan membership.": "“暴露的工控系统”和“暴露的摄像头”图层：可从互联网访问的工业系统和摄像头——全球按国家统计，或在 757 焦点下统计汉普顿路斯一带。搜索过滤器需要 Shodan 会员。"
+  "Exposed ICS and Exposed Cameras layers: industrial systems and cameras reachable from the internet — counts per country worldwide, or around Hampton Roads in 757 focus. Search filters need a Shodan membership.": "“暴露的工控系统”和“暴露的摄像头”图层：可从互联网访问的工业系统和摄像头——全球按国家统计，或在 757 焦点下统计汉普顿路斯一带。搜索过滤器需要 Shodan 会员。",
+  "Adds Virginia DOT 511 traffic cameras (Hampton Roads first) to the Cameras layer. Free developer key from the 511Virginia site.": "将弗吉尼亚州交通局 511（优先汉普顿路斯）的交通摄像头添加到“摄像头”图层。可在 511Virginia 网站免费获取开发者密钥。",
+  "Adds Arizona DOT (AZ511) traffic cameras to the Cameras layer. Free developer key from the AZ511 site.": "将亚利桑那州交通局（AZ511）的交通摄像头添加到“摄像头”图层。可在 AZ511 网站免费获取开发者密钥。",
+  "Adds North Carolina DOT (DriveNC) traffic cameras to the Cameras layer. Free developer key from the DriveNC site.": "将北卡罗来纳州交通局（DriveNC）的交通摄像头添加到“摄像头”图层。可在 DriveNC 网站免费获取开发者密钥。"
 }

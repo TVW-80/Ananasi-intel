@@ -345,3 +345,183 @@ export function worldPacks() {
     };
   });
 }
+
+// ── TravelIQ 511 platform (keyed; BYOK) ──────────────────────────────────────
+// Many US state 511 systems run on the same TravelIQ platform, which exposes
+// GET /api/v2/get/cameras?key=<KEY>&format=json — a flat array of cameras, each
+// with Id, Location, Roadway, Direction, Latitude, Longitude and a Views[] list
+// whose Url is the live snapshot on the agency's own host. The key is free but
+// personal (you register for it), and the terms typically limit reuse to your
+// own use, so these packs are BYOK: a pack makes no request until you put its
+// key in .env (CCTV_<ID>_KEY), and CCTV_<ID>_ENABLED=0 forces it off anyway.
+const VIEW_STATUS_OK = new Set(['', 'enabled', 'active', 'online', 'ok']);
+
+/** One TravelIQ camera record → a normalized source, or null. */
+export function travelIqCameraToSource(cam, net) {
+  if (!cam || typeof cam !== 'object') return null;
+  const lat = num(cam.Latitude);
+  const lon = num(cam.Longitude);
+  const b = net.bounds;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (b && (lat < b.latMin || lat > b.latMax || lon < b.lonMin || lon > b.lonMax)) return null;
+
+  const rawId = String(cam.Id ?? cam.SourceId ?? '').trim();
+  if (!ID_RE.test(rawId)) return null;
+  const cameraId = `${net.id}-${rawId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+
+  const views = Array.isArray(cam.Views) ? cam.Views : [];
+  let imageUrl = '';
+  for (const v of views) {
+    const status = String(v?.Status ?? '').trim().toLowerCase();
+    if (!VIEW_STATUS_OK.has(status)) continue;
+    const safe = safeImageUrl(v?.Url, net.imageHosts);
+    if (safe) {
+      imageUrl = safe;
+      break;
+    }
+  }
+  if (!imageUrl) return null;
+
+  const dir = String(cam.Direction ?? '').trim();
+  const name =
+    [String(cam.Location ?? '').trim(), String(cam.Roadway ?? '').trim(), dir && dir !== 'Unknown' && dir !== 'None' ? dir : '']
+      .filter(Boolean)
+      .join(' · ')
+      .slice(0, 160) || `${net.provider} ${rawId}`;
+
+  return {
+    id: cameraId,
+    name,
+    city: net.label,
+    cityId: net.cityId,
+    provider: net.provider,
+    lat,
+    lon,
+    headingDeg: fallbackHeadingFromId(cameraId),
+    headingConfidence: 'low',
+    pitchDeg: -18,
+    fovDeg: 44,
+    rangeM: 145,
+    mountHeightM: 8,
+    feedType: 'image',
+    url: imageUrl,
+    snapshotUrl: imageUrl,
+    sourceKind: 'traveliq-511',
+    credit: net.license,
+    code: cameraDisplayCode(name.toUpperCase()),
+  };
+}
+
+export function makeTravelIqLoader(net) {
+  return async function loadTravelIqPack() {
+    const key = String(process.env[`CCTV_${net.id.toUpperCase()}_KEY`] || '').trim();
+    if (!key) return []; // BYOK: nothing to fetch without the operator's own key
+    try {
+      const base = process.env[`CCTV_${net.id.toUpperCase()}_URL`] || net.url;
+      const endpoint = `${base}?${new URLSearchParams({ key, format: 'json' })}`;
+      const resp = await fetch(endpoint, {
+        headers: { Accept: 'application/json' },
+        redirect: 'manual',
+        signal: AbortSignal.timeout(CCTV_SOURCE_FETCH_TIMEOUT_MS),
+      });
+      if (!resp.ok || (resp.status >= 300 && resp.status < 400)) {
+        try {
+          await resp.body?.cancel();
+        } catch {
+          /* no-op */
+        }
+        console.warn(`[CCTV] ${net.id} camera download failed:`, resp.status);
+        return [];
+      }
+      const payload = await readResponseJsonCapped(resp, net.maxBytes || DEFAULT_MAX_BYTES);
+      const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.Cameras) ? payload.Cameras : [];
+      const cameras = [];
+      const seen = new Set();
+      for (const cam of rows) {
+        const source = travelIqCameraToSource(cam, net);
+        if (!source || seen.has(source.id)) continue;
+        seen.add(source.id);
+        cameras.push(source);
+      }
+      const maxRaw = Number(process.env[`CCTV_${net.id.toUpperCase()}_MAX_SOURCES`] || net.maxSources || DEFAULT_MAX_SOURCES);
+      const maxCount = Number.isFinite(maxRaw) ? Math.max(8, Math.min(2000, Math.floor(maxRaw))) : DEFAULT_MAX_SOURCES;
+      const prioritized = prioritizeSources(cameras, maxCount, net.anchors || []);
+      console.log(`[CCTV] Loaded ${net.id} camera sources: ${cameras.length} (using nearest ${prioritized.length})`);
+      return prioritized;
+    } catch (error) {
+      console.warn(`[CCTV] ${net.id} camera download error:`, error?.message || error);
+      return [];
+    }
+  };
+}
+
+export const TRAVELIQ_NETWORKS = Object.freeze([
+  {
+    id: 'virginia',
+    label: 'Virginia (VDOT 511)',
+    cityId: 'virginia',
+    provider: 'Virginia DOT · 511Virginia',
+    url: 'https://www.nvroads.com/api/v2/get/cameras',
+    imageHosts: ['nvroads.com', '511virginia.org'],
+    bounds: { latMin: 36.5, latMax: 39.5, lonMin: -83.7, lonMax: -75.2 },
+    license: 'Virginia DOT 511 (VDOT) — used under your own 511Virginia developer key',
+    maxSources: 400,
+    anchors: [
+      { lat: 36.8508, lon: -76.2859 }, // Norfolk / Hampton Roads
+      { lat: 37.5407, lon: -77.436 }, // Richmond
+      { lat: 38.8816, lon: -77.0910 }, // Northern Virginia / Arlington
+      { lat: 37.2707, lon: -76.7075 }, // Williamsburg
+      { lat: 37.2296, lon: -80.4139 }, // Blacksburg / Roanoke area
+    ],
+  },
+  {
+    id: 'arizona',
+    label: 'Arizona (AZ511)',
+    cityId: 'arizona',
+    provider: 'Arizona DOT · AZ511',
+    url: 'https://az511.com/api/v2/get/cameras',
+    imageHosts: ['az511.com'],
+    bounds: { latMin: 31.2, latMax: 37.1, lonMin: -114.9, lonMax: -108.9 },
+    license: 'Arizona DOT (AZ511) — used under your own AZ511 developer key',
+    maxSources: 400,
+    anchors: [
+      { lat: 33.4484, lon: -112.074 }, // Phoenix
+      { lat: 32.2226, lon: -110.9747 }, // Tucson
+      { lat: 35.1983, lon: -111.6513 }, // Flagstaff
+      { lat: 32.6927, lon: -114.6277 }, // Yuma
+    ],
+  },
+  {
+    id: 'ncarolina',
+    label: 'North Carolina (DriveNC)',
+    cityId: 'north-carolina',
+    provider: 'NCDOT · DriveNC',
+    url: 'https://drivenc.gov/api/v2/get/cameras',
+    imageHosts: ['drivenc.gov', 'ncdot.gov', 'traveliq.co'],
+    bounds: { latMin: 33.7, latMax: 36.7, lonMin: -84.4, lonMax: -75.3 },
+    license: 'NCDOT (DriveNC) — used under your own DriveNC developer key',
+    maxSources: 400,
+    anchors: [
+      { lat: 35.7796, lon: -78.6382 }, // Raleigh
+      { lat: 35.2271, lon: -80.8431 }, // Charlotte
+      { lat: 36.0726, lon: -79.792 }, // Greensboro
+      { lat: 35.5951, lon: -82.5515 }, // Asheville
+      { lat: 34.2257, lon: -77.9447 }, // Wilmington
+    ],
+  },
+]);
+
+/** LIVE_PACKS entries for the TravelIQ states. Enabled when a key is present. */
+export function travelIqPacks() {
+  return TRAVELIQ_NETWORKS.map((net) => {
+    const flag = `CCTV_${net.id.toUpperCase()}_ENABLED`;
+    const keyEnv = `CCTV_${net.id.toUpperCase()}_KEY`;
+    return {
+      name: net.id,
+      enabled: () =>
+        String(process.env[keyEnv] || '').trim() !== '' &&
+        String(process.env[flag] || '1').trim() !== '0',
+      load: makeTravelIqLoader(net),
+    };
+  });
+}
