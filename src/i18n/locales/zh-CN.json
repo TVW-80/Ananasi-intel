@@ -2883,6 +2883,6 @@
   "Outage Reports layer, plus the Attack Map’s DDoS arcs and most-attacked industries. Free account; create an API token with Radar read access.": "“中断报告”图层，以及攻击地图中的 DDoS 弧线和受攻击最多的行业。免费账户；创建具有 Radar 读取权限的 API 令牌。",
   "Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.": "攻击地图中的恶意软件名称（ThreatFox）和仍在活动的恶意链接（URLhaus）。免费密钥；“僵尸网络 C2 服务器”图层无需密钥。",
   "Attack Map alerts: researchers’ campaign reports (“pulses”) — who is attacking whom, with which malware. Free account.": "攻击地图警报：研究人员的攻击活动报告（“pulse”）——谁在攻击谁、使用何种恶意软件。免费账户。",
-  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Free community key; a few lookups a day.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。免费社区密钥；每天少量查询。",
-  "Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.": "攻击地图警报：攻击者针对 Shadowserver 诱饵服务器利用的漏洞。免费，但需要注册并申请 API 访问权限。"
+  "Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.": "攻击地图警报：攻击者针对 Shadowserver 诱饵服务器利用的漏洞。免费，但需要注册并申请 API 访问权限。",
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。无需密钥即可使用；密钥（仅限工作邮箱账户）可提高每日限额。"
 }

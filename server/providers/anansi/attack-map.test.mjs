@@ -213,7 +213,8 @@ test('missing keys switch single ingredients off, never the map', async () => {
   const body = await service.get();
   assert.equal(body.status, 'ok');
   const status = Object.fromEntries(body.feeds.map((f) => [f.id, f.status]));
-  for (const id of ['radar', 'threatfox', 'urlhaus', 'otx', 'shadowserver', 'greynoise']) assert.equal(status[id], 'key-required', id);
+  for (const id of ['radar', 'threatfox', 'urlhaus', 'otx', 'shadowserver']) assert.equal(status[id], 'key-required', id);
+  assert.equal(status.greynoise, 'ok', 'GreyNoise works without a key');
 });
 
 test('every Attack Map key can be entered in POWER UP', async () => {
@@ -222,4 +223,25 @@ test('every Attack Map key can be entered in POWER UP', async () => {
   for (const v of ['CLOUDFLARE_API_TOKEN', 'ABUSECH_AUTH_KEY', 'OTX_API_KEY', 'GREYNOISE_API_KEY', 'SHADOWSERVER_API_KEY', 'SHADOWSERVER_API_SECRET', 'ABUSEIPDB_API_KEY']) {
     assert.ok(vars.has(v), `${v} missing from POWER UP`);
   }
+});
+
+test('GreyNoise is asked without a key when none is set, within a smaller daily cap', async () => {
+  const calls = [];
+  const base = fakeFetch([]);
+  const service = createAttackMapService({
+    fetchImpl: async (url, init = {}) => {
+      if (url.includes('greynoise')) {
+        calls.push(init.headers || {});
+        return { ok: true, status: 200, text: async () => JSON.stringify({ noise: true, riot: false, classification: 'malicious' }) };
+      }
+      return base(url);
+    },
+    envSource: {},
+    clock: () => 0,
+    sleep: async () => {},
+    threatIntel: () => null,
+  });
+  await service.get();
+  assert.ok(calls.length > 0);
+  assert.ok(calls.every((h) => !('key' in h)), 'no key header is sent');
 });

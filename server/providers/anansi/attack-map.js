@@ -396,11 +396,12 @@ export function createAttackMapService({
   }
 
   async function greyNoise(ips, errors) {
+    // The Community API also answers without a key (a smaller daily allowance),
+    // so a key is optional: GreyNoise only issues them to work-email accounts.
     const key = env('GREYNOISE_API_KEY');
-    if (!key) return 'key-required';
     const today = new Date(clock()).toISOString().slice(0, 10);
     if (gnBudget.day !== today) Object.assign(gnBudget, { day: today, used: 0 });
-    const dailyCap = Number(env('GREYNOISE_DAILY_LIMIT')) || 40;
+    const dailyCap = Number(env('GREYNOISE_DAILY_LIMIT')) || (key ? 40 : 25);
     let asked = 0;
     for (const ip of ips) {
       const hit = gnCache.get(ip.ip);
@@ -412,7 +413,7 @@ export function createAttackMapService({
       asked += 1;
       gnBudget.used += 1;
       try {
-        const res = await request(URLS.greynoise(ip.ip), { headers: { key, Accept: 'application/json' } });
+        const res = await request(URLS.greynoise(ip.ip), { headers: key ? { key, Accept: 'application/json' } : { Accept: 'application/json' } });
         if (res.status === 429) {
           errors.push('GreyNoise: daily limit reached');
           gnBudget.used = dailyCap;
@@ -643,7 +644,7 @@ export function createAttackMapService({
         { id: 'dshield', label: 'SANS ISC / DShield', status: dsh.ok ? 'ok' : 'error' },
         { id: 'abuseipdb', label: 'AbuseIPDB', status: abuse?.status || 'off', keyEnv: 'ABUSEIPDB_API_KEY' },
         ...ids.map((id) => ({ id, label: FEED_LABELS[id], status: src[id].status, error: src[id].error, keyEnv: FEED_KEYS[id] || null })),
-        { id: 'greynoise', label: 'GreyNoise', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
+        { id: 'greynoise', label: env('GREYNOISE_API_KEY') ? 'GreyNoise' : 'GreyNoise (no key, smaller daily allowance)', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
       ],
       errors,
     };
