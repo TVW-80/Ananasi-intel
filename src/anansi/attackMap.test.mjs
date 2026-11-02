@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ATTACK_MAP_LAYER, arcColor, arcPoints, counterStart } from './attackMap.js';
+import { ATTACK_MAP_LAYER, arcColor, arcPoints, counterStart, sourceColor, twoVoice } from './attackMap.js';
 
 test('arcs start and end on the ground at the endpoints and bow upward between', () => {
   const src = { lat: 39.9, lon: 116.4 }; // Beijing
@@ -25,4 +25,11 @@ test('color runs gold to red; the counter starts at today’s estimated total', 
   assert.equal(arcColor(1), 'rgb(255, 43, 43)');
   assert.equal(counterStart(10, Date.UTC(2026, 10, 1, 1, 30)), 900);
   assert.equal(ATTACK_MAP_LAYER.id, 'cyber-attack-map');
+});
+
+test('arcs take the colour of their dominant attack type, else their strength', () => {
+  const types = [{ service: 'ssh', color: '#ff2b2b' }];
+  assert.equal(sourceColor({ dominantService: 'ssh', weight: 0 }, types), '#ff2b2b');
+  assert.equal(sourceColor({ dominantService: 'ftp', weight: 1 }, types), arcColor(1));
+  assert.equal(twoVoice('Simple words.', 'Jargon.'), 'Simple words.\nTECH: Jargon.');
 });

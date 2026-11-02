@@ -790,8 +790,8 @@ body.console-mode #command-dock.angular-panel {
 #threat-popover {
   position: fixed;
   z-index: 400;
-  width: min(340px, calc(100vw - 24px));
-  max-height: min(420px, calc(100vh - 24px));
+  width: min(380px, calc(100vw - 24px));
+  max-height: min(520px, calc(100vh - 24px));
   overflow-y: auto;
   padding: 10px 12px 12px;
   background: rgba(10, 9, 8, 0.94);
@@ -826,6 +826,12 @@ body.console-mode #command-dock.angular-panel {
   cursor: pointer;
 }
 .threat-popover-title { font-size: 14px; font-weight: 600; color: #f4cf5e; }
+.threat-popover-plain,
+.threat-popover-tech { margin: 2px 0 0 10px; font-size: 10px; line-height: 1.4; }
+.threat-popover-plain { color: var(--text-primary); }
+.threat-popover-plain::before { content: 'PLAIN · '; color: #f4cf5e; font-size: 8.5px; letter-spacing: 0.12em; }
+.threat-popover-tech { color: var(--text-secondary); }
+.threat-popover-tech::before { content: 'TECH · '; color: #ff8a1f; font-size: 8.5px; letter-spacing: 0.12em; }
 .threat-popover-meta { margin: 2px 0 8px; color: var(--text-secondary); }
 .threat-popover-items { margin: 0; padding: 0; list-style: none; }
 .threat-popover-items li {
@@ -927,6 +933,73 @@ body.console-mode #command-dock.angular-panel {
 .attack-map-status { margin-top: 6px; font-size: 9px; color: var(--text-secondary); }
 .attack-map-status[data-state='stale'],
 .attack-map-status[data-state='error'] { color: #ff8a1f; }
+
+/* BRIEF button + rotating column title. */
+.attack-map-brief-btn {
+  padding: 1px 6px;
+  font: inherit;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: #f4cf5e;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  cursor: pointer;
+}
+.attack-map-brief-btn.active,
+.attack-map-brief-btn:hover { background: rgba(212, 175, 55, 0.25); color: #ffe9a8; }
+.attack-map-rotate {
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  font-size: 9px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.attack-map-rotate:hover { color: #ffe9a8; }
+.attack-map-list li[title] { cursor: help; }
+
+/* BRIEF: every alert in plain English + technical terms, legend, sources. */
+.attack-map-brief {
+  max-height: min(52vh, 520px);
+  margin-top: 8px;
+  padding-right: 4px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+}
+.attack-map-brief[hidden] { display: none; }
+.attack-map-hud.folded .attack-map-brief { display: none; }
+.attack-map-brief-section h4 {
+  margin: 10px 0 5px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #d4af37;
+}
+.attack-map-brief-card {
+  margin: 0 0 7px;
+  padding: 5px 8px 6px;
+  border-left: 2px solid var(--bar, rgba(212, 175, 55, 0.55));
+  background: rgba(255, 255, 255, 0.025);
+}
+.attack-map-brief-title { font-size: 10.5px; color: var(--text-primary); line-height: 1.35; }
+.attack-map-brief-title em { font-style: normal; color: #ff5a4a; letter-spacing: 0.06em; font-size: 9px; }
+.attack-map-brief-title a { color: #f4cf5e; text-decoration: none; }
+.attack-map-brief-title a:hover { text-decoration: underline; }
+.attack-map-plain,
+.attack-map-tech { margin: 3px 0 0; font-size: 10px; line-height: 1.4; }
+.attack-map-plain::before { content: 'PLAIN · '; color: #f4cf5e; font-size: 8.5px; letter-spacing: 0.12em; }
+.attack-map-plain { color: var(--text-primary); }
+.attack-map-tech::before { content: 'TECH · '; color: #ff8a1f; font-size: 8.5px; letter-spacing: 0.12em; }
+.attack-map-tech { color: var(--text-secondary); font-family: var(--font-mono); }
+.attack-map-feed { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 10px; }
+.attack-map-feed b { font-weight: 500; text-align: right; color: var(--text-secondary); }
+.attack-map-feed-ok b { color: #8fd46b; }
+.attack-map-feed-key-required b { color: #f4cf5e; }
+.attack-map-feed-error b,
+.attack-map-feed-stale b { color: #ff8a1f; }
 
 /* FortiGuard ticker: a strip inside the HUD, not a screen-wide bar. */
 .attack-map-ticker {

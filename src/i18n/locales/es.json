@@ -3014,10 +3014,13 @@
   "Historical": "Histórico",
   "Optional free key — works without one, raises limits": "Clave gratuita opcional: funciona sin ella y aumenta los límites",
   "Reported Attackers layer: IPs flagged for attacks, grouped by country. Free account; refreshed a few times a day.": "Capa Atacantes reportados: IP señaladas por ataques, agrupadas por país. Cuenta gratuita; se actualiza varias veces al día.",
-  "Outage Reports layer: verified internet outages and their causes. Free account; create an API token with Radar read access.": "Capa Informes de cortes: cortes de internet verificados y sus causas. Cuenta gratuita; crea un token de API con acceso de lectura a Radar.",
   "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "Capa ICS expuestos (757): sistemas de control industrial accesibles desde internet en Hampton Roads. Los filtros de búsqueda requieren una membresía de Shodan.",
-  "Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.": "La capa Servidores C2 de botnets funciona sin clave. Añade una Auth-Key gratuita de abuse.ch si las descargas empiezan a pedirla.",
   "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "Los avisos del panel de Seguridad de IA funcionan sin clave. Un token gratuito de GitHub (sin permisos) eleva el límite de 60 solicitudes por hora.",
   "Attack Map": "Mapa de ataques",
-  "Hampton Roads 757": "Hampton Roads 757"
+  "Hampton Roads 757": "Hampton Roads 757",
+  "Outage Reports layer, plus the Attack Map’s DDoS arcs and most-attacked industries. Free account; create an API token with Radar read access.": "Capa Informes de cortes, además de los arcos DDoS del Mapa de ataques y las industrias más atacadas. Cuenta gratuita; crea un token de API con acceso de lectura a Radar.",
+  "Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.": "Nombres de malware (ThreatFox) y enlaces de malware activos (URLhaus) en el Mapa de ataques. Clave gratuita; la capa Servidores C2 de botnets funciona sin ella.",
+  "Attack Map alerts: researchers’ campaign reports (“pulses”) — who is attacking whom, with which malware. Free account.": "Alertas del Mapa de ataques: informes de campañas de investigadores («pulses»): quién ataca a quién y con qué malware. Cuenta gratuita.",
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Free community key; a few lookups a day.": "Etiquetas «¿es real?» del Mapa de ataques: distingue escáneres masivos de atacantes que podrían elegir objetivos. Clave comunitaria gratuita; pocas consultas al día.",
+  "Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.": "Alertas del Mapa de ataques: vulnerabilidades que los atacantes explotan contra los servidores señuelo de Shadowserver. Gratis, pero debes registrarte y solicitar acceso a la API."
 }

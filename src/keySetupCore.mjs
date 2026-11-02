@@ -151,7 +151,7 @@ export const KEY_SETUP_KEYS = Object.freeze([
     id: 'cloudflare-radar',
     title: 'CLOUDFLARE RADAR', // i18n-ignore: provider product name
     unlocks: msg(
-      'Outage Reports layer: verified internet outages and their causes. Free account; create an API token with Radar read access.',
+      'Outage Reports layer, plus the Attack Map’s DDoS arcs and most-attacked industries. Free account; create an API token with Radar read access.',
     ),
     getUrl: 'https://dash.cloudflare.com/profile/api-tokens',
     envVars: Object.freeze(['CLOUDFLARE_API_TOKEN']),
@@ -171,11 +171,41 @@ export const KEY_SETUP_KEYS = Object.freeze([
     id: 'abusech',
     title: 'ABUSE.CH', // i18n-ignore: provider product name
     unlocks: msg(
-      'Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.',
+      'Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.',
     ),
     getUrl: 'https://auth.abuse.ch/',
     envVars: Object.freeze(['ABUSECH_AUTH_KEY']),
-    tier: 'optional',
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'otx',
+    title: 'ALIENVAULT OTX', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Attack Map alerts: researchers’ campaign reports (“pulses”) — who is attacking whom, with which malware. Free account.',
+    ),
+    getUrl: 'https://otx.alienvault.com/api',
+    envVars: Object.freeze(['OTX_API_KEY']),
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'greynoise',
+    title: 'GREYNOISE', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Free community key; a few lookups a day.',
+    ),
+    getUrl: 'https://viz.greynoise.io/account/api-key',
+    envVars: Object.freeze(['GREYNOISE_API_KEY']),
+    tier: 'free',
+  }),
+  Object.freeze({
+    id: 'shadowserver',
+    title: 'SHADOWSERVER', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.',
+    ),
+    getUrl: 'https://www.shadowserver.org/what-we-do/network-reporting/api-documentation/',
+    envVars: Object.freeze(['SHADOWSERVER_API_KEY', 'SHADOWSERVER_API_SECRET']),
+    tier: 'free',
   }),
   Object.freeze({
     id: 'github',

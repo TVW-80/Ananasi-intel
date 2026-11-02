@@ -1,35 +1,85 @@
-// Anansi: Attack Map — who is attacking, drawn as arcs into Hampton Roads.
+// Ananzi: Attack Map — who is attacking, how, and with what.
 //
 //   GET /api/attackmap
 //
-// Sources (all public; none of them is FortiGuard's map, which has no API):
-//   SANS Internet Storm Center / DShield   top attacking IPs seen by its
-//                                          volunteer honeypot sensors, each
-//                                          looked up for its country (cached
-//                                          per IP for a day), plus the most
-//                                          targeted ports
-//   AbuseIPDB (when its key is set)        reported attackers per country,
-//                                          read through the shared threat-
-//                                          intel cache so quotas are shared
-//   FortiGuard RSS                         outbreak alerts / threat signals /
-//                                          PSIRT advisories for the ticker
+// Arcs into Hampton Roads (the viewer's vantage point, not a claim these
+// sources hit Hampton Roads specifically):
+//   SANS ISC / DShield     top attacking IPs from its worldwide honeypot sensors
+//   AbuseIPDB              reported attackers per country (shared threat-intel cache)
+//   blocklist.de           IPs that attacked members' servers in 48h, per service —
+//                          arcs are coloured by the dominant attack type
+// Country-to-country arcs:
+//   Cloudflare Radar       DDoS / web-attack origin→target pairs (L7 + L3), hit industries
+// Markers and tags:
+//   abuse.ch ThreatFox     malware command servers, labelled by family
+//   Spamhaus DROP, Tor     "criminal netblock" / "via Tor" flags on source IPs
+//   GreyNoise Community    mass scanner vs. possibly targeted, per top IP
+// Alerts (ticker + BRIEF), each in plain English AND technical terms:
+//   FortiGuard RSS, AlienVault OTX pulses, CISA KEV, Shadowserver honeypot
+//   exploited vulnerabilities, URLhaus and ThreatFox summaries.
 //
-// The arcs show where attack traffic comes FROM. DShield sensors are spread
-// worldwide, so the arc end point (Hampton Roads) is the viewer's vantage,
-// not a claim that these sources hit Hampton Roads specifically.
-//
-// Response: { status, updatedAt, target, sources[], ports[], rate, alerts[], errors[] }
+// Every source is cached on its own schedule and fails on its own: a missing
+// key or an outage removes one ingredient, never the map. Keys come from
+// POWER UP (.env) and never leave the server.
 import { countryCentroid } from './threat-feeds.js';
 import { sharedThreatIntel } from './threat-intel.js';
+import {
+  URLS,
+  findRange,
+  normalizeGreyNoise,
+  normalizeKev,
+  normalizeOtx,
+  normalizeRadarPairs,
+  normalizeRadarTop,
+  normalizeThreatFox,
+  normalizeUrlhaus,
+  parseDrop,
+  parseIpList,
+  parseJsonLines,
+  radarUrl,
+  shadowserverRequest,
+} from './attack-sources.js';
+import {
+  DDOS,
+  FLAGS,
+  FORTIGUARD_KINDS,
+  SERVICES as SERVICE_INFO,
+  SERVICE_ORDER,
+  exploitedExplained,
+  familyExplained,
+  greyNoiseExplained,
+  kevExplained,
+  portExplained,
+  pulseExplained,
+} from './attack-glossary.js';
 
 const MIN = 60_000;
-const TTL = 30 * MIN;
-const ALERT_TTL = 60 * MIN;
+const TTL = 10 * MIN; // whole-picture snapshot; each source has its own TTL below
 const IP_TTL = 24 * 60 * MIN;
 const TIMEOUT_MS = 20_000;
 const TOP_IPS = 40; // DShield asks for restraint; 40 lookups a day per new IP at most
 const LOOKUP_GAP_MS = 250;
-const USER_AGENT = 'Anansi/1.0 (personal threat-intel research dashboard)';
+const USER_AGENT = 'Ananzi/1.0 (personal threat-intel research dashboard)';
+const MAX_NEW_LOOKUPS = 60; // country lookups per refresh across all sources
+const BLOCKLIST_SAMPLE = 8; // IPs per blocklist.de service placed on the map
+const GREYNOISE_TTL = 7 * 24 * 60 * MIN;
+const GREYNOISE_PER_REFRESH = 5;
+
+/** Per-source refresh intervals. */
+const SOURCE_TTL = Object.freeze({
+  radar: 30 * MIN,
+  blocklist: 60 * MIN,
+  threatfox: 30 * MIN,
+  urlhaus: 30 * MIN,
+  otx: 30 * MIN,
+  shadowserver: 6 * 60 * MIN,
+  drop: 24 * 60 * MIN,
+  tor: 6 * 60 * MIN,
+  kev: 6 * 60 * MIN,
+  fortiguard: 60 * MIN,
+});
+const RETRY_MS = 5 * MIN;
+const KEY_REQUIRED = Symbol('key-required');
 
 export const TARGET = Object.freeze({ lat: 36.8508, lon: -76.2859, name: 'Hampton Roads' });
 
@@ -131,25 +181,43 @@ export function parseRssItems(xml, label) {
 }
 
 /**
- * Group DShield IPs (with looked-up countries) and AbuseIPDB country points
- * into one row per source country.
+ * One row per source country (arcs into the vantage point): DShield top IPs,
+ * AbuseIPDB country counts and geolocated blocklist.de samples, with each
+ * IP's tags (attack services, Tor, DROP, GreyNoise, malware).
  */
-export function buildSources(dshieldIps, abusePoints = []) {
+export function buildSources(dshieldIps, abusePoints = [], blocklistIps = []) {
   const byCountry = new Map();
   const row = (code) => {
     if (!byCountry.has(code)) {
       const c = countryCentroid(code);
       if (!c) return null;
-      byCountry.set(code, { country: code, name: c.name, lat: c.lat, lon: c.lon, reports: 0, targets: 0, abuse: 0, ips: [] });
+      byCountry.set(code, {
+        country: code, name: c.name, lat: c.lat, lon: c.lon,
+        reports: 0, targets: 0, abuse: 0, blocklist: 0,
+        services: {}, flags: { tor: 0, drop: 0, strong: 0 }, ips: [],
+      });
     }
     return byCountry.get(code);
+  };
+  const addIp = (r, ip) => {
+    for (const s of ip.services || []) r.services[s] = (r.services[s] || 0) + 1;
+    if (ip.tor) r.flags.tor += 1;
+    if (ip.drop) r.flags.drop += 1;
+    if (ip.strong) r.flags.strong += 1;
+    if (r.ips.length < 8 && !r.ips.some((x) => x.ip === ip.ip)) r.ips.push(ip);
   };
   for (const ip of dshieldIps) {
     const r = ip.country && row(ip.country);
     if (!r) continue;
-    r.reports += ip.reports;
-    r.targets += ip.targets;
-    if (r.ips.length < 6) r.ips.push({ ip: ip.ip, reports: ip.reports, asname: ip.asname || '' });
+    r.reports += ip.reports || 0;
+    r.targets += ip.targets || 0;
+    addIp(r, ip);
+  }
+  for (const ip of blocklistIps) {
+    const r = ip.country && row(ip.country);
+    if (!r) continue;
+    r.blocklist += 1;
+    addIp(r, ip);
   }
   for (const p of abusePoints) {
     const code = str(p.id).split(':')[1];
@@ -157,14 +225,99 @@ export function buildSources(dshieldIps, abusePoints = []) {
     if (r) r.abuse += num(p.count);
   }
   const rows = [...byCountry.values()];
-  const maxR = Math.max(1, ...rows.map((r) => r.reports));
-  const maxA = Math.max(1, ...rows.map((r) => r.abuse));
+  const max = (k) => Math.max(1, ...rows.map((r) => r[k]));
+  const maxR = max('reports');
+  const maxA = max('abuse');
+  const maxB = max('blocklist');
   for (const r of rows) {
-    // 0..1 weight mixing both sources on a log scale so one country can't flatten the rest.
-    const w = Math.max(Math.log1p(r.reports) / Math.log1p(maxR), Math.log1p(r.abuse) / Math.log1p(maxA));
+    // 0..1 weight: the strongest of the three signals, each on a log scale.
+    const w = Math.max(
+      Math.log1p(r.reports) / Math.log1p(maxR),
+      Math.log1p(r.abuse) / Math.log1p(maxA),
+      0.85 * (Math.log1p(r.blocklist) / Math.log1p(maxB)),
+    );
     r.weight = Math.round(w * 1000) / 1000;
+    const top = Object.entries(r.services).sort((a, b) => b[1] - a[1])[0];
+    r.dominantService = top ? top[0] : null;
   }
-  return rows.sort((a, b) => b.weight - a.weight).slice(0, 30);
+  return rows.sort((a, b) => b.weight - a.weight).slice(0, 36);
+}
+
+/** Popup lines for one IP: what we know, in both voices. */
+export function describeIp(ip) {
+  const lines = [];
+  const head = `${ip.ip}${ip.asname ? ` · ${ip.asname}` : ''}${ip.reports ? ` · ${ip.reports.toLocaleString('en-US')} DShield reports` : ''}`;
+  lines.push({ text: head });
+  for (const s of ip.services || []) {
+    const info = SERVICE_INFO[s];
+    if (info) lines.push({ text: `↳ ${info.label}`, plain: info.plain, tech: `${info.technical} (blocklist.de, last 48h)` });
+  }
+  if (ip.malware) {
+    const f = familyExplained(ip.malware, ip.threatType);
+    lines.push({ text: `↳ Malware: ${ip.malware}`, plain: f.plain, tech: `${f.technical} (ThreatFox)` });
+  }
+  for (const flag of ['tor', 'drop', 'strong']) {
+    if (ip[flag]) {
+      const f = FLAGS[flag];
+      lines.push({ text: `↳ ${f.label}${flag === 'drop' && ip.dropRef ? ` (${ip.dropRef})` : ''}`, plain: f.plain, tech: f.technical });
+    }
+  }
+  const g = greyNoiseExplained(ip.greynoise);
+  if (g) lines.push({ text: `↳ GreyNoise: ${g.label}`, plain: g.plain, tech: g.technical });
+  return lines;
+}
+
+/** Cloudflare pairs → arcs between countries (same-country pairs are listed, not drawn). */
+export function buildPairs(pairs) {
+  return pairs
+    .map((p) => {
+      const a = countryCentroid(p.from.code);
+      const b = countryCentroid(p.to.code);
+      if (!a || !b) return null;
+      const info = DDOS[p.layer] || DDOS.L7;
+      return {
+        layer: p.layer,
+        value: p.value,
+        from: { code: p.from.code, name: p.from.name || a.name, lat: a.lat, lon: a.lon },
+        to: { code: p.to.code, name: p.to.name || b.name, lat: b.lat, lon: b.lon },
+        domestic: p.from.code === p.to.code,
+        label: info.label,
+        plain: `${info.plain} ${p.value.toFixed(1)}% of what Cloudflare blocked went from ${p.from.name || a.name} to ${p.to.name || b.name}.`,
+        technical: `${info.technical} Pair ${p.from.code}→${p.to.code}: ${p.value.toFixed(2)}% (last 24h).`,
+      };
+    })
+    .filter(Boolean);
+}
+
+/** ThreatFox IOCs with a country → malware infrastructure markers per country. */
+export function buildMalwarePoints(iocs) {
+  const byCountry = new Map();
+  for (const i of iocs) {
+    if (!i.country) continue;
+    const c = countryCentroid(i.country);
+    if (!c) continue;
+    if (!byCountry.has(i.country)) byCountry.set(i.country, { country: i.country, name: c.name, lat: c.lat, lon: c.lon, count: 0, families: new Map(), examples: [] });
+    const r = byCountry.get(i.country);
+    r.count += 1;
+    const key = i.malware || 'Unknown';
+    r.families.set(key, { count: (r.families.get(key)?.count || 0) + 1, threatType: i.threatType });
+    if (r.examples.length < 4) r.examples.push(i);
+  }
+  return [...byCountry.values()]
+    .map((r) => ({
+      ...r,
+      families: [...r.families.entries()]
+        .sort((a, b) => b[1].count - a[1].count)
+        .map(([name, v]) => ({ name, count: v.count, threatType: v.threatType, ...familyExplained(name, v.threatType) })),
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function spacedSample(list, n) {
+  if (list.length <= n) return [...list];
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(list[Math.floor((i * list.length) / n)]);
+  return out;
 }
 
 export function createAttackMapService({
@@ -175,21 +328,111 @@ export function createAttackMapService({
   threatIntel = () => sharedThreatIntel(),
 } = {}) {
   const ipCache = new Map(); // ip -> { at, info }
+  const gnCache = new Map(); // ip -> { at, info }
+  const gnBudget = { day: '', used: 0 };
+  const sources = new Map(); // id -> { at, ok, status, value, error }
   let snapshot = null; // { at, body }
-  let alerts = { at: -Infinity, items: [], errors: [] };
   let inflight = null;
+  const env = (name) => str(envSource[name]);
 
-  async function getText(url) {
+  async function request(url, { method = 'GET', headers = {}, body } = {}) {
     let res;
     try {
-      res = await fetchImpl(url, { headers: { 'User-Agent': USER_AGENT, Accept: '*/*' }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+      res = await fetchImpl(url, {
+        method,
+        body,
+        headers: { 'User-Agent': USER_AGENT, Accept: '*/*', ...headers },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
     } catch (err) {
       throw new Error(`${new URL(url).host}: ${err?.cause?.code || err?.name || 'fetch failed'}`);
     }
-    if (!res.ok) throw new Error(`${new URL(url).host}: HTTP ${res.status}`);
+    return res;
+  }
+  async function getText(url, options) {
+    const res = await request(url, options);
+    if (!res.ok) throw new Error(`${new URL(url).host}: HTTP ${res.status}${res.status === 401 || res.status === 403 ? ' (check the key / access)' : ''}`);
     return res.text();
   }
-  const getJson = async (url) => JSON.parse(await getText(url));
+  const getJson = async (url, options) => JSON.parse(await getText(url, options));
+
+  /** Per-source cache: fresh value, last good on failure, key-required without calling out. */
+  async function cached(id, ttl, fn) {
+    const c = sources.get(id);
+    if (c && clock() - c.at < (c.ok ? ttl : RETRY_MS) && c.status !== 'key-required') return c;
+    let entry;
+    try {
+      const value = await fn();
+      entry = value === KEY_REQUIRED
+        ? { at: clock(), ok: false, status: 'key-required', value: null, error: null }
+        : { at: clock(), ok: true, status: 'ok', value, error: null };
+    } catch (err) {
+      const message = err?.message || String(err);
+      entry = { at: clock(), ok: false, status: c?.value ? 'stale' : 'error', value: c?.value ?? null, error: message };
+    }
+    sources.set(id, entry);
+    return entry;
+  }
+
+  async function lookupCountries(ips, budget, errors) {
+    for (const ip of ips) {
+      const hit = ipCache.get(ip.ip);
+      if (hit && clock() - hit.at < IP_TTL) {
+        Object.assign(ip, hit.info);
+        continue;
+      }
+      if (budget.left <= 0 || budget.failed) continue;
+      budget.left -= 1;
+      try {
+        const info = normalizeIpInfo(await getJson(`https://isc.sans.edu/api/ip/${ip.ip}?json`));
+        ipCache.set(ip.ip, { at: clock(), info });
+        Object.assign(ip, info);
+      } catch (err) {
+        errors.push(`DShield IP lookup: ${err.message}`);
+        budget.failed = true; // don't hammer a struggling API; the rest resolve next refresh
+      }
+      await sleep(LOOKUP_GAP_MS);
+    }
+  }
+
+  async function greyNoise(ips, errors) {
+    const key = env('GREYNOISE_API_KEY');
+    if (!key) return 'key-required';
+    const today = new Date(clock()).toISOString().slice(0, 10);
+    if (gnBudget.day !== today) Object.assign(gnBudget, { day: today, used: 0 });
+    const dailyCap = Number(env('GREYNOISE_DAILY_LIMIT')) || 40;
+    let asked = 0;
+    for (const ip of ips) {
+      const hit = gnCache.get(ip.ip);
+      if (hit && clock() - hit.at < GREYNOISE_TTL) {
+        ip.greynoise = hit.info;
+        continue;
+      }
+      if (asked >= GREYNOISE_PER_REFRESH || gnBudget.used >= dailyCap) continue;
+      asked += 1;
+      gnBudget.used += 1;
+      try {
+        const res = await request(URLS.greynoise(ip.ip), { headers: { key, Accept: 'application/json' } });
+        if (res.status === 429) {
+          errors.push('GreyNoise: daily limit reached');
+          gnBudget.used = dailyCap;
+          break;
+        }
+        const info = normalizeGreyNoise(JSON.parse((await res.text()) || '{}'), res.status);
+        if (info) {
+          gnCache.set(ip.ip, { at: clock(), info });
+          ip.greynoise = info;
+        } else if (res.status === 401 || res.status === 403) {
+          errors.push(`GreyNoise: HTTP ${res.status} (check the key)`);
+          break;
+        }
+      } catch (err) {
+        errors.push(`GreyNoise: ${err.message}`);
+        break;
+      }
+    }
+    return 'ok';
+  }
 
   async function dshield(errors) {
     let ips = [];
@@ -197,23 +440,7 @@ export function createAttackMapService({
       ips = normalizeTopIps(await getJson(`https://isc.sans.edu/api/topips/records/${TOP_IPS}?json`)).slice(0, TOP_IPS);
     } catch (err) {
       errors.push(`DShield top IPs: ${err.message}`);
-      return { ips: [], ports: [] };
-    }
-    for (const ip of ips) {
-      const hit = ipCache.get(ip.ip);
-      if (hit && clock() - hit.at < IP_TTL) {
-        Object.assign(ip, hit.info);
-        continue;
-      }
-      try {
-        const info = normalizeIpInfo(await getJson(`https://isc.sans.edu/api/ip/${ip.ip}?json`));
-        ipCache.set(ip.ip, { at: clock(), info });
-        Object.assign(ip, info);
-      } catch (err) {
-        errors.push(`DShield IP lookup: ${err.message}`);
-        break; // don't hammer a struggling API; the rest resolve next refresh
-      }
-      await sleep(LOOKUP_GAP_MS);
+      return { ips: [], ports: [], ok: false };
     }
     let ports = [];
     try {
@@ -221,54 +448,203 @@ export function createAttackMapService({
     } catch (err) {
       errors.push(`DShield top ports: ${err.message}`);
     }
-    return { ips, ports };
+    return { ips, ports, ok: true };
   }
 
-  async function fortiguard() {
-    if (clock() - alerts.at < ALERT_TTL) return alerts;
-    const custom = str(envSource.FORTIGUARD_RSS);
-    const feeds = custom
+  function fortiguardFeeds() {
+    const custom = env('FORTIGUARD_RSS');
+    return custom
       ? custom.split(',').map((url) => ({ label: 'FortiGuard', url: url.trim() })).filter((f) => /^https:\/\//.test(f.url))
       : DEFAULT_FORTIGUARD_FEEDS;
-    const items = [];
-    const errors = [];
-    await Promise.all(
-      feeds.map(async (f) => {
-        try {
-          items.push(...parseRssItems(await getText(f.url), f.label).slice(0, 15));
-        } catch (err) {
-          errors.push(`FortiGuard ${f.label}: ${err.message}`);
-        }
-      }),
-    );
-    items.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
-    alerts = { at: items.length ? clock() : clock() - ALERT_TTL + 5 * MIN, items: items.slice(0, 25), errors };
-    return alerts;
   }
+
+  const fetchers = {
+    radar: () => {
+      const token = env('CLOUDFLARE_API_TOKEN');
+      if (!token) return KEY_REQUIRED;
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
+      const get = (path, params) => getJson(radarUrl(path, params), { headers });
+      return Promise.allSettled([
+        get('layer7/top/attacks', { limit: '20' }),
+        get('layer3/top/attacks', { limit: '15' }),
+        get('layer7/top/industry', { limit: '8' }),
+        get('layer7/top/locations/target', { limit: '8' }),
+      ]).then(([l7, l3, industry, targets]) => {
+        if ([l7, l3, industry, targets].every((r) => r.status === 'rejected')) throw l7.reason;
+        return {
+          pairs: [
+            ...(l7.status === 'fulfilled' ? normalizeRadarPairs(l7.value, 'L7') : []),
+            ...(l3.status === 'fulfilled' ? normalizeRadarPairs(l3.value, 'L3') : []),
+          ],
+          industries: industry.status === 'fulfilled' ? normalizeRadarTop(industry.value) : [],
+          targets: targets.status === 'fulfilled' ? normalizeRadarTop(targets.value) : [],
+        };
+      });
+    },
+    blocklist: async () => {
+      const lists = {};
+      const results = await Promise.allSettled(
+        [...SERVICE_ORDER, 'strongips'].map(async (s) => [s, parseIpList(await getText(URLS.blocklist(s)))]),
+      );
+      for (const r of results) if (r.status === 'fulfilled') lists[r.value[0]] = r.value[1];
+      if (!Object.keys(lists).length) throw results[0].reason;
+      return lists;
+    },
+    threatfox: async () => {
+      const key = env('ABUSECH_AUTH_KEY');
+      if (!key) return KEY_REQUIRED;
+      return normalizeThreatFox(
+        await getJson(URLS.threatfox, {
+          method: 'POST',
+          headers: { 'Auth-Key': key, 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ query: 'get_iocs', days: 1 }),
+        }),
+      );
+    },
+    urlhaus: async () => {
+      const key = env('ABUSECH_AUTH_KEY');
+      if (!key) return KEY_REQUIRED;
+      return normalizeUrlhaus(await getJson(URLS.urlhaus, { headers: { 'Auth-Key': key, Accept: 'application/json' } }));
+    },
+    otx: async () => {
+      const key = env('OTX_API_KEY');
+      if (!key) return KEY_REQUIRED;
+      return normalizeOtx(await getJson(URLS.otx, { headers: { 'X-OTX-API-KEY': key, Accept: 'application/json' } }));
+    },
+    shadowserver: async () => {
+      const key = env('SHADOWSERVER_API_KEY');
+      const secret = env('SHADOWSERVER_API_SECRET');
+      if (!key || !secret) return KEY_REQUIRED;
+      const req = shadowserverRequest({ limit: 12 }, key, secret);
+      return parseJsonLines(await getText(URLS.shadowserver, { method: 'POST', headers: req.headers, body: req.body }));
+    },
+    drop: async () => {
+      try {
+        return parseDrop(await getText(URLS.dropJson));
+      } catch {
+        return parseDrop(await getText(URLS.dropTxt));
+      }
+    },
+    tor: async () => new Set(parseIpList(await getText(URLS.tor))),
+    kev: async () => normalizeKev(await getJson(URLS.kev)),
+    fortiguard: async () => {
+      const items = [];
+      const errs = [];
+      await Promise.all(
+        fortiguardFeeds().map(async (f) => {
+          try {
+            items.push(...parseRssItems(await getText(f.url), f.label).slice(0, 12));
+          } catch (err) {
+            errs.push(`${f.label}: ${err.message}`);
+          }
+        }),
+      );
+      if (!items.length && errs.length) throw new Error(errs.join('; '));
+      return items;
+    },
+  };
 
   async function build() {
     const errors = [];
-    const [{ ips, ports }, abuse, feed] = await Promise.all([
+    const ids = Object.keys(fetchers);
+    const [dsh, abuse, ...entries] = await Promise.all([
       dshield(errors),
       Promise.resolve(threatIntel()?.get?.('abuseipdb')).catch(() => null),
-      fortiguard(),
+      ...ids.map((id) => cached(id, SOURCE_TTL[id], fetchers[id])),
     ]);
-    errors.push(...feed.errors);
+    const src = Object.fromEntries(ids.map((id, i) => [id, entries[i]]));
+    const val = (id) => src[id]?.value;
+    for (const [id, e] of Object.entries(src)) if (e.error) errors.push(`${id}: ${e.error}`);
+
+    // Membership sets for tagging.
+    const lists = val('blocklist') || {};
+    const sets = Object.fromEntries(Object.entries(lists).map(([k, v]) => [k, new Set(v)]));
+    const tor = val('tor') || new Set();
+    const drop = val('drop') || [];
+    const iocs = val('threatfox') || [];
+    const iocByIp = new Map(iocs.filter((i) => i.ip).map((i) => [i.ip, i]));
+    const tag = (ip) => {
+      ip.services = SERVICE_ORDER.filter((s) => sets[s]?.has(ip.ip));
+      ip.tor = tor.has(ip.ip);
+      const d = drop.length ? findRange(ip.ip, drop) : null;
+      ip.drop = Boolean(d);
+      if (d) ip.dropRef = d.sbl;
+      ip.strong = Boolean(sets.strongips?.has(ip.ip));
+      const ioc = iocByIp.get(ip.ip);
+      if (ioc) Object.assign(ip, { malware: ioc.malware, threatType: ioc.threatType });
+      return ip;
+    };
+
+    // Country lookups, shared budget: DShield top IPs first, then samples.
+    const budget = { left: MAX_NEW_LOOKUPS, failed: false };
+    await lookupCountries(dsh.ips, budget, errors);
+    const blocklistIps = SERVICE_ORDER.flatMap((s) =>
+      spacedSample(lists[s] || [], BLOCKLIST_SAMPLE).map((ip) => ({ ip, services: [s] })),
+    );
+    await lookupCountries(blocklistIps, budget, errors);
+    const c2 = iocs.filter((i) => i.ip && i.threatType === 'botnet_cc').slice(0, 24);
+    await lookupCountries(c2, budget, errors);
+
+    dsh.ips.forEach(tag);
+    blocklistIps.forEach((ip) => {
+      const own = ip.services;
+      tag(ip);
+      if (!ip.services.length) ip.services = own;
+    });
+    const gnStatus = await greyNoise(dsh.ips.slice(0, 10), errors);
+
     const abusePoints = abuse && (abuse.status === 'ok' || abuse.status === 'stale') ? abuse.points || [] : [];
-    const sources = buildSources(ips, abusePoints);
-    const dailyReports = ips.reduce((sum, ip) => sum + ip.reports, 0);
+    const rows = buildSources(dsh.ips, abusePoints, blocklistIps);
+    for (const r of rows) r.ips = r.ips.map((ip) => ({ ip: ip.ip, lines: describeIp(ip) }));
+
+    const radar = val('radar') || { pairs: [], industries: [], targets: [] };
+    const pairs = buildPairs(radar.pairs);
+    const malware = buildMalwarePoints(c2);
+    const attackTypes = SERVICE_ORDER.filter((s) => lists[s]?.length).map((s) => ({
+      service: s,
+      count: lists[s].length,
+      ...SERVICE_INFO[s],
+    }));
+    const exploited = (val('shadowserver') || []).slice(0, 8).map((r) => ({ ...exploitedExplained(r), vulnerability: r.vulnerability }));
+    const dailyReports = dsh.ips.reduce((sum, ip) => sum + ip.reports, 0);
+
     const body = {
-      status: sources.length ? 'ok' : feed.items.length ? 'partial' : 'error',
+      status: rows.length || pairs.length ? 'ok' : 'error',
       updatedAt: new Date(clock()).toISOString(),
       target: TARGET,
-      sources,
-      ports,
+      sources: rows,
+      pairs,
+      malware,
+      attackTypes,
+      ddos: {
+        industries: radar.industries.map((i) => ({
+          ...i,
+          plain: `${i.name} websites took ${i.value.toFixed(1)}% of the web attacks Cloudflare blocked.`,
+          technical: `Cloudflare Radar L7 top industry: ${i.value.toFixed(2)}% of mitigated requests (24h).`,
+        })),
+        targets: radar.targets,
+      },
+      exploited,
+      ports: dsh.ports.map((p) => ({ ...p, ...portExplained(p.port, p.service) })),
       rate: {
         perMinute: Math.round((dailyReports / 1440) * 10) / 10,
-        basis: `DShield reports from the top ${ips.length} sources, averaged over a day`,
+        basis: `DShield reports from the top ${dsh.ips.length} sources, averaged over a day`,
       },
-      alerts: feed.items,
+      alerts: buildAlerts({
+        fortiguard: val('fortiguard') || [],
+        otx: val('otx') || [],
+        kev: val('kev') || [],
+        exploited,
+        urlhaus: val('urlhaus'),
+        iocs,
+      }),
       abuseipdb: abuse?.status || 'off',
+      feeds: [
+        { id: 'dshield', label: 'SANS ISC / DShield', status: dsh.ok ? 'ok' : 'error' },
+        { id: 'abuseipdb', label: 'AbuseIPDB', status: abuse?.status || 'off', keyEnv: 'ABUSEIPDB_API_KEY' },
+        ...ids.map((id) => ({ id, label: FEED_LABELS[id], status: src[id].status, error: src[id].error, keyEnv: FEED_KEYS[id] || null })),
+        { id: 'greynoise', label: 'GreyNoise', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
+      ],
       errors,
     };
     return body;
@@ -280,13 +656,13 @@ export function createAttackMapService({
       inflight ??= build()
         .then((body) => {
           const lastGood = snapshot?.body?.sources?.length ? snapshot.body : null;
-          if (!body.sources.length && lastGood) {
+          if (!body.sources.length && !body.pairs.length && lastGood) {
             // Keep the last good arcs (and any fresh ticker items); retry in 5 minutes.
-            const stale = { ...lastGood, status: 'stale', alerts: body.alerts.length ? body.alerts : lastGood.alerts, errors: body.errors };
-            snapshot = { at: clock() - TTL + 5 * MIN, body: lastGood };
+            const stale = { ...lastGood, status: 'stale', alerts: body.alerts.length ? body.alerts : lastGood.alerts, feeds: body.feeds, errors: body.errors };
+            snapshot = { at: clock() - TTL + RETRY_MS, body: lastGood };
             return stale;
           }
-          snapshot = { at: body.sources.length ? clock() : clock() - TTL + 5 * MIN, body };
+          snapshot = { at: body.status === 'ok' ? clock() : clock() - TTL + RETRY_MS, body };
           return body;
         })
         .finally(() => {
@@ -295,6 +671,76 @@ export function createAttackMapService({
       return inflight;
     },
   };
+}
+
+const FEED_LABELS = Object.freeze({
+  radar: 'Cloudflare Radar',
+  blocklist: 'blocklist.de',
+  threatfox: 'abuse.ch ThreatFox',
+  urlhaus: 'abuse.ch URLhaus',
+  otx: 'AlienVault OTX',
+  shadowserver: 'Shadowserver',
+  drop: 'Spamhaus DROP',
+  tor: 'Tor exit list',
+  kev: 'CISA KEV',
+  fortiguard: 'FortiGuard',
+});
+const FEED_KEYS = Object.freeze({
+  radar: 'CLOUDFLARE_API_TOKEN',
+  threatfox: 'ABUSECH_AUTH_KEY',
+  urlhaus: 'ABUSECH_AUTH_KEY',
+  otx: 'OTX_API_KEY',
+  shadowserver: 'SHADOWSERVER_API_KEY',
+});
+
+/** Every alert: { source, title, plain, technical, link, time }. Newest first, sources interleaved. */
+export function buildAlerts({ fortiguard = [], otx = [], kev = [], exploited = [], urlhaus = null, iocs = [] }) {
+  const lanes = [];
+  lanes.push(
+    fortiguard.map((a) => {
+      const kind = FORTIGUARD_KINDS[a.source] || FORTIGUARD_KINDS['Threat Signal'];
+      return { source: `FortiGuard ${a.source}`, title: a.title, plain: kind.plain, technical: `${kind.technical} “${a.title}”`, link: a.link, time: a.time };
+    }),
+  );
+  lanes.push(
+    otx.slice(0, 12).map((p) => ({ source: 'OTX', ...pulseExplained(p), link: p.id ? `https://otx.alienvault.com/pulse/${p.id}` : '', time: p.time || null })),
+  );
+  lanes.push(
+    kev.map((v) => ({ source: 'CISA KEV', ...kevExplained(v), link: `https://nvd.nist.gov/vuln/detail/${encodeURIComponent(v.cveID)}`, time: v.dateAdded ? `${v.dateAdded}T00:00:00Z` : null })),
+  );
+  lanes.push(exploited.map((e) => ({ source: 'Shadowserver', title: e.title, plain: e.plain, technical: e.technical, link: '', time: null })));
+  const extra = [];
+  if (iocs.length) {
+    const counts = new Map();
+    for (const i of iocs) if (i.malware) counts.set(i.malware, (counts.get(i.malware) || 0) + 1);
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+    if (top.length) {
+      const f = familyExplained(top[0][0]);
+      extra.push({
+        source: 'ThreatFox',
+        title: `Most-reported malware today: ${top.map(([n, c]) => `${n} (${c})`).join(', ')}`,
+        plain: `${top[0][0]}: ${f.plain}`,
+        technical: `ThreatFox IOCs (24h): ${iocs.length} indicators; top families ${top.map(([n, c]) => `${n}=${c}`).join(', ')}.`,
+        link: 'https://threatfox.abuse.ch/browse/',
+        time: null,
+      });
+    }
+  }
+  if (urlhaus?.total) {
+    extra.push({
+      source: 'URLhaus',
+      title: `${urlhaus.online} malware download links are live right now`,
+      plain: `Researchers reported ${urlhaus.total} web links handing out malware in the last few days; ${urlhaus.online} still work. Opening one infects the computer.`,
+      technical: `URLhaus recent URLs: ${urlhaus.total} (online ${urlhaus.online}); top tags ${urlhaus.topTags.map((t) => `${t.tag}=${t.count}`).join(', ') || 'n/a'}.`,
+      link: 'https://urlhaus.abuse.ch/browse/',
+      time: null,
+    });
+  }
+  lanes.push(extra);
+  const sorted = lanes.map((l) => [...l].sort((a, b) => String(b.time || '').localeCompare(String(a.time || ''))));
+  const out = [];
+  for (let i = 0; out.length < 40 && sorted.some((l) => i < l.length); i++) for (const l of sorted) if (l[i] && out.length < 40) out.push(l[i]);
+  return out;
 }
 
 export function createAttackMapMiddleware(options) {

@@ -2876,10 +2876,13 @@
   "Historical": "历史资料",
   "Optional free key — works without one, raises limits": "可选的免费密钥——没有也能用，可提高限额",
   "Reported Attackers layer: IPs flagged for attacks, grouped by country. Free account; refreshed a few times a day.": "“已报告攻击者”图层：因攻击被标记的 IP，按国家分组。免费账户；每天刷新几次。",
-  "Outage Reports layer: verified internet outages and their causes. Free account; create an API token with Radar read access.": "“中断报告”图层：经核实的互联网中断及其原因。免费账户；创建具有 Radar 读取权限的 API 令牌。",
   "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "“暴露的工控系统 (757)”图层：汉普顿路斯一带可从互联网访问的工业控制系统。搜索过滤器需要 Shodan 会员。",
-  "Botnet C2 Servers layer works without a key. Add a free abuse.ch Auth-Key if downloads start asking for one.": "“僵尸网络 C2 服务器”图层无需密钥。如果下载开始要求密钥，请添加免费的 abuse.ch Auth-Key。",
   "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "“AI 安全”面板的公告无需密钥。免费的 GitHub 令牌（无需任何权限）可解除每小时 60 次请求的限制。",
   "Attack Map": "攻击地图",
-  "Hampton Roads 757": "汉普顿路斯 757"
+  "Hampton Roads 757": "汉普顿路斯 757",
+  "Outage Reports layer, plus the Attack Map’s DDoS arcs and most-attacked industries. Free account; create an API token with Radar read access.": "“中断报告”图层，以及攻击地图中的 DDoS 弧线和受攻击最多的行业。免费账户；创建具有 Radar 读取权限的 API 令牌。",
+  "Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.": "攻击地图中的恶意软件名称（ThreatFox）和仍在活动的恶意链接（URLhaus）。免费密钥；“僵尸网络 C2 服务器”图层无需密钥。",
+  "Attack Map alerts: researchers’ campaign reports (“pulses”) — who is attacking whom, with which malware. Free account.": "攻击地图警报：研究人员的攻击活动报告（“pulse”）——谁在攻击谁、使用何种恶意软件。免费账户。",
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Free community key; a few lookups a day.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。免费社区密钥；每天少量查询。",
+  "Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.": "攻击地图警报：攻击者针对 Shadowserver 诱饵服务器利用的漏洞。免费，但需要注册并申请 API 访问权限。"
 }

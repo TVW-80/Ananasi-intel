@@ -127,3 +127,99 @@ test('an upstream outage keeps the last good map and says it is stale', async ()
   assert.equal(stale.sources.length, 2);
   assert.ok(stale.errors.some((e) => /HTTP 503/.test(e)));
 });
+
+test('with every source configured, the picture merges arcs, tags, malware and two-voice alerts', async () => {
+  const seen = [];
+  const json = (o, status = 200) => ({ ok: status < 400, status, text: async () => JSON.stringify(o) });
+  const text = (t) => ({ ok: true, status: 200, text: async () => t });
+  const fetchImpl = async (url, init = {}) => {
+    seen.push({ url, init });
+    if (url.includes('/topips/')) return json(TOP_IPS);
+    if (url.includes('/topports/')) return json(TOP_PORTS);
+    const m = url.match(/\/api\/ip\/([\d.]+)\?json/);
+    if (m) return json(IP_INFO[m[1]] || { ip: { ascountry: 'DE', asname: 'SAMPLE-DE' } });
+    if (url.endsWith('.xml')) return text(RSS);
+    if (url.includes('/radar/attacks/layer7/top/attacks')) return json({ result: { top_0: [{ originCountryAlpha2: 'US', originCountryName: 'United States', targetCountryAlpha2: 'BE', targetCountryName: 'Belgium', value: '3.6' }, { originCountryAlpha2: 'US', targetCountryAlpha2: 'US', value: '3.7' }] } });
+    if (url.includes('/radar/attacks/layer7/top/industry')) return json({ result: { top_0: [{ name: 'Gambling', value: '12.5' }] } });
+    if (url.includes('/radar/')) return json({ result: { top_0: [] } });
+    if (url.includes('lists.blocklist.de/lists/ssh.txt')) return text('198.51.100.7\n192.0.2.10\n');
+    if (url.includes('lists.blocklist.de/lists/strongips.txt')) return text('198.51.100.7\n');
+    if (url.includes('lists.blocklist.de')) return text('');
+    if (url.includes('threatfox')) return json({ data: [{ ioc: '192.0.2.50:443', threat_type: 'botnet_cc', malware_printable: 'AsyncRAT' }] });
+    if (url.includes('urlhaus')) return json({ urls: [{ url: 'http://192.0.2.60/x', url_status: 'online', tags: ['mirai'] }] });
+    if (url.includes('otx.alienvault')) return json({ results: [{ id: 'p1', name: 'SAMPLE pulse', adversary: 'Sample Group', modified: '2026-11-01T10:00:00' }] });
+    if (url.includes('greynoise')) return json({ noise: true, riot: false, classification: 'malicious' });
+    if (url.includes('shadowserver')) return text('{"vendor":"Sample","product":"Router","class":"router","vulnerability":"CVE-2000-0003","iot":"yes","1d":"40"}\n');
+    if (url.includes('drop_v4.json')) return text('{"cidr":"203.0.113.0/24","sblid":"SBL000009"}\n');
+    if (url.includes('torbulkexitlist')) return text('203.0.113.9\n');
+    if (url.includes('known_exploited')) return json({ vulnerabilities: [{ cveID: 'CVE-2000-0002', dateAdded: '2026-11-01', vendorProject: 'Sample', product: 'Router', vulnerabilityName: 'Sample RCE' }] });
+    return { ok: false, status: 404, text: async () => '' };
+  };
+  const service = createAttackMapService({
+    fetchImpl,
+    envSource: { CLOUDFLARE_API_TOKEN: 'cf', ABUSECH_AUTH_KEY: 'ac', OTX_API_KEY: 'otx', GREYNOISE_API_KEY: 'gn', SHADOWSERVER_API_KEY: 'k', SHADOWSERVER_API_SECRET: 's' },
+    clock: () => Date.UTC(2026, 10, 2, 12),
+    sleep: async () => {},
+    threatIntel: () => null,
+  });
+  const body = await service.get();
+
+  // Cloudflare: one drawable pair; the domestic pair is kept but flagged.
+  assert.deepEqual(body.pairs.map((p) => [p.from.code, p.to.code, p.domestic]), [['US', 'BE', false], ['US', 'US', true]]);
+  assert.match(body.pairs[0].plain, /Belgium/);
+  assert.equal(body.ddos.industries[0].name, 'Gambling');
+
+  // Tags on the Chinese DShield IP: SSH (blocklist.de), repeat offender, GreyNoise.
+  const cn = body.sources.find((s) => s.country === 'CN');
+  assert.equal(cn.dominantService, 'ssh');
+  const lines = cn.ips[0].lines.map((l) => l.text).join(' | ');
+  assert.match(lines, /SSH break-in attempts/);
+  assert.match(lines, /Repeat offender/);
+  assert.match(lines, /GreyNoise: Mass attacker/);
+  assert.ok(cn.ips[0].lines.every((l, i) => i === 0 || (l.plain && l.tech)), 'every tag line has both voices');
+
+  // The Dutch IP is a Tor exit inside a DROP netblock.
+  const nl = body.sources.find((s) => s.country === 'NL');
+  assert.deepEqual([nl.flags.tor, nl.flags.drop], [1, 1]);
+
+  // Malware C2 markers, attack-type legend, exploited list.
+  assert.equal(body.malware[0].families[0].name, 'AsyncRAT');
+  assert.deepEqual(body.attackTypes.map((a) => [a.service, a.count]), [['ssh', 2]]);
+  assert.match(body.exploited[0].plain, /decoy servers/);
+
+  // Alerts from every lane, each with both voices.
+  const lanes = new Set(body.alerts.map((a) => a.source.split(' ')[0]));
+  for (const lane of ['FortiGuard', 'OTX', 'CISA', 'Shadowserver', 'ThreatFox', 'URLhaus']) assert.ok(lanes.has(lane), lane);
+  assert.ok(body.alerts.every((a) => a.title && a.plain && a.technical));
+
+  // Keys go only where they belong; Shadowserver is HMAC-signed.
+  const ss = seen.find((r) => r.url.includes('shadowserver'));
+  assert.match(ss.init.headers.HMAC2, /^[0-9a-f]{64}$/);
+  assert.equal(JSON.parse(ss.init.body).apikey, 'k');
+  assert.equal(seen.find((r) => r.url.includes('threatfox')).init.headers['Auth-Key'], 'ac');
+  assert.ok(seen.filter((r) => !r.url.includes('cloudflare')).every((r) => !String(r.init.headers?.Authorization || '').includes('cf')));
+  const notOk = body.feeds.filter((f) => f.status !== 'ok' && f.id !== 'abuseipdb');
+  assert.deepEqual(notOk, []);
+});
+
+test('missing keys switch single ingredients off, never the map', async () => {
+  const service = createAttackMapService({
+    fetchImpl: fakeFetch([]),
+    envSource: {},
+    clock: () => 0,
+    sleep: async () => {},
+    threatIntel: () => null,
+  });
+  const body = await service.get();
+  assert.equal(body.status, 'ok');
+  const status = Object.fromEntries(body.feeds.map((f) => [f.id, f.status]));
+  for (const id of ['radar', 'threatfox', 'urlhaus', 'otx', 'shadowserver', 'greynoise']) assert.equal(status[id], 'key-required', id);
+});
+
+test('every Attack Map key can be entered in POWER UP', async () => {
+  const { KEY_SETUP_KEYS } = await import('../../../src/keySetupCore.mjs');
+  const vars = new Set(KEY_SETUP_KEYS.filter((k) => !k.hidden).flatMap((k) => k.envVars));
+  for (const v of ['CLOUDFLARE_API_TOKEN', 'ABUSECH_AUTH_KEY', 'OTX_API_KEY', 'GREYNOISE_API_KEY', 'SHADOWSERVER_API_KEY', 'SHADOWSERVER_API_SECRET', 'ABUSEIPDB_API_KEY']) {
+    assert.ok(vars.has(v), `${v} missing from POWER UP`);
+  }
+});

@@ -101,8 +101,14 @@ function showPopover({ layer, point }, screen) {
   );
   const list = document.createElement('ul');
   list.className = 'threat-popover-items';
-  for (const item of point.items || []) list.appendChild(text('li', null, item.text));
-  const more = point.count > (point.items || []).length ? text('div', 'threat-popover-more', `+${point.count - point.items.length} more`) : null;
+  for (const item of point.items || []) {
+    const li = text('li', null, item.text);
+    // Two voices: what it means in plain words, then the analyst's jargon.
+    if (item.plain) li.appendChild(text('div', 'threat-popover-plain', item.plain));
+    if (item.tech) li.appendChild(text('div', 'threat-popover-tech', item.tech));
+    list.appendChild(li);
+  }
+  const more = point.count && point.count > (point.items || []).length ? text('div', 'threat-popover-more', `+${point.count - point.items.length} more`) : null;
   const src = text('div', 'threat-popover-source', `Source: ${layer.source}`);
   el.replaceChildren(head, title, meta, list, ...(more ? [more] : []), src);
   el.hidden = false;
