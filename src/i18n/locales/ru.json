@@ -3078,12 +3078,10 @@
   "Ransomware Victims": "Жертвы вымогателей",
   "Internet Outages": "Сбои интернета",
   "Outage Reports": "Сообщения о сбоях",
-  "Exposed ICS (757)": "Открытые АСУ ТП (757)",
   "Sundown Towns (historical)": "«Города заката» (исторические)",
   "Historical": "Исторические",
   "Optional free key — works without one, raises limits": "Необязательный бесплатный ключ — работает и без него, повышает лимиты",
   "Reported Attackers layer: IPs flagged for attacks, grouped by country. Free account; refreshed a few times a day.": "Слой «Замеченные атакующие»: IP-адреса, отмеченные за атаки, сгруппированы по странам. Бесплатный аккаунт; обновляется несколько раз в день.",
-  "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "Слой «Открытые АСУ ТП (757)»: промышленные системы управления в районе Хэмптон-Роудс, доступные из интернета. Для фильтров поиска нужно членство Shodan.",
   "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "Бюллетени панели «Безопасность ИИ» работают без ключа. Бесплатный токен GitHub (без прав доступа) снимает лимит в 60 запросов в час.",
   "Attack Map": "Карта атак",
   "Hampton Roads 757": "Хэмптон-Роудс 757",
@@ -3091,5 +3089,8 @@
   "Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.": "Названия вредоносных программ (ThreatFox) и активные вредоносные ссылки (URLhaus) на Карте атак. Бесплатный ключ; слой «C2-серверы ботнетов» работает и без него.",
   "Attack Map alerts: researchers’ campaign reports (“pulses”) — who is attacking whom, with which malware. Free account.": "Оповещения Карты атак: отчёты исследователей о кампаниях («пульсы») — кто кого атакует и каким вредоносом. Бесплатный аккаунт.",
   "Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.": "Оповещения Карты атак: уязвимости, которые атакующие эксплуатируют против серверов-ловушек Shadowserver. Бесплатно, но нужно зарегистрироваться и запросить доступ к API.",
-  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "Метки «это реально?» на Карте атак: отличают массовые сканеры интернета от атакующих, которые могут выбирать цели. Работает без ключа; ключ (только для рабочих e-mail) повышает дневной лимит."
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "Метки «это реально?» на Карте атак: отличают массовые сканеры интернета от атакующих, которые могут выбирать цели. Работает без ключа; ключ (только для рабочих e-mail) повышает дневной лимит.",
+  "Exposed ICS": "Открытые АСУ ТП",
+  "Exposed Cameras": "Открытые камеры",
+  "Exposed ICS and Exposed Cameras layers: industrial systems and cameras reachable from the internet — counts per country worldwide, or around Hampton Roads in 757 focus. Search filters need a Shodan membership.": "Слои «Открытые АСУ ТП» и «Открытые камеры»: промышленные системы и камеры, доступные из интернета, — количество по странам по всему миру или вокруг Хэмптон-Роудс в режиме 757. Для фильтров поиска нужно членство Shodan."
 }

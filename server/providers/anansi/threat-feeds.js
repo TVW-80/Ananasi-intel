@@ -213,3 +213,96 @@ export function normalizeShodan(payload) {
   }
   return { points, total: Number(payload?.total) || matches.length, skipped: matches.length - points.length };
 }
+
+// ── Shodan host/count facets: how many, never which ──────────────────────────
+// The count endpoint costs no query credits and returns no hosts, so these
+// points carry totals only — no IPs, no screenshots, no streams.
+
+/** Hampton Roads cities for the 757 focus (Shodan's city facet → a map position). */
+export const HR_CITIES = Object.freeze({
+  norfolk: [36.8508, -76.2859],
+  'virginia beach': [36.8529, -75.978],
+  chesapeake: [36.7682, -76.2875],
+  portsmouth: [36.8354, -76.2983],
+  suffolk: [36.7282, -76.5836],
+  hampton: [37.0299, -76.3452],
+  'newport news': [37.0871, -76.473],
+  williamsburg: [37.2707, -76.7075],
+  yorktown: [37.2388, -76.5097],
+  poquoson: [37.1224, -76.3458],
+  smithfield: [36.9824, -76.6311],
+  gloucester: [37.4093, -76.5258],
+  'gloucester point': [37.2532, -76.4971],
+  'james city': [37.3132, -76.7739],
+  toano: [37.3757, -76.8008],
+  'cape charles': [37.2685, -76.017],
+  'elizabeth city': [36.2946, -76.2511],
+  moyock: [36.5235, -76.1752],
+  currituck: [36.4498, -76.0157],
+});
+
+const SHODAN_EXPLAIN = Object.freeze({
+  ics: {
+    plain: 'Industrial control systems — the computers that run factories, water plants, pipelines and ports — answering openly on the internet. They were never meant to be reachable from outside.',
+    tech: 'Shodan host/count, ICS-tagged services (Modbus, S7, DNP3, BACnet, EtherNet/IP…).',
+  },
+  cameras: {
+    plain: 'Security cameras and webcams anyone on the internet can reach, often still using factory passwords. Hijacked cameras are what built botnets like Mirai.',
+    tech: 'Shodan host/count on exposed camera services (webcam screenshot label). Counts only — no addresses or images are collected.',
+  },
+});
+
+/**
+ * @param {object} payload host/count response { total, facets: { country|city: [{value, count}] } }
+ * @param {{kind: 'ics'|'cameras', facet: 'country'|'city'}} opts
+ */
+export function normalizeShodanFacets(payload, { kind, facet }) {
+  const rows = Array.isArray(payload?.facets?.[facet]) ? payload.facets[facet] : [];
+  const explain = SHODAN_EXPLAIN[kind];
+  const label = kind === 'ics' ? 'industrial systems' : 'cameras';
+  const groups = new Map();
+  for (const r of rows) {
+    const count = Number(r?.count) || 0;
+    if (!count) continue;
+    let key;
+    let place;
+    let lat;
+    let lon;
+    if (facet === 'country') {
+      const c = countryCentroid(r.value);
+      if (!c) continue;
+      key = iso2(r.value);
+      place = c.name;
+      [lat, lon] = [c.lat, c.lon];
+    } else {
+      const name = str(r.value);
+      const hit = HR_CITIES[name.toLowerCase()];
+      key = hit ? name.toLowerCase().replace(/\s+/g, '-') : 'other';
+      place = hit ? name : 'Elsewhere in the 757 area';
+      [lat, lon] = hit || HR_CITIES.norfolk;
+    }
+    const g = groups.get(key) || { key, place, lat, lon, count: 0 };
+    g.count += count;
+    groups.set(key, g);
+  }
+  const max = Math.max(0, ...[...groups.values()].map((g) => g.count));
+  const points = [...groups.values()]
+    .sort((a, b) => b.count - a.count)
+    .map((g) => ({
+      id: `shodan-${kind}:${facet === 'country' ? g.key : `757-${g.key}`}`,
+      lat: g.lat,
+      lon: g.lon,
+      country: facet === 'country' ? g.key : 'US',
+      place: g.place,
+      title: `${g.count.toLocaleString('en-US')} ${label}`,
+      detail: g.place,
+      count: g.count,
+      severity: logScale(g.count, max),
+      time: null,
+      approximate: true,
+      items: [
+        { text: `${g.count.toLocaleString('en-US')} exposed ${label} in ${g.place}`, plain: explain.plain, tech: explain.tech },
+      ],
+    }));
+  return { points, total: Number(payload?.total) || points.reduce((s, p) => s + p.count, 0), skipped: 0 };
+}

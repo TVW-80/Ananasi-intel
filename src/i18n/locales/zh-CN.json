@@ -2871,12 +2871,10 @@
   "Ransomware Victims": "勒索软件受害者",
   "Internet Outages": "互联网中断",
   "Outage Reports": "中断报告",
-  "Exposed ICS (757)": "暴露的工控系统 (757)",
   "Sundown Towns (historical)": "日落镇（历史）",
   "Historical": "历史资料",
   "Optional free key — works without one, raises limits": "可选的免费密钥——没有也能用，可提高限额",
   "Reported Attackers layer: IPs flagged for attacks, grouped by country. Free account; refreshed a few times a day.": "“已报告攻击者”图层：因攻击被标记的 IP，按国家分组。免费账户；每天刷新几次。",
-  "Exposed ICS (757) layer: industrial control systems reachable from the internet around Hampton Roads. Search filters need a Shodan membership.": "“暴露的工控系统 (757)”图层：汉普顿路斯一带可从互联网访问的工业控制系统。搜索过滤器需要 Shodan 会员。",
   "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "“AI 安全”面板的公告无需密钥。免费的 GitHub 令牌（无需任何权限）可解除每小时 60 次请求的限制。",
   "Attack Map": "攻击地图",
   "Hampton Roads 757": "汉普顿路斯 757",
@@ -2884,5 +2882,8 @@
   "Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.": "攻击地图中的恶意软件名称（ThreatFox）和仍在活动的恶意链接（URLhaus）。免费密钥；“僵尸网络 C2 服务器”图层无需密钥。",
   "Attack Map alerts: researchers’ campaign reports (“pulses”) — who is attacking whom, with which malware. Free account.": "攻击地图警报：研究人员的攻击活动报告（“pulse”）——谁在攻击谁、使用何种恶意软件。免费账户。",
   "Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.": "攻击地图警报：攻击者针对 Shadowserver 诱饵服务器利用的漏洞。免费，但需要注册并申请 API 访问权限。",
-  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。无需密钥即可使用；密钥（仅限工作邮箱账户）可提高每日限额。"
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。无需密钥即可使用；密钥（仅限工作邮箱账户）可提高每日限额。",
+  "Exposed ICS": "暴露的工控系统",
+  "Exposed Cameras": "暴露的摄像头",
+  "Exposed ICS and Exposed Cameras layers: industrial systems and cameras reachable from the internet — counts per country worldwide, or around Hampton Roads in 757 focus. Search filters need a Shodan membership.": "“暴露的工控系统”和“暴露的摄像头”图层：可从互联网访问的工业系统和摄像头——全球按国家统计，或在 757 焦点下统计汉普顿路斯一带。搜索过滤器需要 Shodan 会员。"
 }

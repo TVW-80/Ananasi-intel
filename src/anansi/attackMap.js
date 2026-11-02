@@ -1,8 +1,12 @@
 /**
  * Ananzi Attack Map. Data: /api/attackmap (server/providers/anansi/attack-map.js).
  *
- *   glowing arcs → Hampton Roads   attack sources per country, coloured by the
- *                                  attack type they send most (blocklist.de)
+ *   WORLD (default): pulsing hotspots per attacking country, coloured by the
+ *                    attack type they send most (blocklist.de)
+ *   757 focus:       the same sources as glowing arcs into Hampton Roads, and
+ *                    only the US slice of everything below (focus.js)
+ *   amber dotted arcs / rings      internet route hijacks / leaks (Cloudflare BGP)
+ *   green dots                     phishing sites (OpenPhish)
  *   pink dashed arcs               Cloudflare Radar DDoS origin → target pairs
  *   purple dots                    malware command servers (ThreatFox)
  *   HUD                            estimated counter, attack types, a rotating
@@ -20,6 +24,8 @@ import * as Cesium from 'cesium';
 import { registerPickOwner, unregisterPickOwner } from '../data/pickRegistry.js';
 import { governorRequestRender, holdContinuousRender, releaseContinuousRender } from '../renderGovernor.js';
 import { POINT_LIFT_M, attachThreatClick, detachThreatClick, forgetThreatPoint, registerThreatPoint } from './threatLayers.js';
+import { FOCUS_757, createFocusToggle, getFocus, onFocusChange } from './focus.js';
+import { COLORS, renderLegend } from './legend.js';
 
 export const ATTACK_MAP_LAYER = Object.freeze({
   id: 'cyber-attack-map',
@@ -221,7 +227,8 @@ function createHud() {
   fold.type = 'button';
   fold.title = 'Minimize';
   fold.setAttribute('aria-label', 'Minimize attack map panel');
-  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), brief, fold);
+  const focusBtn = createFocusToggle(document);
+  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), focusBtn, brief, fold);
   head.title = 'Drag to move · double-click to re-dock';
   const counter = el('div', 'attack-map-counter', '—');
   const basis = el('div', 'attack-map-basis', 'waiting for DShield…');
@@ -319,7 +326,7 @@ function createHud() {
       sec.append(el('h4', null, title), ...nodes);
       return sec;
     };
-    const explain = (heading, plain, technical, { color, link, source } = {}) => {
+    const explain = (heading, plain, technical, { color, link, source, details = [] } = {}) => {
       const card = el('article', 'attack-map-brief-card');
       if (color) card.style.setProperty('--bar', color);
       const h = el('div', 'attack-map-brief-title');
@@ -334,15 +341,25 @@ function createHud() {
       card.append(h);
       if (plain) card.append(el('p', 'attack-map-plain', plain));
       if (technical) card.append(el('p', 'attack-map-tech', technical));
+      // Extra two-voice lines: EPSS odds, MITRE ATT&CK techniques.
+      for (const d of details) {
+        const sub = el('div', 'attack-map-brief-detail');
+        const label = d.link ? el('a', null, d.label) : el('span', null, d.label);
+        if (d.link) {
+          label.href = d.link;
+          label.target = '_blank';
+          label.rel = 'noopener noreferrer';
+        }
+        sub.append(label);
+        if (d.plain) sub.append(el('p', 'attack-map-plain', d.plain));
+        if (d.technical) sub.append(el('p', 'attack-map-tech', d.technical));
+        card.append(sub);
+      }
       return card;
     };
-    const legend = [
-      explain('Glowing arcs into Hampton Roads', 'Where attacks are coming from. The arc’s colour is the kind of attack its country sends most (see below); thicker and faster means more of it.', 'Source geolocation = AS country of DShield top IPs, AbuseIPDB reports and sampled blocklist.de IPs; endpoint is the viewer’s vantage, not a confirmed target.'),
-      ...(b.attackTypes || []).map((t) => explain(`${t.label} — ${fmt(t.count)} attackers (48h)`, t.plain, t.technical, { color: t.color })),
-      explain('Pink dashed arcs between countries', 'DDoS: floods meant to knock websites or networks offline, from the attacking country to the country being hit.', 'Cloudflare Radar top origin→target pairs, L7 (HTTP) and L3 (network), share of mitigated traffic, last 24h.', { color: '#e0457b' }),
-      explain('Purple dots', 'Malware control servers: the computers that give orders to infected machines. Click one to see which malware.', 'ThreatFox botnet_cc IOCs (ip:port), grouped by AS country.', { color: '#c04dd8' }),
-    ];
-    const alerts = (b.alerts || []).map((a) => explain(a.title, a.plain, a.technical, { link: a.link, source: a.source }));
+    const typeCards = (b.attackTypes || []).map((t) => explain(`${t.label} — ${fmt(t.count)} attackers (48h)`, t.plain, t.technical, { color: t.color }));
+    const legend = [renderLegend(document, { only: ['focus', 'attack-map'] }), ...typeCards];
+    const alerts = (b.alerts || []).map((a) => explain(a.title, a.plain, a.technical, { link: a.link, source: a.source, details: a.details || [] }));
     const feeds = (b.feeds || []).map((f) => {
       const row = el('div', `attack-map-feed attack-map-feed-${f.status}`);
       const note = f.status === 'key-required'
@@ -359,7 +376,7 @@ function createHud() {
     });
     panel.replaceChildren(
       section('ALERTS — PLAIN ENGLISH + TECHNICAL', alerts.length ? alerts : [el('p', 'attack-map-plain', 'No alerts yet — add keys in POWER UP or wait for the next refresh.')]),
-      section('WHAT YOU’RE LOOKING AT', legend),
+      section('WHAT YOU’RE LOOKING AT (full key: LEGEND, bottom-right)', legend),
       section('SOURCES', feeds),
     );
   }
@@ -380,6 +397,7 @@ function createHud() {
       }, 8000);
     },
     unmount() {
+      focusBtn.dispose?.();
       clearInterval(timer);
       clearInterval(rotateTimer);
       timer = rotateTimer = null;
@@ -436,6 +454,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
   let _lastUpdate = null;
   let _lastError = null;
   let _hud = null;
+  let _offFocus = null;
   const overlayId = `anansi-${def.id}`;
   const ownedIds = new Set();
 
@@ -508,13 +527,21 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
       point: { pixelSize: 7 + w * 11, color: color.withAlpha(0.85), outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 2 },
     });
+    const point = sourcePopup(source, attackTypes, target);
+    clickable(markerId, point);
+    clickable(arcId, point);
+    return { id: source.country, position: positions[0], title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
+  }
+
+  /** Popup for an attack-source country (shared by WORLD hotspots and 757 arcs). */
+  function sourcePopup(source, attackTypes, target) {
     const dominant = attackTypes.find((t) => t.service === source.dominantService);
     const flagLines = [];
     if (source.flags?.tor) flagLines.push({ text: `${source.flags.tor} via Tor`, plain: 'Some of these came through Tor, an anonymity network — the real attacker could be anywhere.', tech: 'Source IPs match the Tor Project bulk exit list.' });
     if (source.flags?.drop) flagLines.push({ text: `${source.flags.drop} from criminal netblocks`, plain: 'Some addresses belong to blocks of the internet run by criminals or stolen from their owners.', tech: 'Source IPs fall inside Spamhaus DROP netblocks.' });
-    const point = {
+    return {
       title: source.name,
-      place: `→ ${target.name}`,
+      place: target ? `→ ${target.name}` : 'attack source (WORLD view)',
       count: 0,
       time: null,
       approximate: true,
@@ -524,12 +551,79 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         ...(source.abuse ? [{ text: `AbuseIPDB: ${fmt(source.abuse)} reported attacker IPs`, plain: 'Addresses other server owners reported for attacks.', tech: 'AbuseIPDB blacklist, confidence 100, grouped by country.' }] : []),
         ...flagLines,
         ...source.ips.flatMap((ip) => ip.lines || [{ text: ip.ip }]),
-        { text: 'The arc ends at your vantage point; the sensors are worldwide.' },
+        ...(target ? [{ text: 'The arc ends at your vantage point; the sensors are worldwide.' }] : []),
       ],
     };
-    clickable(markerId, point);
-    clickable(arcId, point);
-    return { id: source.country, position: positions[0], title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
+  }
+
+  /** WORLD focus: a pulsing hotspot per attacking country (no vantage arcs). */
+  function addHotspot(source, attackTypes) {
+    const css = sourceColor(source, attackTypes);
+    const color = Cesium.Color.fromCssColorString(css);
+    const w = source.weight || 0;
+    const id = `${ID_PREFIX}src:${source.country}`;
+    const phase = (source.country.charCodeAt(0) * 37) % 1000;
+    _ds.entities.add({
+      id,
+      position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
+      point: {
+        pixelSize: new Cesium.CallbackProperty(() => 8 + w * 16 + 3 * Math.abs(Math.sin((performance.now() + phase) / 520)), false),
+        color: color.withAlpha(0.8),
+        outlineColor: color.withAlpha(0.35),
+        outlineWidth: 6,
+      },
+    });
+    clickable(id, sourcePopup(source, attackTypes, null));
+    return { id: source.country, position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world), title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
+  }
+
+  /** BGP hijack: amber dotted arc hijacker → victim (same-country hijacks become a ring). */
+  function addHijack(h, index) {
+    const color = Cesium.Color.fromCssColorString(COLORS.hijack);
+    const id = `${ID_PREFIX}bgp:${h.id}`;
+    const point = { title: h.title, place: `${h.from.name} → ${h.to.name}`, count: 0, time: h.time, approximate: true, items: [{ text: `${h.ongoing ? 'Ongoing' : 'Ended'} · confidence ${h.confidence}/10`, plain: h.plain, tech: h.technical }] };
+    if (h.domestic) {
+      _ds.entities.add({ id, position: Cesium.Cartesian3.fromDegrees(h.from.lon + 1.6, h.from.lat, POINT_LIFT_M.world), point: { pixelSize: 12, color: color.withAlpha(0.05), outlineColor: color, outlineWidth: 2 } });
+      clickable(id, point);
+      return;
+    }
+    const positions = liftedArc(h.from, h.to, POINT_LIFT_M.world, POINT_LIFT_M.world);
+    _ds.entities.add({
+      id,
+      polyline: { positions, width: 2.5, arcType: Cesium.ArcType.NONE, material: new Cesium.PolylineDashMaterialProperty({ color: color.withAlpha(0.9), dashLength: 6, dashPattern: 0b1100110011001100 }) },
+    });
+    addHeads(`bgp:${h.id}`, positions, color, 0.3, index + 13);
+    clickable(id, point);
+  }
+
+  /** BGP route leak: amber ring at the leaking network's country. */
+  function addLeak(l) {
+    const id = `${ID_PREFIX}leak:${l.id}`;
+    const color = Cesium.Color.fromCssColorString(COLORS.hijack);
+    _ds.entities.add({ id, position: Cesium.Cartesian3.fromDegrees(l.lon - 1.6, l.lat, POINT_LIFT_M.world), point: { pixelSize: 13, color: color.withAlpha(0.05), outlineColor: color, outlineWidth: 2.5 } });
+    clickable(id, { title: l.title, place: l.name, count: 0, time: l.time, approximate: true, items: [{ text: 'Internet route leak', plain: l.plain, tech: l.technical }] });
+  }
+
+  /** Phishing pages hosted in a country: green dot, brands in the popup. */
+  function addPhish(p) {
+    const id = `${ID_PREFIX}phish:${p.country}`;
+    _ds.entities.add({
+      id,
+      position: Cesium.Cartesian3.fromDegrees(p.lon + 1.6, Math.min(85, p.lat + 1.2), POINT_LIFT_M.world),
+      point: { pixelSize: 8 + Math.min(10, p.count * 2), color: Cesium.Color.fromCssColorString(COLORS.phishing).withAlpha(0.9), outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 2 },
+    });
+    clickable(id, {
+      title: `${p.count} phishing site${p.count === 1 ? '' : 's'}`,
+      place: p.name,
+      count: 0,
+      time: null,
+      approximate: true,
+      items: [
+        { text: 'What this is', plain: p.plain, tech: p.technical },
+        ...p.brands.map((b) => ({ text: `Pretends to be ${b.name} × ${b.count}` })),
+        ...p.hosts.map((h) => ({ text: h })),
+      ],
+    });
   }
 
   /** Cloudflare DDoS pair: dashed pink arc country → country. */
@@ -609,9 +703,10 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       overlayHost?.setVisible(overlayId, true);
       registerPickOwner(def.id, (id) => ownedIds.has(String(id)) || String(id).startsWith(ID_PREFIX));
       attachThreatClick(viewer || _viewer);
-      _hud ??= createHud();
+      _hud = createHud();
       _hud.mount();
       holdContinuousRender(RENDER_HOLD);
+      _offFocus = onFocusChange(() => this.update());
     },
 
     disable() {
@@ -625,6 +720,9 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       clearOwned();
       detachThreatClick();
       _hud?.unmount();
+      _hud = null;
+      _offFocus?.();
+      _offFocus = null;
       releaseContinuousRender(RENDER_HOLD);
     },
 
@@ -640,14 +738,23 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         if (request.signal.aborted || !_enabled) return false;
         clearOwned();
         _ds.entities.removeAll();
+        const focus = getFocus();
+        const view = focusView(body, focus);
         const target = body.target || { lat: 36.8508, lon: -76.2859, name: 'Hampton Roads' };
-        addTarget(target);
         const attackTypes = body.attackTypes || [];
-        const labels = (body.sources || []).map((s, i) => addArc(s, target, i, attackTypes));
-        const pairs = body.pairs || [];
-        const maxPair = Math.max(0, ...pairs.filter((p) => !p.domestic).map((p) => p.value));
-        pairs.forEach((p, i) => addPair(p, i, maxPair));
-        (body.malware || []).forEach(addMalware);
+        let labels;
+        if (focus === FOCUS_757) {
+          addTarget(target);
+          labels = view.sources.map((src, i) => addArc(src, target, i, attackTypes));
+        } else {
+          labels = view.sources.map((src) => addHotspot(src, attackTypes));
+        }
+        const maxPair = Math.max(0, ...view.pairs.filter((p) => !p.domestic).map((p) => p.value));
+        view.pairs.forEach((p, i) => addPair(p, i, maxPair));
+        view.hijacks.forEach((h, i) => addHijack(h, i));
+        view.leaks.forEach(addLeak);
+        view.malware.forEach(addMalware);
+        view.phishing.forEach(addPhish);
         overlayHost?.setEntries(
           overlayId,
           labels
@@ -669,7 +776,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
           { cohortLimit: LABEL_LIMIT, collisionCapacity: LABEL_LIMIT, moving: false },
         );
         _hud?.update(body);
-        _count = (body.sources || []).length + (body.pairs || []).filter((p) => !p.domestic).length + (body.malware || []).length;
+        _count = view.sources.length + view.pairs.filter((p) => !p.domestic).length + view.malware.length + view.phishing.length + view.hijacks.length;
         _lastUpdate = Date.now();
         _lastError = body.status === 'ok' ? null : body.errors?.[0] || null;
         governorRequestRender(`anansi:${def.id}`);
@@ -694,6 +801,31 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
     getStats() {
       return { count: _count, lastUpdate: _lastUpdate, error: _lastError };
     },
+  };
+}
+
+/**
+ * What to draw for a focus. WORLD: everything. 757: the US slice — DDoS and
+ * hijacks that touch the US, US malware/phishing/leaks; sources still arc in.
+ */
+export function focusView(body, focus) {
+  const all = {
+    sources: body.sources || [],
+    pairs: body.pairs || [],
+    hijacks: body.hijacks || [],
+    leaks: body.leaks || [],
+    malware: body.malware || [],
+    phishing: body.phishing || [],
+  };
+  if (focus !== FOCUS_757) return all;
+  const us = (code) => code === 'US';
+  return {
+    sources: all.sources,
+    pairs: all.pairs.filter((p) => us(p.from.code) || us(p.to.code)),
+    hijacks: all.hijacks.filter((h) => us(h.from.code) || us(h.to.code)),
+    leaks: all.leaks.filter((l) => us(l.country)),
+    malware: all.malware.filter((m) => us(m.country)),
+    phishing: all.phishing.filter((p) => us(p.country)),
   };
 }
 

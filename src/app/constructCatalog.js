@@ -57,6 +57,7 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'cyber-internet-outages', disposition: 'local-only' }),
   Object.freeze({ id: 'cyber-outage-reports', disposition: 'local-only' }),
   Object.freeze({ id: 'cyber-ics-exposure', disposition: 'local-only' }),
+  Object.freeze({ id: 'exposed-cameras', disposition: 'local-only' }),
   Object.freeze({ id: 'history-sundown-towns', disposition: 'local-only' }),
 ]);
 

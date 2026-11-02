@@ -161,6 +161,7 @@ test('with every source configured, the picture merges arcs, tags, malware and t
     clock: () => Date.UTC(2026, 10, 2, 12),
     sleep: async () => {},
     threatIntel: () => null,
+    resolve4: async () => [],
   });
   const body = await service.get();
 
@@ -198,12 +199,14 @@ test('with every source configured, the picture merges arcs, tags, malware and t
   assert.equal(JSON.parse(ss.init.body).apikey, 'k');
   assert.equal(seen.find((r) => r.url.includes('threatfox')).init.headers['Auth-Key'], 'ac');
   assert.ok(seen.filter((r) => !r.url.includes('cloudflare')).every((r) => !String(r.init.headers?.Authorization || '').includes('cf')));
-  const notOk = body.feeds.filter((f) => f.status !== 'ok' && f.id !== 'abuseipdb');
+  const original = ['dshield', 'radar', 'blocklist', 'threatfox', 'urlhaus', 'otx', 'shadowserver', 'drop', 'tor', 'kev', 'fortiguard', 'greynoise'];
+  const notOk = body.feeds.filter((f) => f.status !== 'ok' && original.includes(f.id));
   assert.deepEqual(notOk, []);
 });
 
 test('missing keys switch single ingredients off, never the map', async () => {
   const service = createAttackMapService({
+    resolve4: async () => [],
     fetchImpl: fakeFetch([]),
     envSource: {},
     clock: () => 0,
@@ -244,4 +247,67 @@ test('GreyNoise is asked without a key when none is set, within a smaller daily 
   await service.get();
   assert.ok(calls.length > 0);
   assert.ok(calls.every((h) => !('key' in h)), 'no key header is sent');
+});
+
+test('world-wide extras: BGP hijacks, phishing, C2 toolkits, SSLBL, breaches, PoCs, ICS, EPSS and ATT&CK', async () => {
+  const json = (o) => ({ ok: true, status: 200, text: async () => JSON.stringify(o) });
+  const text = (t) => ({ ok: true, status: 200, text: async () => t });
+  const geo = { '192.0.2.70': 'RU', '192.0.2.71': 'CN', '192.0.2.72': 'NL', '192.0.2.80': 'US' };
+  const seen = [];
+  const fetchImpl = async (url, init = {}) => {
+    seen.push({ url, init });
+    const m = url.match(/\/api\/ip\/([\d.]+)\?json/);
+    if (m) return json({ ip: { ascountry: geo[m[1]] || 'DE' } });
+    if (url.includes('/topips/')) return json([]);
+    if (url.includes('/bgp/hijacks/')) return json({ result: { events: [{ id: 1, hijacker_asn: 64500, hijacker_country: 'RU', victim_asns: [64501], victim_countries: ['US'], confidence_score: 9, prefixes: ['198.51.100.0/24'], min_hijack_ts: '2026-11-02T08:00:00', on_going_count: 1 }], asn_info: [{ asn: 64500, org_name: 'Sample Transit', country_code: 'RU' }, { asn: 64501, org_name: 'Sample Bank', country_code: 'US' }] } });
+    if (url.includes('/bgp/leaks/')) return json({ result: { events: [{ id: 2, leak_asn: 64502, countries: ['BR'], prefix_count: 120, origin_count: 40, detected_ts: '2026-11-02T07:00:00', finished: false }], asn_info: [] } });
+    if (url.includes('/radar/')) return json({ result: { top_0: [] } });
+    if (url.includes('mb-api.abuse.ch')) return json({ data: [{ signature: 'AgentTesla', file_type: 'exe', file_name: 'Invoice_2026.pdf.exe' }, { signature: 'AgentTesla', file_type: 'exe', file_name: 'x.exe' }] });
+    if (url.includes('sslbl')) return text('# SSLBL\n2026-11-01 10:00:00,192.0.2.72,443\n');
+    if (url.includes('haveibeenpwned')) return json([{ Name: 'SampleCo', Title: 'Sample Co', Domain: 'sample.example', BreachDate: '2026-10-01', AddedDate: '2026-11-01T00:00:00Z', PwnCount: 120000, DataClasses: ['Email addresses', 'Passwords'], IsVerified: true }]);
+    if (url.includes('api.github.com/search')) return json({ items: [{ name: 'CVE-2026-1234-poc', full_name: 'someone/CVE-2026-1234-poc', created_at: '2026-11-02T01:00:00Z', stargazers_count: 12 }] });
+    if (url.includes('ics-advisories')) return text('<rss><item><title>ICSA-26-306-01 Sample PLC</title><link>https://www.cisa.gov/x</link><pubDate>Mon, 02 Nov 2026 10:00:00 GMT</pubDate></item></rss>');
+    if (url.includes('openphish')) return text('https://paypal-login.example/verify\nhttps://other.example/a\n');
+    if (url.includes('C2IntelFeeds')) return text('#ip,ioc\n192.0.2.70,Possible Cobaltstrike C2 IP\n192.0.2.71,Possible Sliver C2 IP\n');
+    if (url.includes('malpedia')) return json({ 'win.agent_tesla': { common_name: 'Agent Tesla', alt_names: [], description: 'Sample description of a keylogger. Second sentence. Third.' } });
+    if (url.includes('api.first.org')) return json({ data: [{ cve: 'CVE-2026-1234', epss: '0.97', percentile: '0.999' }] });
+    if (url.includes('otx.alienvault')) return json({ results: [{ id: 'p', name: 'SAMPLE pulse', attack_ids: [{ id: 'T1566.001' }, 'T1486'] }] });
+    return { ok: false, status: 404, text: async () => '' };
+  };
+  const service = createAttackMapService({
+    fetchImpl,
+    envSource: { CLOUDFLARE_API_TOKEN: 'cf', ABUSECH_AUTH_KEY: 'ac', OTX_API_KEY: 'o' },
+    clock: () => Date.UTC(2026, 10, 2, 12),
+    sleep: async () => {},
+    threatIntel: () => null,
+    resolve4: async (host) => (host.startsWith('paypal') ? ['192.0.2.80'] : []),
+  });
+  const body = await service.get();
+
+  assert.equal(body.hijacks[0].from.code, 'RU');
+  assert.equal(body.hijacks[0].to.code, 'US');
+  assert.match(body.hijacks[0].title, /Sample Transit/);
+  assert.equal(body.leaks[0].country, 'BR');
+  assert.deepEqual(body.phishing.map((p) => [p.country, p.brands[0]?.name]), [['US', 'PayPal']]);
+  assert.match(body.phishing[0].hosts[0], /paypal-login\[\.\]example/, 'phishing hosts are defanged');
+  const families = body.malware.flatMap((m) => m.families.map((f) => f.name));
+  for (const f of ['Cobalt Strike', 'Sliver', 'SSLBL-listed botnet server']) assert.ok(families.includes(f), f);
+
+  const by = (src) => body.alerts.find((a) => a.source === src);
+  assert.match(by('Breach').plain, /120,000/);
+  assert.match(by('PoC watch').title, /CVE-2026-1234/);
+  assert.match(by('PoC watch').details[0].plain, /97%/, 'EPSS odds in plain words');
+  assert.match(by('CISA ICS').plain, /industrial/);
+  assert.match(by('BGP hijack').plain, /post office/);
+  assert.match(by('MalwareBazaar').plain, /Invoice_2026\.pdf\.exe/);
+  assert.match(by('OpenPhish').title, /PayPal/);
+  assert.match(by('C2IntelFeeds').title, /Cobalt Strike|Sliver/);
+  const otx = by('OTX');
+  assert.deepEqual(otx.details.map((d) => d.label), ['T1566.001 · Spearphishing attachment', 'T1486 · Data encrypted for impact']);
+  assert.match(otx.details[1].plain, /Ransomware/);
+  assert.ok(body.alerts.every((a) => a.plain && a.technical && (a.details || []).every((d) => d.plain && d.technical)));
+
+  const mb = seen.find((r) => r.url.includes('mb-api'));
+  assert.equal(mb.init.body, 'query=get_recent&selector=time');
+  assert.equal(mb.init.headers['Auth-Key'], 'ac');
 });

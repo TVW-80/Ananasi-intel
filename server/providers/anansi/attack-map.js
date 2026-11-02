@@ -38,7 +38,20 @@ import {
   parseJsonLines,
   radarUrl,
   shadowserverRequest,
+  normalizeBgpHijacks,
+  normalizeBgpLeaks,
+  normalizeMalwareBazaar,
+  parseSslbl,
+  normalizeHibp,
+  normalizeEpss,
+  normalizePocSearch,
+  parseOpenPhish,
+  parseC2Intel,
+  normalizeMalpedia,
+  malpediaLookup,
+  defang,
 } from './attack-sources.js';
+import { resolve4 as dnsResolve4 } from 'node:dns/promises';
 import {
   DDOS,
   FLAGS,
@@ -51,6 +64,16 @@ import {
   kevExplained,
   portExplained,
   pulseExplained,
+  techniqueExplained,
+  epssExplained,
+  BGP,
+  PHISHING,
+  C2_TOOLS,
+  SSLBL,
+  breachExplained,
+  pocExplained,
+  icsAdvisoryExplained,
+  malwareBazaarExplained,
 } from './attack-glossary.js';
 
 const MIN = 60_000;
@@ -60,7 +83,11 @@ const TIMEOUT_MS = 20_000;
 const TOP_IPS = 40; // DShield asks for restraint; 40 lookups a day per new IP at most
 const LOOKUP_GAP_MS = 250;
 const USER_AGENT = 'Ananzi/1.0 (personal threat-intel research dashboard)';
-const MAX_NEW_LOOKUPS = 60; // country lookups per refresh across all sources
+const MAX_NEW_LOOKUPS = 100; // country lookups per refresh across all sources (cached a day per IP)
+const PHISH_SAMPLE = 20;
+const C2INTEL_SAMPLE = 15;
+const SSLBL_SAMPLE = 10;
+const EPSS_TTL = 24 * 60 * MIN;
 const BLOCKLIST_SAMPLE = 8; // IPs per blocklist.de service placed on the map
 const GREYNOISE_TTL = 7 * 24 * 60 * MIN;
 const GREYNOISE_PER_REFRESH = 5;
@@ -77,6 +104,15 @@ const SOURCE_TTL = Object.freeze({
   tor: 6 * 60 * MIN,
   kev: 6 * 60 * MIN,
   fortiguard: 60 * MIN,
+  bgp: 30 * MIN,
+  malwarebazaar: 60 * MIN,
+  sslbl: 6 * 60 * MIN,
+  hibp: 6 * 60 * MIN,
+  poc: 60 * MIN,
+  ics: 6 * 60 * MIN,
+  openphish: 6 * 60 * MIN, // the community feed updates every 12 hours
+  c2intel: 6 * 60 * MIN,
+  malpedia: 7 * 24 * 60 * MIN,
 });
 const RETRY_MS = 5 * MIN;
 const KEY_REQUIRED = Symbol('key-required');
@@ -262,6 +298,7 @@ export function describeIp(ip) {
       lines.push({ text: `↳ ${f.label}${flag === 'drop' && ip.dropRef ? ` (${ip.dropRef})` : ''}`, plain: f.plain, tech: f.technical });
     }
   }
+  if (ip.sslbl) lines.push({ text: `↳ ${SSLBL.label}`, plain: SSLBL.plain, tech: SSLBL.technical });
   const g = greyNoiseExplained(ip.greynoise);
   if (g) lines.push({ text: `↳ GreyNoise: ${g.label}`, plain: g.plain, tech: g.technical });
   return lines;
@@ -290,7 +327,17 @@ export function buildPairs(pairs) {
 }
 
 /** ThreatFox IOCs with a country → malware infrastructure markers per country. */
-export function buildMalwarePoints(iocs) {
+/** Family explanation, with Malpedia's description as the technical voice for families we don't know. */
+export function explainFamily(name, threatType, malpedia) {
+  const f = familyExplained(name, threatType);
+  const m = malpediaLookup(malpedia, name);
+  if (m && !f.technical.includes('·') && f.technical.startsWith(String(name || ''))) {
+    return { ...f, technical: `${m.description} (Malpedia ${m.id})` };
+  }
+  return f;
+}
+
+export function buildMalwarePoints(iocs, malpedia = null) {
   const byCountry = new Map();
   for (const i of iocs) {
     if (!i.country) continue;
@@ -308,9 +355,72 @@ export function buildMalwarePoints(iocs) {
       ...r,
       families: [...r.families.entries()]
         .sort((a, b) => b[1].count - a[1].count)
-        .map(([name, v]) => ({ name, count: v.count, threatType: v.threatType, ...familyExplained(name, v.threatType) })),
+        .map(([name, v]) => ({ name, count: v.count, threatType: v.threatType, ...explainFamily(name, v.threatType, malpedia) })),
     }))
     .sort((a, b) => b.count - a.count);
+}
+
+/** Phishing hosts (resolved + geolocated) → one green marker per hosting country. */
+export function buildPhishPoints(hosts) {
+  const byCountry = new Map();
+  for (const h of hosts) {
+    const c = h.country && countryCentroid(h.country);
+    if (!c) continue;
+    const r = byCountry.get(h.country) || { country: h.country, name: c.name, lat: c.lat, lon: c.lon, count: 0, brands: new Map(), hosts: [] };
+    r.count += 1;
+    if (h.brand) r.brands.set(h.brand, (r.brands.get(h.brand) || 0) + 1);
+    if (r.hosts.length < 5) r.hosts.push(`${defang(h.host)}${h.brand ? ` — pretends to be ${h.brand}` : ''}`);
+    byCountry.set(h.country, r);
+  }
+  return [...byCountry.values()]
+    .map((r) => ({ ...r, brands: [...r.brands.entries()].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count })), ...PHISHING }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/** BGP hijacks → arcs from the hijacker's country to the victim's. */
+export function buildHijacks(events) {
+  return events
+    .map((e) => {
+      const a = countryCentroid(e.hijackerCountry);
+      const b = countryCentroid(e.victimCountries[0]);
+      if (!a || !b) return null;
+      const who = e.hijackerOrg ? `${e.hijackerOrg} (AS${e.hijackerAsn})` : `AS${e.hijackerAsn}`;
+      const victim = e.victimOrg ? `${e.victimOrg}${e.victimAsn ? ` (AS${e.victimAsn})` : ''}` : e.victimAsn ? `AS${e.victimAsn}` : 'another network';
+      return {
+        id: e.id,
+        from: { code: e.hijackerCountry, name: a.name, lat: a.lat, lon: a.lon },
+        to: { code: e.victimCountries[0], name: b.name, lat: b.lat, lon: b.lon },
+        domestic: e.hijackerCountry === e.victimCountries[0],
+        confidence: e.confidence,
+        ongoing: e.ongoing,
+        title: `${who} claimed ${victim}’s addresses`,
+        plain: BGP.hijack.plain,
+        technical: `${BGP.hijack.technical} Hijacker ${who} (${e.hijackerCountry}) → victim ${victim} (${e.victimCountries.join(', ')}); prefixes ${e.prefixes.join(', ') || 'n/a'}; confidence ${e.confidence}/10; ${e.ongoing ? 'ongoing' : `ended ${e.end || '?'}`}.`,
+        time: e.start || null,
+      };
+    })
+    .filter(Boolean);
+}
+
+export function buildLeaks(events) {
+  return events
+    .map((e) => {
+      const c = countryCentroid(e.countries[0]);
+      if (!c) return null;
+      const who = e.leakOrg ? `${e.leakOrg} (AS${e.leakAsn})` : `AS${e.leakAsn}`;
+      return {
+        id: e.id,
+        country: e.countries[0],
+        name: c.name,
+        lat: c.lat,
+        lon: c.lon,
+        title: `${who} leaked ${e.prefixes} internet routes`,
+        plain: BGP.leak.plain,
+        technical: `${BGP.leak.technical} Leaker ${who}; countries ${e.countries.join(', ')}; ${e.prefixes} prefixes from ${e.origins} origins; ${e.finished ? 'finished' : 'ongoing'}; detected ${e.detected || '?'}.`,
+        time: e.detected || null,
+      };
+    })
+    .filter(Boolean);
 }
 
 function spacedSample(list, n) {
@@ -326,8 +436,11 @@ export function createAttackMapService({
   clock = Date.now,
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
   threatIntel = () => sharedThreatIntel(),
+  resolve4 = (host) => dnsResolve4(host),
 } = {}) {
   const ipCache = new Map(); // ip -> { at, info }
+  const hostCache = new Map(); // phishing host -> { at, ip }
+  const epssCache = new Map(); // CVE -> { at, value }
   const gnCache = new Map(); // ip -> { at, info }
   const gnBudget = { day: '', used: 0 };
   const sources = new Map(); // id -> { at, ok, status, value, error }
@@ -543,7 +656,79 @@ export function createAttackMapService({
       if (!items.length && errs.length) throw new Error(errs.join('; '));
       return items;
     },
+    bgp: async () => {
+      const token = env('CLOUDFLARE_API_TOKEN');
+      if (!token) return KEY_REQUIRED;
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
+      const [h, l] = await Promise.allSettled([getJson(URLS.bgpHijacks, { headers }), getJson(URLS.bgpLeaks, { headers })]);
+      if (h.status === 'rejected' && l.status === 'rejected') throw h.reason;
+      return {
+        hijacks: h.status === 'fulfilled' ? normalizeBgpHijacks(h.value) : [],
+        leaks: l.status === 'fulfilled' ? normalizeBgpLeaks(l.value) : [],
+      };
+    },
+    malwarebazaar: async () => {
+      const key = env('ABUSECH_AUTH_KEY');
+      if (!key) return KEY_REQUIRED;
+      return normalizeMalwareBazaar(
+        await getJson(URLS.malwarebazaar, {
+          method: 'POST',
+          headers: { 'Auth-Key': key, 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+          body: new URLSearchParams({ query: 'get_recent', selector: 'time' }).toString(),
+        }),
+      );
+    },
+    sslbl: async () => {
+      const key = env('ABUSECH_AUTH_KEY');
+      return parseSslbl(await getText(URLS.sslbl, { headers: key ? { 'Auth-Key': key } : {} }));
+    },
+    hibp: async () => normalizeHibp(await getJson(URLS.hibp, { headers: { Accept: 'application/json' } })),
+    poc: async () => {
+      const token = env('GITHUB_TOKEN');
+      const year = new Date(clock()).getUTCFullYear();
+      const headers = { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+      return normalizePocSearch(await getJson(URLS.poc(year), { headers }));
+    },
+    ics: async () => parseRssItems(await getText(URLS.icsAdvisories), 'ICS').slice(0, 8),
+    openphish: async () => parseOpenPhish(await getText(URLS.openphish)),
+    c2intel: async () => parseC2Intel(await getText(URLS.c2intel)),
+    malpedia: async () => normalizeMalpedia(await getJson(URLS.malpedia)),
   };
+
+  async function resolveHosts(hosts, errors) {
+    let asked = 0;
+    for (const h of hosts) {
+      const hit = hostCache.get(h.host);
+      if (hit && clock() - hit.at < IP_TTL) {
+        h.ip = hit.ip;
+        continue;
+      }
+      if (asked >= PHISH_SAMPLE) continue;
+      asked += 1;
+      try {
+        const ips = await Promise.race([resolve4(h.host), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000).unref?.())]);
+        h.ip = Array.isArray(ips) ? ips[0] || '' : '';
+      } catch {
+        h.ip = '';
+      }
+      hostCache.set(h.host, { at: clock(), ip: h.ip });
+    }
+    return hosts.filter((h) => h.ip);
+  }
+
+  async function epssFor(cves, errors) {
+    const want = [...new Set(cves.filter((c) => /^CVE-\d{4}-\d+$/.test(c)))].slice(0, 40);
+    const missing = want.filter((c) => !(epssCache.get(c) && clock() - epssCache.get(c).at < EPSS_TTL));
+    if (missing.length) {
+      try {
+        const m = normalizeEpss(await getJson(URLS.epss(missing)));
+        for (const c of missing) epssCache.set(c, { at: clock(), value: m.get(c) || null });
+      } catch (err) {
+        errors.push(`EPSS: ${err.message}`);
+      }
+    }
+    return new Map(want.map((c) => [c, epssCache.get(c)?.value || null]));
+  }
 
   async function build() {
     const errors = [];
@@ -564,6 +749,9 @@ export function createAttackMapService({
     const drop = val('drop') || [];
     const iocs = val('threatfox') || [];
     const iocByIp = new Map(iocs.filter((i) => i.ip).map((i) => [i.ip, i]));
+    const sslblList = val('sslbl') || [];
+    const sslblSet = new Set(sslblList);
+    const malpedia = val('malpedia');
     const tag = (ip) => {
       ip.services = SERVICE_ORDER.filter((s) => sets[s]?.has(ip.ip));
       ip.tor = tor.has(ip.ip);
@@ -573,6 +761,7 @@ export function createAttackMapService({
       ip.strong = Boolean(sets.strongips?.has(ip.ip));
       const ioc = iocByIp.get(ip.ip);
       if (ioc) Object.assign(ip, { malware: ioc.malware, threatType: ioc.threatType });
+      ip.sslbl = sslblSet.has(ip.ip);
       return ip;
     };
 
@@ -583,8 +772,15 @@ export function createAttackMapService({
       spacedSample(lists[s] || [], BLOCKLIST_SAMPLE).map((ip) => ({ ip, services: [s] })),
     );
     await lookupCountries(blocklistIps, budget, errors);
-    const c2 = iocs.filter((i) => i.ip && i.threatType === 'botnet_cc').slice(0, 24);
+    const c2 = [
+      ...iocs.filter((i) => i.ip && i.threatType === 'botnet_cc').slice(0, 24),
+      ...spacedSample(val('c2intel') || [], C2INTEL_SAMPLE).map((x) => ({ ...x, ioc: x.ip, source: 'C2IntelFeeds' })),
+      ...spacedSample(sslblList, SSLBL_SAMPLE).map((ip) => ({ ip, ioc: ip, malware: 'SSLBL-listed botnet server', threatType: 'botnet_cc', source: 'SSLBL' })),
+    ];
     await lookupCountries(c2, budget, errors);
+    const phish = val('openphish') || { total: 0, hosts: [] };
+    const phishHosts = await resolveHosts(spacedSample(phish.hosts, PHISH_SAMPLE).map((h) => ({ ...h })), errors);
+    await lookupCountries(phishHosts, budget, errors);
 
     dsh.ips.forEach(tag);
     blocklistIps.forEach((ip) => {
@@ -600,22 +796,32 @@ export function createAttackMapService({
 
     const radar = val('radar') || { pairs: [], industries: [], targets: [] };
     const pairs = buildPairs(radar.pairs);
-    const malware = buildMalwarePoints(c2);
+    const malware = buildMalwarePoints(c2, malpedia);
+    const phishing = buildPhishPoints(phishHosts);
+    const bgp = val('bgp') || { hijacks: [], leaks: [] };
+    const hijacks = buildHijacks(bgp.hijacks);
+    const leaks = buildLeaks(bgp.leaks);
     const attackTypes = SERVICE_ORDER.filter((s) => lists[s]?.length).map((s) => ({
       service: s,
       count: lists[s].length,
       ...SERVICE_INFO[s],
     }));
     const exploited = (val('shadowserver') || []).slice(0, 8).map((r) => ({ ...exploitedExplained(r), vulnerability: r.vulnerability }));
+    const pocs = val('poc') || [];
+    const kev = val('kev') || [];
+    const epss = await epssFor([...kev.map((v) => v.cveID), ...exploited.map((e) => e.vulnerability), ...pocs.map((p) => p.cve)], errors);
     const dailyReports = dsh.ips.reduce((sum, ip) => sum + ip.reports, 0);
 
     const body = {
-      status: rows.length || pairs.length ? 'ok' : 'error',
+      status: rows.length || pairs.length || malware.length ? 'ok' : 'error',
       updatedAt: new Date(clock()).toISOString(),
       target: TARGET,
       sources: rows,
       pairs,
       malware,
+      phishing,
+      hijacks,
+      leaks,
       attackTypes,
       ddos: {
         industries: radar.industries.map((i) => ({
@@ -634,16 +840,27 @@ export function createAttackMapService({
       alerts: buildAlerts({
         fortiguard: val('fortiguard') || [],
         otx: val('otx') || [],
-        kev: val('kev') || [],
+        kev,
         exploited,
         urlhaus: val('urlhaus'),
         iocs,
+        epss,
+        hijacks,
+        leaks,
+        malwarebazaar: val('malwarebazaar'),
+        breaches: val('hibp') || [],
+        pocs,
+        ics: val('ics') || [],
+        phish,
+        c2intel: val('c2intel') || [],
+        malpedia,
       }),
       abuseipdb: abuse?.status || 'off',
       feeds: [
         { id: 'dshield', label: 'SANS ISC / DShield', status: dsh.ok ? 'ok' : 'error' },
         { id: 'abuseipdb', label: 'AbuseIPDB', status: abuse?.status || 'off', keyEnv: 'ABUSEIPDB_API_KEY' },
         ...ids.map((id) => ({ id, label: FEED_LABELS[id], status: src[id].status, error: src[id].error, keyEnv: FEED_KEYS[id] || null })),
+        { id: 'epss', label: 'FIRST EPSS', status: errors.some((e) => e.startsWith('EPSS')) ? 'error' : 'ok' },
         { id: 'greynoise', label: env('GREYNOISE_API_KEY') ? 'GreyNoise' : 'GreyNoise (no key, smaller daily allowance)', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
       ],
       errors,
@@ -657,7 +874,7 @@ export function createAttackMapService({
       inflight ??= build()
         .then((body) => {
           const lastGood = snapshot?.body?.sources?.length ? snapshot.body : null;
-          if (!body.sources.length && !body.pairs.length && lastGood) {
+          if (!body.sources.length && !body.pairs.length && !body.malware.length && lastGood) {
             // Keep the last good arcs (and any fresh ticker items); retry in 5 minutes.
             const stale = { ...lastGood, status: 'stale', alerts: body.alerts.length ? body.alerts : lastGood.alerts, feeds: body.feeds, errors: body.errors };
             snapshot = { at: clock() - TTL + RETRY_MS, body: lastGood };
@@ -685,6 +902,15 @@ const FEED_LABELS = Object.freeze({
   tor: 'Tor exit list',
   kev: 'CISA KEV',
   fortiguard: 'FortiGuard',
+  bgp: 'Cloudflare Radar BGP (route hijacks & leaks)',
+  malwarebazaar: 'abuse.ch MalwareBazaar',
+  sslbl: 'abuse.ch SSLBL',
+  hibp: 'Have I Been Pwned (breaches)',
+  poc: 'GitHub PoC watch',
+  ics: 'CISA ICS advisories',
+  openphish: 'OpenPhish',
+  c2intel: 'C2IntelFeeds',
+  malpedia: 'Malpedia',
 });
 const FEED_KEYS = Object.freeze({
   radar: 'CLOUDFLARE_API_TOKEN',
@@ -692,10 +918,25 @@ const FEED_KEYS = Object.freeze({
   urlhaus: 'ABUSECH_AUTH_KEY',
   otx: 'OTX_API_KEY',
   shadowserver: 'SHADOWSERVER_API_KEY',
+  bgp: 'CLOUDFLARE_API_TOKEN',
+  malwarebazaar: 'ABUSECH_AUTH_KEY',
 });
 
-/** Every alert: { source, title, plain, technical, link, time }. Newest first, sources interleaved. */
-export function buildAlerts({ fortiguard = [], otx = [], kev = [], exploited = [], urlhaus = null, iocs = [] }) {
+/** EPSS line for a CVE, as an alert detail. */
+function epssDetail(epss, cve) {
+  const e = epssExplained(epss?.get?.(cve));
+  return e ? [{ label: `EPSS · ${cve}`, plain: e.plain, technical: e.technical, link: `https://www.first.org/epss/` }] : [];
+}
+
+/**
+ * Every alert: { source, title, plain, technical, link, time, details? }.
+ * `details` are extra two-voice lines (EPSS odds, ATT&CK techniques).
+ * Newest first, sources interleaved so no one feed floods the ticker.
+ */
+export function buildAlerts({
+  fortiguard = [], otx = [], kev = [], exploited = [], urlhaus = null, iocs = [], epss = new Map(),
+  hijacks = [], leaks = [], malwarebazaar = null, breaches = [], pocs = [], ics = [], phish = null, c2intel = [], malpedia = null,
+} = {}) {
   const lanes = [];
   lanes.push(
     fortiguard.map((a) => {
@@ -704,24 +945,52 @@ export function buildAlerts({ fortiguard = [], otx = [], kev = [], exploited = [
     }),
   );
   lanes.push(
-    otx.slice(0, 12).map((p) => ({ source: 'OTX', ...pulseExplained(p), link: p.id ? `https://otx.alienvault.com/pulse/${p.id}` : '', time: p.time || null })),
+    otx.slice(0, 12).map((p) => {
+      const techniques = (p.attack_ids || []).map(techniqueExplained).filter(Boolean).slice(0, 5);
+      return {
+        source: 'OTX',
+        ...pulseExplained(p),
+        link: p.id ? `https://otx.alienvault.com/pulse/${p.id}` : '',
+        time: p.time || null,
+        details: techniques.map((t) => ({ label: `${t.id} · ${t.name}`, plain: t.plain, technical: t.technical, link: t.link })),
+      };
+    }),
   );
   lanes.push(
-    kev.map((v) => ({ source: 'CISA KEV', ...kevExplained(v), link: `https://nvd.nist.gov/vuln/detail/${encodeURIComponent(v.cveID)}`, time: v.dateAdded ? `${v.dateAdded}T00:00:00Z` : null })),
+    kev.map((v) => ({
+      source: 'CISA KEV',
+      ...kevExplained(v),
+      link: `https://nvd.nist.gov/vuln/detail/${encodeURIComponent(v.cveID)}`,
+      time: v.dateAdded ? `${v.dateAdded}T00:00:00Z` : null,
+      details: epssDetail(epss, v.cveID),
+    })),
   );
-  lanes.push(exploited.map((e) => ({ source: 'Shadowserver', title: e.title, plain: e.plain, technical: e.technical, link: '', time: null })));
+  lanes.push(exploited.map((e) => ({ source: 'Shadowserver', title: e.title, plain: e.plain, technical: e.technical, link: '', time: null, details: epssDetail(epss, e.vulnerability) })));
+  lanes.push(
+    pocs.slice(0, 6).map((p) => ({
+      source: 'PoC watch',
+      ...pocExplained(p),
+      link: `https://nvd.nist.gov/vuln/detail/${encodeURIComponent(p.cve)}`,
+      time: p.created || null,
+      details: epssDetail(epss, p.cve),
+    })),
+  );
+  lanes.push(ics.slice(0, 6).map((a) => ({ source: 'CISA ICS', ...icsAdvisoryExplained(a), link: a.link, time: a.time })));
+  lanes.push(hijacks.slice(0, 5).map((h) => ({ source: 'BGP hijack', title: h.title, plain: h.plain, technical: h.technical, link: 'https://radar.cloudflare.com/routing', time: h.time })));
+  lanes.push(leaks.slice(0, 3).map((l) => ({ source: 'BGP leak', title: l.title, plain: l.plain, technical: l.technical, link: 'https://radar.cloudflare.com/routing', time: l.time })));
+  lanes.push(breaches.map((b) => ({ source: 'Breach', ...breachExplained(b), link: `https://haveibeenpwned.com/PwnedWebsites#${encodeURIComponent(b.name)}`, time: b.addedDate || null })));
   const extra = [];
   if (iocs.length) {
     const counts = new Map();
     for (const i of iocs) if (i.malware) counts.set(i.malware, (counts.get(i.malware) || 0) + 1);
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
     if (top.length) {
-      const f = familyExplained(top[0][0]);
+      const f = explainFamily(top[0][0], undefined, malpedia);
       extra.push({
         source: 'ThreatFox',
         title: `Most-reported malware today: ${top.map(([n, c]) => `${n} (${c})`).join(', ')}`,
         plain: `${top[0][0]}: ${f.plain}`,
-        technical: `ThreatFox IOCs (24h): ${iocs.length} indicators; top families ${top.map(([n, c]) => `${n}=${c}`).join(', ')}.`,
+        technical: `ThreatFox IOCs (24h): ${iocs.length} indicators; top families ${top.map(([n, c]) => `${n}=${c}`).join(', ')}. ${f.technical}`,
         link: 'https://threatfox.abuse.ch/browse/',
         time: null,
       });
@@ -737,10 +1006,37 @@ export function buildAlerts({ fortiguard = [], otx = [], kev = [], exploited = [
       time: null,
     });
   }
+  if (malwarebazaar?.total) extra.push({ source: 'MalwareBazaar', ...malwareBazaarExplained(malwarebazaar), link: 'https://bazaar.abuse.ch/browse/', time: null });
+  if (phish?.total) {
+    const brands = new Map();
+    for (const h of phish.hosts) if (h.brand) brands.set(h.brand, (brands.get(h.brand) || 0) + h.urls);
+    const top = [...brands.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+    extra.push({
+      source: 'OpenPhish',
+      title: `${phish.total.toLocaleString('en-US')} phishing pages active${top.length ? ` — most faked: ${top[0][0]}` : ''}`,
+      plain: `${PHISHING.plain}${top.length ? ` The most-copied brands right now: ${top.map(([n]) => n).join(', ')}.` : ''}`,
+      technical: `${PHISHING.technical} ${phish.total} URLs on ${phish.hosts.length} hosts${top.length ? `; brand keywords ${top.map(([n, c]) => `${n}=${c}`).join(', ')}` : ''}.`,
+      link: 'https://openphish.com/',
+      time: null,
+    });
+  }
+  if (c2intel.length) {
+    const tools = new Map();
+    for (const c of c2intel) tools.set(c.malware, (tools.get(c.malware) || 0) + 1);
+    const top = [...tools.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+    extra.push({
+      source: 'C2IntelFeeds',
+      title: `${c2intel.length.toLocaleString('en-US')} hacking-toolkit servers seen this month — mostly ${top[0][0]}`,
+      plain: C2_TOOLS.plain,
+      technical: `${C2_TOOLS.technical} ${top.map(([n, c]) => `${n}=${c}`).join(', ')}.`,
+      link: 'https://github.com/drb-ra/C2IntelFeeds',
+      time: null,
+    });
+  }
   lanes.push(extra);
   const sorted = lanes.map((l) => [...l].sort((a, b) => String(b.time || '').localeCompare(String(a.time || ''))));
   const out = [];
-  for (let i = 0; out.length < 40 && sorted.some((l) => i < l.length); i++) for (const l of sorted) if (l[i] && out.length < 40) out.push(l[i]);
+  for (let i = 0; out.length < 60 && sorted.some((l) => i < l.length); i++) for (const l of sorted) if (l[i] && out.length < 60) out.push(l[i]);
   return out;
 }
 

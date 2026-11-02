@@ -1167,3 +1167,93 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   #corner-actions #key-setup-chip.ananzi-powerup { animation: none; }
 }
+
+/* WORLD / 757 focus toggle (src/anansi/focus.js): corner chip + Attack Map HUD. */
+.ananzi-focus-btn {
+  padding: 0 9px;
+  height: 26px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #f4cf5e;
+  background: rgba(10, 9, 8, 0.86);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ananzi-focus-btn[data-focus='757'] {
+  color: #0b0a08;
+  background: #d4af37;
+  border-color: #f4cf5e;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.55);
+}
+.ananzi-focus-btn:hover { border-color: #f4cf5e; }
+.attack-map-hud-head .ananzi-focus-btn { height: 18px; padding: 0 6px; font-size: 9px; border-radius: 9px; }
+
+/* LEGEND (src/anansi/legend.js): corner chip + quick-reference panel. */
+.ananzi-legend-btn.active { background: rgba(212, 175, 55, 0.25); }
+.ananzi-legend {
+  position: fixed;
+  z-index: 320;
+  right: 16px;
+  bottom: 80px;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(70vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 9, 8, 0.94);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 22px rgba(212, 175, 55, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  backdrop-filter: blur(12px);
+}
+.ananzi-legend[hidden] { display: none; }
+.ananzi-legend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #f4cf5e;
+}
+.ananzi-legend-body { overflow-y: auto; padding: 0 10px 10px; }
+.ananzi-legend-group h4,
+.attack-map-brief .ananzi-legend-group h4 {
+  margin: 10px 0 5px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #d4af37;
+}
+.ananzi-legend-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.ananzi-legend-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  font-size: 13px;
+  line-height: 1;
+}
+.ananzi-legend-swatch.is-chip {
+  width: 30px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  font-size: 10px;
+}
+.ananzi-legend-text b { font-size: 10.5px; font-weight: 600; }
+.ananzi-legend-text p { margin: 2px 0 0; font-size: 9.5px; line-height: 1.4; }
+.attack-map-brief-detail { margin: 5px 0 0 10px; padding-left: 7px; border-left: 1px dashed rgba(212, 175, 55, 0.4); }
+.attack-map-brief-detail > a,
+.attack-map-brief-detail > span { font-size: 10px; color: #f4cf5e; text-decoration: none; }
+.attack-map-brief-detail > a:hover { text-decoration: underline; }

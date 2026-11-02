@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ATTACK_MAP_LAYER, arcColor, arcPoints, counterStart, sourceColor, twoVoice } from './attackMap.js';
+import { ATTACK_MAP_LAYER, arcColor, arcPoints, counterStart, focusView, sourceColor, twoVoice } from './attackMap.js';
 
 test('arcs start and end on the ground at the endpoints and bow upward between', () => {
   const src = { lat: 39.9, lon: 116.4 }; // Beijing
@@ -32,4 +32,20 @@ test('arcs take the colour of their dominant attack type, else their strength', 
   assert.equal(sourceColor({ dominantService: 'ssh', weight: 0 }, types), '#ff2b2b');
   assert.equal(sourceColor({ dominantService: 'ftp', weight: 1 }, types), arcColor(1));
   assert.equal(twoVoice('Simple words.', 'Jargon.'), 'Simple words.\nTECH: Jargon.');
+});
+
+test('WORLD draws everything; 757 keeps the US slice', () => {
+  const body = {
+    sources: [{ country: 'CN' }],
+    pairs: [{ from: { code: 'US' }, to: { code: 'BE' } }, { from: { code: 'ID' }, to: { code: 'DE' } }],
+    hijacks: [{ from: { code: 'RU' }, to: { code: 'US' } }, { from: { code: 'BR' }, to: { code: 'AR' } }],
+    leaks: [{ country: 'US' }, { country: 'BR' }],
+    malware: [{ country: 'US' }, { country: 'NL' }],
+    phishing: [{ country: 'DE' }],
+  };
+  const world = focusView(body, 'world');
+  assert.equal(world.pairs.length + world.hijacks.length + world.leaks.length + world.malware.length + world.phishing.length, 9);
+  const local = focusView(body, '757');
+  assert.deepEqual([local.pairs.length, local.hijacks.length, local.leaks.length, local.malware.length, local.phishing.length], [1, 1, 1, 1, 0]);
+  assert.equal(local.sources.length, 1, 'sources still arc into Hampton Roads');
 });

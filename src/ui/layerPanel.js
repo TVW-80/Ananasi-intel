@@ -53,7 +53,8 @@ const PANEL_GROUPS = [
   },
   {
     label: msg('Cameras'),
-    ids: ['cctv', 'recent-imagery', 'street-level'],
+    // Anansi: exposed-camera counts (Shodan) sit with the other camera layers.
+    ids: ['cctv', 'exposed-cameras', 'recent-imagery', 'street-level'],
   },
   {
     label: msg('Infrastructure'),

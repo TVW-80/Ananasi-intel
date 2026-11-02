@@ -114,16 +114,17 @@ test('caches, serves stale on failure, and never leaks the Shodan key', async ()
       return json({ total: 1, matches: [{ ip_str: '203.0.113.5', port: 502, location: { latitude: 36.9, longitude: -76.2 } }] });
     },
   });
-  const first = await call(mw, '/shodan-ics');
+  // 757 focus = the host search with exact positions (WORLD uses counts; tested below).
+  const first = await call(mw, '/shodan-ics?focus=757');
   assert.equal(first.body.status, 'ok');
   assert.equal(first.body.points.length, 1);
   assert.match(seen[0].opts.headers['User-Agent'], /^Anansi/);
-  await call(mw, '/shodan-ics');
+  await call(mw, '/shodan-ics?focus=757');
   assert.equal(seen.length, 1, 'second call within TTL is cached');
 
   t += FEEDS['shodan-ics'].ttl + 1;
   mode = 'down';
-  const stale = await call(mw, '/shodan-ics');
+  const stale = await call(mw, '/shodan-ics?focus=757');
   assert.equal(stale.body.status, 'stale');
   assert.equal(stale.body.points.length, 1, 'last good points kept');
   assert.doesNotMatch(JSON.stringify(stale.body), /SECRET123/);
@@ -159,4 +160,30 @@ test('every keyed feed and optional feed key has a POWER UP entry', async () => 
     if (feed.keyEnv) assert.ok(panelVars.has(feed.keyEnv), `${name}: ${feed.keyEnv} missing from POWER UP`);
   }
   for (const optional of ['ABUSECH_AUTH_KEY', 'GITHUB_TOKEN']) assert.ok(panelVars.has(optional), optional);
+});
+
+test('Shodan layers: WORLD uses the free count API per country, 757 searches around Norfolk', async () => {
+  const urls = [];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    if (url.includes('/host/count') && url.includes('city')) {
+      return json({ total: 9, facets: { city: [{ value: 'Norfolk', count: 6 }, { value: 'Nowhereville', count: 3 }] } });
+    }
+    if (url.includes('/host/count')) return json({ total: 30, facets: { country: [{ value: 'US', count: 20 }, { value: 'DE', count: 10 }] } });
+    return json({ matches: [{ ip_str: '192.0.2.1', port: 502, location: { latitude: 36.9, longitude: -76.2 } }], total: 1 });
+  };
+  const mw = createThreatIntelMiddleware({ envSource: { SHODAN_API_KEY: 'SECRET' }, fetchImpl });
+  const world = (await call(mw, '/shodan-cameras?focus=world')).body;
+  assert.equal(world.focused, true);
+  assert.deepEqual(world.points.map((p) => [p.id, p.count]), [['shodan-cameras:US', 20], ['shodan-cameras:DE', 10]]);
+  assert.ok(world.points[0].items[0].plain && world.points[0].items[0].tech);
+  assert.ok(!JSON.stringify(world).includes('192.0.2'), 'camera points carry counts only');
+  const local = (await call(mw, '/shodan-cameras?focus=757')).body;
+  assert.deepEqual(local.points.map((p) => p.place), ['Norfolk', 'Elsewhere in the 757 area']);
+  assert.ok(urls.some((u) => u.includes('/host/count') && decodeURIComponent(u).includes('geo:"36.85,-76.29,120"')));
+  const icsWorld = (await call(mw, '/shodan-ics')).body;
+  assert.equal(icsWorld.points[0].id, 'shodan-ics:US');
+  const icsLocal = (await call(mw, '/shodan-ics?focus=757')).body;
+  assert.equal(icsLocal.points[0].approximate, false);
+  assert.ok(!JSON.stringify([world, local, icsWorld]).includes('SECRET'));
 });

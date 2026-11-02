@@ -11,6 +11,7 @@
 import * as Cesium from 'cesium';
 import { registerPickOwner, unregisterPickOwner, resolvePickId } from '../data/pickRegistry.js';
 import { governorRequestRender } from '../renderGovernor.js';
+import { getFocus, inFocus, onFocusChange } from './focus.js';
 
 /**
  * Layer definitions: id, feeds it merges, look, and attribution. `keyId` names
@@ -23,9 +24,12 @@ export const THREAT_LAYERS = Object.freeze([
   { id: 'cyber-ransomware', name: 'Ransomware Victims', icon: '☠', feeds: ['ransomware'], color: '#e0457b', source: 'ransomware.live', updateInterval: 30 * 60_000 },
   { id: 'cyber-internet-outages', name: 'Internet Outages', icon: '⚡', feeds: ['ioda', 'ioda-us'], color: '#f4cf5e', source: 'IODA · Georgia Tech', updateInterval: 10 * 60_000 },
   { id: 'cyber-outage-reports', name: 'Outage Reports', icon: '⚠', feeds: ['cloudflare'], keyId: 'cloudflare-radar', color: '#e8d9a8', source: 'Cloudflare Radar', updateInterval: 30 * 60_000 },
-  { id: 'cyber-ics-exposure', name: 'Exposed ICS (757)', icon: '⚙', feeds: ['shodan-ics'], keyId: 'shodan', color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
+  // Shodan layers follow the WORLD / 757 focus server-side (world = per-country counts, 757 = around Norfolk).
+  { id: 'cyber-ics-exposure', name: 'Exposed ICS', icon: '⚙', feeds: ['shodan-ics'], keyId: 'shodan', color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
+  // Lives in the Cameras group: how many internet-exposed cameras, never which ones (no IPs, no images).
+  { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', feeds: ['shodan-cameras'], keyId: 'shodan', color: '#f4cf5e', source: 'Shodan (counts only)', updateInterval: 60 * 60_000 },
   // History: a dataset you supply (src/data/local_data/sundown). Icons are colored by evidence level.
-  { id: 'history-sundown-towns', name: 'Sundown Towns (historical)', icon: '◐', feeds: ['sundown'], color: '#c81e1e', source: 'Your sundown-towns research file (local)', updateInterval: 5 * 60_000 },
+  { id: 'history-sundown-towns', name: 'Sundown Towns (historical)', icon: '◐', feeds: ['sundown'], color: '#c81e1e', source: 'Your sundown-towns research file (local)', updateInterval: 5 * 60_000, focusFilter: false },
 ]);
 
 const LABEL_LIMIT = 40;
@@ -152,16 +156,22 @@ export function forgetThreatPoint(entityId) {
 }
 
 // ── layer factory ────────────────────────────────────────────────────────────
-export async function fetchFeeds(feeds, { fetchImpl = globalThis.fetch, signal } = {}) {
+export async function fetchFeeds(feeds, { fetchImpl = globalThis.fetch, signal, focus = 'world', filter = true } = {}) {
   const bodies = await Promise.all(
     feeds.map(async (feed) => {
-      const res = await fetchImpl(`/api/threat/${feed}`, { signal, cache: 'no-store' });
+      const res = await fetchImpl(`/api/threat/${feed}?focus=${encodeURIComponent(focus)}`, { signal, cache: 'no-store' });
       if (!res.ok) throw new Error(`${feed}: HTTP ${res.status}`);
       return res.json();
     }),
   );
   const points = new Map();
-  for (const body of bodies) for (const p of body.points || []) if (!points.has(p.id)) points.set(p.id, p);
+  for (const body of bodies) {
+    for (const p of body.points || []) {
+      // Server-side focused feeds (Shodan) already answer for the focus; the rest are filtered here.
+      if (filter && !body.focused && !inFocus(p, focus)) continue;
+      if (!points.has(p.id)) points.set(p.id, p);
+    }
+  }
   const usable = bodies.filter((b) => b.status === 'ok' || b.status === 'stale');
   const keyMissing = bodies.find((b) => b.status === 'key-required');
   const failed = bodies.find((b) => b.status === 'error' || b.status === 'stale' || (b.status === 'no-data' && b.error) || (b.error && !(b.points || []).length));
@@ -181,6 +191,7 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
   let _lastUpdate = null;
   let _lastError = null;
   let _keyRequired = false;
+  let _offFocus = null;
   const overlayId = `anansi-${def.id}`;
   const ownedIds = new Set();
   const color = Cesium.Color.fromCssColorString(def.color);
@@ -213,12 +224,16 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
       overlayHost?.setVisible(overlayId, true);
       registerPickOwner(def.id, (pickedId) => ownedIds.has(String(pickedId)));
       attachClick(viewer || _viewer);
+      // WORLD / 757 switch: redraw right away instead of waiting for the next poll.
+      if (def.focusFilter !== false) _offFocus = onFocusChange(() => this.update());
     },
 
     disable() {
       _request?.abort();
       _request = null;
       _enabled = false;
+      _offFocus?.();
+      _offFocus = null;
       if (_dataSource) _dataSource.show = false;
       overlayHost?.clearSource(overlayId);
       overlayHost?.setVisible(overlayId, false);
@@ -233,7 +248,12 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
       const request = new AbortController();
       _request = request;
       try {
-        const { points, error, keyRequired } = await fetchFeeds(def.feeds, { fetchImpl, signal: request.signal });
+        const { points, error, keyRequired } = await fetchFeeds(def.feeds, {
+          fetchImpl,
+          signal: request.signal,
+          focus: getFocus(),
+          filter: def.focusFilter !== false,
+        });
         if (request.signal.aborted || !_enabled) return false;
         clearOwned();
         _dataSource.entities.removeAll();

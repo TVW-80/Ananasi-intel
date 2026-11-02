@@ -10,6 +10,8 @@
  * The body class `ananzi-menu-open` drives everything (src/ui/styles/anansi.css);
  * the open/closed choice is remembered in this browser.
  */
+import { createFocusToggle } from './focus.js';
+
 export const MENU_OPEN_CLASS = 'ananzi-menu-open';
 const STORAGE_KEY = 'ananzi.settingsOpen';
 
@@ -43,4 +45,17 @@ export function initSettingsMenu(doc = document) {
   };
   button.addEventListener('click', onClick);
   return () => button.removeEventListener('click', onClick);
+}
+
+/** WORLD / 757 focus chip in the bottom-right corner row (always visible). */
+export function initFocusChip(doc = document) {
+  const row = doc.getElementById('corner-actions');
+  if (!row || doc.getElementById('ananzi-focus')) return () => {};
+  const chip = createFocusToggle(doc, 'ananzi-focus-btn ananzi-focus-chip');
+  chip.id = 'ananzi-focus';
+  row.prepend(chip);
+  return () => {
+    chip.dispose?.();
+    chip.remove();
+  };
 }

@@ -1,6 +1,10 @@
 // Anansi: threat-intel feeds for the Cyber map layers.
 //
-//   GET /api/threat/<feed>   feed = feodo | abuseipdb | ransomware | ioda | ioda-us | cloudflare | shodan-ics | sundown
+//   GET /api/threat/<feed>?focus=world|757
+//        feed = feodo | abuseipdb | ransomware | ioda | ioda-us | cloudflare | shodan-ics | shodan-cameras | sundown
+//   `focus` only changes the Shodan feeds (focusAware): WORLD asks Shodan's
+//   credit-free count API per country, 757 searches around Norfolk. Every
+//   other feed is filtered by focus in the browser.
 //
 // Each response is { feed, status, updatedAt, error, keyEnv, points, total }:
 //   status 'ok'           fresh data
@@ -17,6 +21,7 @@ import {
   normalizeIoda,
   normalizeRansomware,
   normalizeShodan,
+  normalizeShodanFacets,
 } from './threat-feeds.js';
 import { loadSundownFeed } from './sundown.js';
 
@@ -83,16 +88,35 @@ export const FEEDS = Object.freeze({
     normalize: normalizeCloudflareOutages,
   },
   'shodan-ics': {
-    ttl: 12 * 60 * MIN, // each refresh spends a Shodan query credit
+    ttl: 12 * 60 * MIN, // a 757 refresh spends a Shodan query credit; WORLD uses the free count API
     keyEnv: 'SHODAN_API_KEY',
-    request: (e) => {
+    focusAware: true,
+    request: (e, _now, focus) => {
       const key = env('SHODAN_API_KEY', e);
       if (!key) return null;
-      // Default: ICS/SCADA-tagged services within ~120 km of Norfolk.
-      const query = env('SHODAN_ICS_QUERY', e) || 'tag:ics geo:"36.85,-76.29,120"';
-      return { url: `https://api.shodan.io/shodan/host/search?${new URLSearchParams({ key, query, minify: 'true' })}`, headers: {}, redact: true };
+      if (focus === '757') {
+        // ICS/SCADA-tagged services within ~120 km of Norfolk (exact positions; these are machines, not people).
+        const query = env('SHODAN_ICS_QUERY', e) || 'tag:ics geo:"36.85,-76.29,120"';
+        return { url: `https://api.shodan.io/shodan/host/search?${new URLSearchParams({ key, query, minify: 'true' })}`, headers: {}, redact: true };
+      }
+      const query = env('SHODAN_ICS_WORLD_QUERY', e) || 'tag:ics';
+      return { url: `https://api.shodan.io/shodan/host/count?${new URLSearchParams({ key, query, facets: 'country:100' })}`, headers: {}, redact: true };
     },
-    normalize: normalizeShodan,
+    normalize: (p, focus) => (focus === '757' ? normalizeShodan(p) : normalizeShodanFacets(p, { kind: 'ics', facet: 'country' })),
+  },
+  'shodan-cameras': {
+    ttl: 12 * 60 * MIN, // count API: no query credits
+    keyEnv: 'SHODAN_API_KEY',
+    focusAware: true,
+    request: (e, _now, focus) => {
+      const key = env('SHODAN_API_KEY', e);
+      if (!key) return null;
+      const base = env('SHODAN_CAMERA_QUERY', e) || 'screenshot.label:webcam';
+      const query = focus === '757' ? `${base} geo:"36.85,-76.29,120"` : base;
+      const facets = focus === '757' ? 'city:40' : 'country:100';
+      return { url: `https://api.shodan.io/shodan/host/count?${new URLSearchParams({ key, query, facets })}`, headers: {}, redact: true };
+    },
+    normalize: (p, focus) => normalizeShodanFacets(p, { kind: 'cameras', facet: focus === '757' ? 'city' : 'country' }),
   },
 });
 
@@ -112,13 +136,13 @@ export function createThreatIntelMiddleware({
   const cache = new Map(); // feed -> { at, body }
   const inflight = new Map();
 
-  async function load(name, feed) {
+  async function load(name, feed, focus) {
     const now = clock();
     if (feed.local) {
       const { points = [], total = 0, error = null, empty = false } = feed.local();
       return { feed: name, status: empty ? 'no-data' : 'ok', keyEnv: null, updatedAt: new Date(now).toISOString(), error, points, total };
     }
-    const req = feed.request(envSource, now);
+    const req = feed.request(envSource, now, focus);
     if (!req) {
       return { feed: name, status: 'key-required', keyEnv: feed.keyEnv, updatedAt: null, error: `Needs ${feed.keyEnv} — paste it in POWER UP (bottom-right chip)`, points: [], total: 0 };
     }
@@ -141,22 +165,25 @@ export function createThreatIntelMiddleware({
     } catch {
       throw new Error(`${name}: non-JSON response from ${req.redact ? label : new URL(req.url).host}`);
     }
-    const { points, total } = feed.normalize(payload);
+    const { points, total } = feed.normalize(payload, focus);
     return { feed: name, status: 'ok', keyEnv: feed.keyEnv, updatedAt: new Date(now).toISOString(), error: null, points, total };
   }
 
-  async function get(name) {
+  async function get(name, focusParam = 'world') {
     const feed = feeds[name];
-    const cached = cache.get(name);
+    const focus = feed.focusAware && focusParam === '757' ? '757' : 'world';
+    const cacheKey = feed.focusAware ? `${name}:${focus}` : name;
+    const cached = cache.get(cacheKey);
     if (cached && clock() - cached.at < feed.ttl) return cached.body;
-    if (!inflight.has(name)) {
+    if (!inflight.has(cacheKey)) {
       inflight.set(
-        name,
-        load(name, feed)
+        cacheKey,
+        load(name, feed, focus)
           .then((body) => {
+            if (feed.focusAware) body.focused = true;
             // key-required is never cached: a key pasted in POWER UP lands in
             // process.env live and must take effect on the very next poll.
-            if (['ok', 'no-data'].includes(body.status)) cache.set(name, { at: clock(), body });
+            if (['ok', 'no-data'].includes(body.status)) cache.set(cacheKey, { at: clock(), body });
             return body;
           })
           .catch((err) => {
@@ -165,10 +192,10 @@ export function createThreatIntelMiddleware({
             if (cached) return { ...cached.body, status: 'stale', error: message };
             return { feed: name, status: 'error', keyEnv: feed.keyEnv, updatedAt: null, error: message, points: [], total: 0 };
           })
-          .finally(() => inflight.delete(name)),
+          .finally(() => inflight.delete(cacheKey)),
       );
     }
-    return inflight.get(name);
+    return inflight.get(cacheKey);
   }
 
   async function threatIntelMiddleware(req, res) {
@@ -178,16 +205,18 @@ export function createThreatIntelMiddleware({
       res.end(JSON.stringify(body));
     };
     if (req.method !== 'GET') return send(405, { error: 'method not allowed' });
-    const name = String(req.url || '/').split('?')[0].replace(/^\/+|\/+$/g, '');
+    const [rawPath, query = ''] = String(req.url || '/').split('?');
+    const name = rawPath.replace(/^\/+|\/+$/g, '');
+    const focus = new URLSearchParams(query).get('focus') === '757' ? '757' : 'world';
     if (!Object.hasOwn(feeds, name)) return send(404, { error: 'unknown feed', feeds: Object.keys(feeds) });
     try {
-      return send(200, await get(name));
+      return send(200, await get(name, focus));
     } catch (err) {
       return send(500, { error: `threat-intel error: ${err?.message || err}` });
     }
   }
   /** Other Anansi providers (the attack map) read feeds through the same cache. */
-  threatIntelMiddleware.get = (name) => (Object.hasOwn(feeds, name) ? get(name) : Promise.resolve(null));
+  threatIntelMiddleware.get = (name, focus) => (Object.hasOwn(feeds, name) ? get(name, focus) : Promise.resolve(null));
   return threatIntelMiddleware;
 }
 

@@ -269,3 +269,166 @@ export const FORTIGUARD_KINDS = Object.freeze({
     technical: 'FortiGuard PSIRT advisory (vendor vulnerability disclosure).',
   },
 });
+
+// ── MITRE ATT&CK: common techniques in plain words ───────────────────────────
+// Technique IDs (T####[.###]) are the industry's shared vocabulary for "how".
+const TECHNIQUES = {
+  T1566: ['Phishing', 'Tricking someone with an email or message into clicking a bad link or opening a bad attachment.'],
+  'T1566.001': ['Spearphishing attachment', 'A booby-trapped attachment (invoice, résumé, shipping notice) sent to a chosen person.'],
+  'T1566.002': ['Spearphishing link', 'A link to a fake login page or malware download sent to a chosen person.'],
+  T1190: ['Exploit public-facing application', 'Breaking in through a bug in a website, VPN or other server that faces the internet.'],
+  T1133: ['External remote services', 'Logging in through a VPN or remote-desktop service with stolen or guessed passwords.'],
+  T1078: ['Valid accounts', 'Using a real username and password that were stolen, bought or guessed.'],
+  T1110: ['Brute force', 'Guessing passwords over and over until one works.'],
+  'T1110.003': ['Password spraying', 'Trying one common password against many accounts to avoid lockouts.'],
+  T1059: ['Command and scripting interpreter', 'Running commands or scripts (PowerShell, cmd, bash) on the victim’s machine.'],
+  'T1059.001': ['PowerShell', 'Using Windows’ built-in PowerShell to run attack commands.'],
+  'T1059.003': ['Windows command shell', 'Using cmd.exe to run attack commands.'],
+  'T1059.005': ['Visual Basic', 'Using VBScript or Office macros to run code.'],
+  'T1059.007': ['JavaScript', 'Using JavaScript files to run attack code.'],
+  T1204: ['User execution', 'Getting the victim to open the malicious file or link themselves.'],
+  'T1204.002': ['Malicious file', 'The victim opens a file that installs malware.'],
+  T1203: ['Exploitation for client execution', 'A bug in a program like a browser or Office lets malware run just by opening something.'],
+  T1547: ['Boot or logon autostart', 'Making the malware start again every time the computer boots or someone logs in.'],
+  'T1547.001': ['Registry run keys / startup folder', 'Adding the malware to Windows’ list of programs that start automatically.'],
+  T1053: ['Scheduled task/job', 'Creating a scheduled task so the malware keeps running.'],
+  T1543: ['Create or modify system process', 'Installing the malware as a background service.'],
+  T1055: ['Process injection', 'Hiding malware inside a normal, trusted program’s memory.'],
+  T1027: ['Obfuscated files or information', 'Scrambling or packing the malware so security tools can’t read it.'],
+  T1140: ['Deobfuscate/decode files', 'Unscrambling hidden malware once it’s on the machine.'],
+  T1036: ['Masquerading', 'Disguising malware as something harmless, like “invoice.pdf.exe” or a fake system file.'],
+  T1562: ['Impair defenses', 'Turning off antivirus, logging or security tools.'],
+  'T1562.001': ['Disable or modify tools', 'Switching off or tampering with security software.'],
+  T1070: ['Indicator removal', 'Deleting logs and traces to cover tracks.'],
+  T1218: ['System binary proxy execution', 'Using Windows’ own trusted programs to run malware (living off the land).'],
+  T1003: ['OS credential dumping', 'Pulling saved passwords and login secrets out of the computer’s memory or files.'],
+  T1555: ['Credentials from password stores', 'Stealing passwords saved in browsers and password managers.'],
+  'T1555.003': ['Credentials from web browsers', 'Stealing passwords saved in Chrome, Edge, Firefox and others.'],
+  T1539: ['Steal web session cookie', 'Stealing login cookies so the attacker is logged in as you without a password.'],
+  T1056: ['Input capture', 'Recording what you type, such as passwords (keylogging).'],
+  'T1056.001': ['Keylogging', 'Recording every key you press.'],
+  T1113: ['Screen capture', 'Taking screenshots of the victim’s screen.'],
+  T1082: ['System information discovery', 'Checking what computer it landed on: OS, name, hardware.'],
+  T1083: ['File and directory discovery', 'Looking through folders for interesting files.'],
+  T1057: ['Process discovery', 'Listing running programs, often to spot security tools.'],
+  T1016: ['Network configuration discovery', 'Mapping the victim’s network settings.'],
+  T1018: ['Remote system discovery', 'Finding other computers on the same network to attack next.'],
+  T1087: ['Account discovery', 'Listing user and admin accounts.'],
+  T1021: ['Remote services', 'Moving to other computers using remote-login tools (RDP, SMB, SSH).'],
+  'T1021.001': ['Remote Desktop Protocol', 'Using Windows Remote Desktop to hop between machines.'],
+  T1570: ['Lateral tool transfer', 'Copying attack tools from one hacked machine to the next.'],
+  T1105: ['Ingress tool transfer', 'Downloading more malware or tools onto the hacked machine.'],
+  T1071: ['Application layer protocol', 'Hiding communication with the attacker inside normal web, DNS or email traffic.'],
+  'T1071.001': ['Web protocols', 'Talking to the control server over ordinary-looking web traffic.'],
+  T1573: ['Encrypted channel', 'Encrypting the conversation with the control server.'],
+  T1090: ['Proxy', 'Bouncing traffic through other machines to hide the attacker.'],
+  T1095: ['Non-application layer protocol', 'Talking to the control server with raw network protocols.'],
+  T1041: ['Exfiltration over C2 channel', 'Sending stolen data out through the same line used for commands.'],
+  T1567: ['Exfiltration over web service', 'Uploading stolen data to cloud storage like Mega or Dropbox.'],
+  T1486: ['Data encrypted for impact', 'Ransomware: locking the victim’s files and demanding payment.'],
+  T1490: ['Inhibit system recovery', 'Deleting backups and restore points so victims can’t recover without paying.'],
+  T1489: ['Service stop', 'Shutting down services (databases, backups) before encrypting.'],
+  T1498: ['Network denial of service', 'Flooding a network to knock it offline (DDoS).'],
+  T1499: ['Endpoint denial of service', 'Overloading a server or app until it stops responding.'],
+  T1583: ['Acquire infrastructure', 'Buying or renting servers and domains for the attack.'],
+  T1588: ['Obtain capabilities', 'Buying or downloading malware and exploit tools.'],
+  T1595: ['Active scanning', 'Scanning the internet for vulnerable machines to attack.'],
+  T1598: ['Phishing for information', 'Fake messages designed to trick people into revealing information.'],
+  T1189: ['Drive-by compromise', 'Infecting visitors of a hacked or malicious website.'],
+  T1195: ['Supply chain compromise', 'Hacking a supplier or software update to reach many victims at once.'],
+  T1574: ['Hijack execution flow', 'Tricking a legitimate program into loading the attacker’s code (DLL sideloading).'],
+  'T1574.002': ['DLL side-loading', 'Placing a malicious DLL next to a trusted program so it loads it.'],
+  T1112: ['Modify registry', 'Changing Windows settings in the registry to hide or persist.'],
+  T1497: ['Virtualization/sandbox evasion', 'Detecting security analysis environments and playing dead.'],
+  T1102: ['Web service', 'Using legitimate sites (Telegram, GitHub, Pastebin) to receive commands.'],
+  T1048: ['Exfiltration over alternative protocol', 'Sneaking stolen data out via unusual channels like DNS or FTP.'],
+};
+
+/** "T1566.001" → { id, name, plain, technical, link } */
+export function techniqueExplained(raw) {
+  const id = String(raw?.id || raw || '').trim().toUpperCase();
+  if (!/^T\d{4}(\.\d{3})?$/.test(id)) return null;
+  const hit = TECHNIQUES[id] || TECHNIQUES[id.split('.')[0]];
+  const link = `https://attack.mitre.org/techniques/${id.replace('.', '/')}/`;
+  return hit
+    ? { id, name: hit[0], plain: hit[1], technical: `MITRE ATT&CK ${id} — ${hit[0]}${TECHNIQUES[id] ? '' : ' (parent technique)'}`, link }
+    : { id, name: id, plain: 'A hacking technique catalogued by MITRE (open the link for details).', technical: `MITRE ATT&CK ${id}`, link };
+}
+
+// ── EPSS: chance of exploitation ─────────────────────────────────────────────
+export function epssExplained(e) {
+  if (!e || !Number.isFinite(e.epss)) return null;
+  const pct = Math.round(e.epss * 1000) / 10;
+  const top = Math.round(e.percentile * 1000) / 10;
+  const word = e.epss >= 0.5 ? 'very likely' : e.epss >= 0.1 ? 'likely' : e.epss >= 0.01 ? 'possible' : 'unlikely';
+  return {
+    plain: `Chance hackers use it in the next 30 days: ${pct}% (${word}) — riskier than ${top}% of all known bugs.`,
+    technical: `EPSS ${e.epss.toFixed(4)} (percentile ${e.percentile.toFixed(4)}).`,
+  };
+}
+
+// ── Internet routing (BGP) ───────────────────────────────────────────────────
+export const BGP = Object.freeze({
+  hijack: {
+    label: 'Internet route hijack',
+    plain: 'A network announced that it owns someone else’s internet addresses, pulling their traffic toward itself — like a post office rerouting another town’s mail. Sometimes a mistake, sometimes theft or spying.',
+    technical: 'BGP origin/prefix hijack detected by Cloudflare Radar route monitors.',
+  },
+  leak: {
+    label: 'Internet route leak',
+    plain: 'A network passed along internet directions it shouldn’t have, so traffic took a wrong, longer road through it. Usually a mistake; it can slow sites or expose traffic.',
+    technical: 'BGP route leak (valley-free violation) detected by Cloudflare Radar.',
+  },
+});
+
+export const PHISHING = Object.freeze({
+  plain: 'Fake login pages built to steal passwords, usually pretending to be a bank, Microsoft, a delivery company and the like.',
+  technical: 'OpenPhish community feed (URLs), hosting IP geolocated to AS country.',
+});
+
+export const C2_TOOLS = Object.freeze({
+  plain: 'Servers running professional hacking toolkits (Cobalt Strike, Sliver, Metasploit…) used to control machines after a break-in.',
+  technical: 'C2IntelFeeds (community scanning for C2 framework fingerprints), last 30 days.',
+});
+
+export const SSLBL = Object.freeze({
+  label: 'Botnet SSL certificate',
+  plain: 'This server uses an encryption certificate that researchers have tied to botnets — a strong sign it controls malware.',
+  technical: 'Listed on abuse.ch SSLBL IP blacklist (botnet C2 SSL certificate / JA3 fingerprint).',
+});
+
+export function breachExplained(b) {
+  const classes = (b.dataClasses || []).slice(0, 5).join(', ');
+  const count = Number(b.pwnCount || 0).toLocaleString('en-US');
+  return {
+    title: `${b.title || b.name}: ${count} accounts exposed`,
+    plain: `${b.title || b.name}${b.domain ? ` (${b.domain})` : ''} had a data breach. ${count} people’s ${classes ? classes.toLowerCase() : 'data'} ${b.dataClasses?.length > 1 ? 'were' : 'was'} exposed. If you had an account, change that password everywhere you reused it.`,
+    technical: `HIBP breach “${b.name}”: breach date ${b.breachDate || '?'}, added ${String(b.addedDate || '').slice(0, 10)}, ${b.isVerified ? 'verified' : 'unverified'}; data classes: ${(b.dataClasses || []).join(', ') || 'n/a'}.`,
+  };
+}
+
+export function pocExplained(p) {
+  return {
+    title: `Public attack code posted for ${p.cve}`,
+    plain: `Someone published working attack code (a “proof of concept”) for ${p.cve} on GitHub. When that happens, attacks on unpatched systems usually jump within days.`,
+    technical: `PoC repository ${p.repo} (created ${String(p.created || '').slice(0, 10)}${p.stars ? `, ★${p.stars}` : ''}). Treat as untrusted code.`,
+  };
+}
+
+export function icsAdvisoryExplained(a) {
+  return {
+    title: a.title,
+    plain: 'A security flaw was found in industrial equipment — the kind that runs power, water, factories, ships or ports. Operators are being told to patch or protect it.',
+    technical: `CISA ICS advisory: ${a.title}`,
+  };
+}
+
+export function malwareBazaarExplained(s) {
+  const fams = s.topSignatures.map((x) => `${x.name} (${x.count})`).join(', ');
+  const disguise = s.disguises[0];
+  return {
+    title: `New malware samples today: ${fams || 'various families'}`,
+    plain: `Researchers collected ${s.total} new malware files.${disguise ? ` Example disguise: “${disguise}” — malware often pretends to be an invoice, order or document.` : ''}`,
+    technical: `MalwareBazaar recent samples: ${s.total}; top signatures ${fams || 'n/a'}; file types ${s.topTypes.map((x) => `${x.name}=${x.count}`).join(', ') || 'n/a'}.`,
+  };
+}

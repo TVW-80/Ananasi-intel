@@ -24,7 +24,7 @@ test('fetchFeeds merges feeds, dedupes points, and surfaces a missing key only w
     'ioda-us': { status: 'ok', points: [{ id: 'y' }, { id: 'z' }] },
     abuseipdb: { status: 'key-required', error: 'Set ABUSEIPDB_API_KEY in .env', points: [] },
   };
-  const fetchImpl = async (url) => ({ ok: true, json: async () => bodies[url.split('/').pop()] });
+  const fetchImpl = async (url) => ({ ok: true, json: async () => bodies[url.split('/').pop().split('?')[0]] });
   const merged = await fetchFeeds(['ioda', 'ioda-us'], { fetchImpl });
   assert.deepEqual(merged.points.map((p) => p.id), ['x', 'y', 'z']);
   assert.equal(merged.error, null);
@@ -36,6 +36,26 @@ test('fetchFeeds merges feeds, dedupes points, and surfaces a missing key only w
 test('keyed Cyber layers name a real POWER UP entry and report it on the row', async () => {
   const { KEY_SETUP_KEYS } = await import('../keySetupCore.mjs');
   const keyed = THREAT_LAYERS.filter((l) => l.keyId);
-  assert.deepEqual(keyed.map((l) => l.id).sort(), ['cyber-ics-exposure', 'cyber-outage-reports', 'cyber-reported-attackers']);
+  assert.deepEqual(keyed.map((l) => l.id).sort(), ['cyber-ics-exposure', 'cyber-outage-reports', 'cyber-reported-attackers', 'exposed-cameras']);
   for (const l of keyed) assert.ok(KEY_SETUP_KEYS.some((k) => k.id === l.keyId && !k.hidden), l.keyId);
+});
+
+test('757 focus keeps US entries and points inside Hampton Roads; WORLD keeps everything', async () => {
+  const bodies = {
+    feodo: { status: 'ok', points: [{ id: 'feodo:US', approximate: true }, { id: 'feodo:DE', approximate: true }] },
+    'ioda-us': { status: 'ok', points: [{ id: 'ioda:us-state:VA', approximate: true }] },
+    'shodan-ics': { status: 'ok', focused: true, points: [{ id: 'shodan:DE', approximate: true }] },
+  };
+  const urls = [];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    return { ok: true, json: async () => bodies[url.split('/').pop().split('?')[0]] };
+  };
+  const world = await fetchFeeds(['feodo', 'ioda-us'], { fetchImpl });
+  assert.equal(world.points.length, 3);
+  const local = await fetchFeeds(['feodo', 'ioda-us'], { fetchImpl, focus: '757' });
+  assert.deepEqual(local.points.map((p) => p.id), ['feodo:US', 'ioda:us-state:VA']);
+  assert.ok(urls.at(-1).endsWith('?focus=757'));
+  const focused = await fetchFeeds(['shodan-ics'], { fetchImpl, focus: '757' });
+  assert.equal(focused.points.length, 1, 'server-focused feeds are not filtered twice');
 });
