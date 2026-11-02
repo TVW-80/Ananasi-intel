@@ -1,12 +1,12 @@
 /**
  * Ananzi Attack Map. Data: /api/attackmap (server/providers/anansi/attack-map.js).
  *
- *   WORLD (default): pulsing hotspots per attacking country, coloured by the
- *                    attack type they send most (blocklist.de)
- *   757 focus:       the same sources as glowing arcs into Hampton Roads, and
- *                    only the US slice of everything below (focus.js)
+ *   crosshair + glowing arc        an attacking country, arc into Hampton Roads,
+ *                                  coloured by the attack type it sends most
+ *   biohazard glyph                malware control servers (ThreatFox / C2 / SSLBL)
+ *   envelope glyph                 phishing sites (OpenPhish)
  *   amber dotted arcs / rings      internet route hijacks / leaks (Cloudflare BGP)
- *   green dots                     phishing sites (OpenPhish)
+ *   The whole world shows at once — there is no 757 filter here.
  *   pink dashed arcs               Cloudflare Radar DDoS origin → target pairs
  *   purple dots                    malware command servers (ThreatFox)
  *   HUD                            estimated counter, attack types, a rotating
@@ -24,8 +24,11 @@ import * as Cesium from 'cesium';
 import { registerPickOwner, unregisterPickOwner } from '../data/pickRegistry.js';
 import { governorRequestRender, holdContinuousRender, releaseContinuousRender } from '../renderGovernor.js';
 import { POINT_LIFT_M, attachThreatClick, detachThreatClick, forgetThreatPoint, registerThreatPoint } from './threatLayers.js';
-import { FOCUS_757, createFocusToggle, getFocus, onFocusChange } from './focus.js';
 import { COLORS, renderLegend } from './legend.js';
+import { glyphBillboard } from './markerIcons.js';
+
+// Distinct glyph per category (monochrome symbols; coloured by the SVG badge).
+const GLYPH = Object.freeze({ source: '⌖', malware: '☣', phishing: '✉', leak: '↻', hijack: '⇄' });
 
 export const ATTACK_MAP_LAYER = Object.freeze({
   id: 'cyber-attack-map',
@@ -228,8 +231,7 @@ function createHud() {
   fold.type = 'button';
   fold.title = 'Minimize';
   fold.setAttribute('aria-label', 'Minimize attack map panel');
-  const focusBtn = createFocusToggle(document);
-  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), focusBtn, brief, fold);
+  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), brief, fold);
   head.title = 'Drag to move · double-click to re-dock';
   const counter = el('div', 'attack-map-counter', '—');
   const basis = el('div', 'attack-map-basis', 'waiting for DShield…');
@@ -360,7 +362,7 @@ function createHud() {
       return card;
     };
     const typeCards = (b.attackTypes || []).map((t) => explain(`${t.label} — ${fmt(t.count)} attackers (48h)`, t.plain, t.technical, { color: t.color }));
-    const legend = [renderLegend(document, { only: ['focus', 'attack-map'] }), ...typeCards];
+    const legend = [renderLegend(document, { only: ['attack-map'] }), ...typeCards];
     const alerts = (b.alerts || []).map((a) => explain(a.title, a.plain, a.technical, { link: a.link, source: a.source, details: a.details || [] }));
     const feeds = (b.feeds || []).map((f) => {
       const row = el('div', `attack-map-feed attack-map-feed-${f.status}`);
@@ -408,7 +410,6 @@ function createHud() {
       }, 8000);
     },
     unmount() {
-      focusBtn.dispose?.();
       clearInterval(timer);
       clearInterval(rotateTimer);
       timer = rotateTimer = null;
@@ -465,7 +466,6 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
   let _lastUpdate = null;
   let _lastError = null;
   let _hud = null;
-  let _offFocus = null;
   const overlayId = `anansi-${def.id}`;
   const ownedIds = new Set();
 
@@ -536,7 +536,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
     _ds.entities.add({
       id: markerId,
       position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
-      point: { pixelSize: 7 + w * 11, color: color.withAlpha(0.85), outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 2 },
+      billboard: glyphBillboard(Cesium, GLYPH.source, css, { scale: 0.9 + w * 0.8 }),
     });
     const point = sourcePopup(source, attackTypes, target);
     clickable(markerId, point);
@@ -568,26 +568,6 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
   }
 
   /** WORLD focus: a pulsing hotspot per attacking country (no vantage arcs). */
-  function addHotspot(source, attackTypes) {
-    const css = sourceColor(source, attackTypes);
-    const color = Cesium.Color.fromCssColorString(css);
-    const w = source.weight || 0;
-    const id = `${ID_PREFIX}src:${source.country}`;
-    const phase = (source.country.charCodeAt(0) * 37) % 1000;
-    _ds.entities.add({
-      id,
-      position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
-      point: {
-        pixelSize: new Cesium.CallbackProperty(() => 8 + w * 16 + 3 * Math.abs(Math.sin((performance.now() + phase) / 520)), false),
-        color: color.withAlpha(0.8),
-        outlineColor: color.withAlpha(0.35),
-        outlineWidth: 6,
-      },
-    });
-    clickable(id, sourcePopup(source, attackTypes, null));
-    return { id: source.country, position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world), title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
-  }
-
   /** BGP hijack: amber dotted arc hijacker → victim (same-country hijacks become a ring). */
   function addHijack(h, index) {
     const color = Cesium.Color.fromCssColorString(COLORS.hijack);
@@ -621,7 +601,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
     _ds.entities.add({
       id,
       position: Cesium.Cartesian3.fromDegrees(p.lon + 1.6, Math.min(85, p.lat + 1.2), POINT_LIFT_M.world),
-      point: { pixelSize: 8 + Math.min(10, p.count * 2), color: Cesium.Color.fromCssColorString(COLORS.phishing).withAlpha(0.9), outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 2 },
+      billboard: glyphBillboard(Cesium, GLYPH.phishing, COLORS.phishing, { scale: 1 + Math.min(0.8, p.count * 0.15) }),
     });
     clickable(id, {
       title: `${p.count} phishing site${p.count === 1 ? '' : 's'}`,
@@ -671,12 +651,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       id,
       // Nudged south of the country centre so it doesn't sit on the source marker.
       position: Cesium.Cartesian3.fromDegrees(m.lon, Math.max(-85, m.lat - 1.4), POINT_LIFT_M.world),
-      point: {
-        pixelSize: 8 + Math.min(10, m.count * 2),
-        color: Cesium.Color.fromCssColorString(MALWARE_COLOR).withAlpha(0.9),
-        outlineColor: Cesium.Color.BLACK.withAlpha(0.9),
-        outlineWidth: 2,
-      },
+      billboard: glyphBillboard(Cesium, GLYPH.malware, MALWARE_COLOR, { scale: 1 + Math.min(0.8, m.count * 0.15) }),
     });
     clickable(id, {
       title: `${m.count} malware control server${m.count === 1 ? '' : 's'}`,
@@ -717,7 +692,6 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       _hud = createHud();
       _hud.mount();
       holdContinuousRender(RENDER_HOLD);
-      _offFocus = onFocusChange(() => this.update());
     },
 
     disable() {
@@ -732,8 +706,6 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       detachThreatClick();
       _hud?.unmount();
       _hud = null;
-      _offFocus?.();
-      _offFocus = null;
       releaseContinuousRender(RENDER_HOLD);
     },
 
@@ -749,23 +721,24 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         if (request.signal.aborted || !_enabled) return false;
         clearOwned();
         _ds.entities.removeAll();
-        const focus = getFocus();
-        const view = focusView(body, focus);
+        // One fused view: the whole world's sources arc into Hampton Roads,
+        // with every DDoS pair, hijack, leak, malware server and phishing host.
         const target = body.target || { lat: 36.8508, lon: -76.2859, name: 'Hampton Roads' };
         const attackTypes = body.attackTypes || [];
-        let labels;
-        if (focus === FOCUS_757) {
-          addTarget(target);
-          labels = view.sources.map((src, i) => addArc(src, target, i, attackTypes));
-        } else {
-          labels = view.sources.map((src) => addHotspot(src, attackTypes));
-        }
-        const maxPair = Math.max(0, ...view.pairs.filter((p) => !p.domestic).map((p) => p.value));
-        view.pairs.forEach((p, i) => addPair(p, i, maxPair));
-        view.hijacks.forEach((h, i) => addHijack(h, i));
-        view.leaks.forEach(addLeak);
-        view.malware.forEach(addMalware);
-        view.phishing.forEach(addPhish);
+        addTarget(target);
+        const sources = body.sources || [];
+        const pairs = body.pairs || [];
+        const hijacks = body.hijacks || [];
+        const leaks = body.leaks || [];
+        const malware = body.malware || [];
+        const phishing = body.phishing || [];
+        const labels = sources.map((src, i) => addArc(src, target, i, attackTypes));
+        const maxPair = Math.max(0, ...pairs.filter((p) => !p.domestic).map((p) => p.value));
+        pairs.forEach((p, i) => addPair(p, i, maxPair));
+        hijacks.forEach((h, i) => addHijack(h, i));
+        leaks.forEach(addLeak);
+        malware.forEach(addMalware);
+        phishing.forEach(addPhish);
         overlayHost?.setEntries(
           overlayId,
           labels
@@ -787,7 +760,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
           { cohortLimit: LABEL_LIMIT, collisionCapacity: LABEL_LIMIT, moving: false },
         );
         _hud?.update(body);
-        _count = view.sources.length + view.pairs.filter((p) => !p.domestic).length + view.malware.length + view.phishing.length + view.hijacks.length;
+        _count = sources.length + pairs.filter((p) => !p.domestic).length + malware.length + phishing.length + hijacks.length;
         _lastUpdate = Date.now();
         _lastError = body.status === 'ok' ? null : body.errors?.[0] || null;
         governorRequestRender(`anansi:${def.id}`);
@@ -812,31 +785,6 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
     getStats() {
       return { count: _count, lastUpdate: _lastUpdate, error: _lastError };
     },
-  };
-}
-
-/**
- * What to draw for a focus. WORLD: everything. 757: the US slice — DDoS and
- * hijacks that touch the US, US malware/phishing/leaks; sources still arc in.
- */
-export function focusView(body, focus) {
-  const all = {
-    sources: body.sources || [],
-    pairs: body.pairs || [],
-    hijacks: body.hijacks || [],
-    leaks: body.leaks || [],
-    malware: body.malware || [],
-    phishing: body.phishing || [],
-  };
-  if (focus !== FOCUS_757) return all;
-  const us = (code) => code === 'US';
-  return {
-    sources: all.sources,
-    pairs: all.pairs.filter((p) => us(p.from.code) || us(p.to.code)),
-    hijacks: all.hijacks.filter((h) => us(h.from.code) || us(h.to.code)),
-    leaks: all.leaks.filter((l) => us(l.country)),
-    malware: all.malware.filter((m) => us(m.country)),
-    phishing: all.phishing.filter((p) => us(p.country)),
   };
 }
 

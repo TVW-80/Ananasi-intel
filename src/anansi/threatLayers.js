@@ -12,6 +12,7 @@ import * as Cesium from 'cesium';
 import { registerPickOwner, unregisterPickOwner, resolvePickId } from '../data/pickRegistry.js';
 import { governorRequestRender } from '../renderGovernor.js';
 import { getFocus, inFocus, onFocusChange } from './focus.js';
+import { glyphBillboard } from './markerIcons.js';
 
 /**
  * Layer definitions: id, feeds it merges, look, and attribution. `keyId` names
@@ -27,7 +28,7 @@ export const THREAT_LAYERS = Object.freeze([
   // Shodan layers follow the WORLD / 757 focus server-side (world = per-country counts, 757 = around Norfolk).
   { id: 'cyber-ics-exposure', name: 'Exposed ICS', icon: '⚙', feeds: ['shodan-ics'], keyId: 'shodan', color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
   // Lives in the Cameras group: how many internet-exposed cameras, never which ones (no IPs, no images).
-  { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', feeds: ['shodan-cameras'], keyId: 'shodan', color: '#f4cf5e', source: 'Shodan (counts only)', updateInterval: 60 * 60_000 },
+  { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', feeds: ['shodan-cameras'], keyId: 'shodan', color: '#e8a33c', source: 'Shodan (counts only)', updateInterval: 60 * 60_000 },
   // History: a dataset you supply (src/data/local_data/sundown). Icons are colored by evidence level.
   { id: 'history-sundown-towns', name: 'Sundown Towns (historical)', icon: '◐', feeds: ['sundown'], color: '#c81e1e', source: 'Your sundown-towns research file (local)', updateInterval: 5 * 60_000, focusFilter: false },
 ]);
@@ -194,7 +195,6 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
   let _offFocus = null;
   const overlayId = `anansi-${def.id}`;
   const ownedIds = new Set();
-  const color = Cesium.Color.fromCssColorString(def.color);
   const slot = Math.max(0, THREAT_LAYERS.findIndex((l) => l.id === def.id));
 
   function clearOwned() {
@@ -262,16 +262,14 @@ export function createThreatLayer(def, { overlayHost, fetchImpl } = {}) {
           const entityId = `${ID_PREFIX}${p.id}`;
           const at = slotPosition(p.lat, p.lon, slot, p.approximate);
           const position = Cesium.Cartesian3.fromDegrees(at.lon, at.lat, liftFor(p.approximate));
+          // Each layer's own glyph (the symbol beside its name in Data Layers),
+          // as a depth-tested billboard badge — so layers look different, not
+          // like identical dots.
           _dataSource.entities.add(
             new Cesium.Entity({
               id: entityId,
               position,
-              point: {
-                pixelSize: 7 + Math.round((p.severity || 0) * 13),
-                color: (p.color ? Cesium.Color.fromCssColorString(p.color) : color).withAlpha(0.85),
-                outlineColor: Cesium.Color.BLACK.withAlpha(0.9),
-                outlineWidth: 2,
-              },
+              billboard: glyphBillboard(Cesium, def.icon, p.color || def.color, { scale: 0.85 + (p.severity || 0) * 0.7 }),
             }),
           );
           ownedIds.add(entityId);

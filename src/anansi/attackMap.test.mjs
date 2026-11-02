@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ATTACK_MAP_LAYER, arcColor, arcPoints, counterStart, focusView, sourceColor, twoVoice } from './attackMap.js';
+import { ATTACK_MAP_LAYER, arcColor, arcPoints, counterStart, sourceColor, twoVoice } from './attackMap.js';
+import { glyphBadgeImage } from './markerIcons.js';
 
 test('arcs start and end on the ground at the endpoints and bow upward between', () => {
   const src = { lat: 39.9, lon: 116.4 }; // Beijing
@@ -34,18 +35,14 @@ test('arcs take the colour of their dominant attack type, else their strength', 
   assert.equal(twoVoice('Simple words.', 'Jargon.'), 'Simple words.\nTECH: Jargon.');
 });
 
-test('WORLD draws everything; 757 keeps the US slice', () => {
-  const body = {
-    sources: [{ country: 'CN' }],
-    pairs: [{ from: { code: 'US' }, to: { code: 'BE' } }, { from: { code: 'ID' }, to: { code: 'DE' } }],
-    hijacks: [{ from: { code: 'RU' }, to: { code: 'US' } }, { from: { code: 'BR' }, to: { code: 'AR' } }],
-    leaks: [{ country: 'US' }, { country: 'BR' }],
-    malware: [{ country: 'US' }, { country: 'NL' }],
-    phishing: [{ country: 'DE' }],
-  };
-  const world = focusView(body, 'world');
-  assert.equal(world.pairs.length + world.hijacks.length + world.leaks.length + world.malware.length + world.phishing.length, 9);
-  const local = focusView(body, '757');
-  assert.deepEqual([local.pairs.length, local.hijacks.length, local.leaks.length, local.malware.length, local.phishing.length], [1, 1, 1, 1, 0]);
-  assert.equal(local.sources.length, 1, 'sources still arc into Hampton Roads');
+test('each category gets a distinct glyph badge image, colour baked in', () => {
+  const src = glyphBadgeImage('⌖', '#ff2b2b');
+  const malware = glyphBadgeImage('☣', '#c04dd8');
+  const phish = glyphBadgeImage('✉', '#8fd46b');
+  for (const uri of [src, malware, phish]) assert.match(uri, /^data:image\/svg\+xml,/);
+  assert.notEqual(src, malware);
+  assert.notEqual(malware, phish);
+  // The colour is in the SVG, and the same glyph+colour is memoized to one URI.
+  assert.ok(decodeURIComponent(malware).includes('%23c04dd8') || decodeURIComponent(malware).includes('#c04dd8'));
+  assert.equal(glyphBadgeImage('☣', '#c04dd8'), malware);
 });

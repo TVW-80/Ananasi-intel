@@ -16,7 +16,7 @@ export const LEGEND_LAYERS = Object.freeze([
   { id: 'cyber-internet-outages', name: 'Internet Outages', icon: '⚡', color: '#f4cf5e' },
   { id: 'cyber-outage-reports', name: 'Outage Reports', icon: '⚠', color: '#e8d9a8' },
   { id: 'cyber-ics-exposure', name: 'Exposed ICS', icon: '⚙', color: '#d4af37' },
-  { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', color: '#f4cf5e' },
+  { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', color: '#e8a33c' },
 ]);
 export const LEGEND_757 = Object.freeze({
   traffic: { label: 'Traffic', glyph: '🚦', color: '#ff8a1f' },
@@ -73,27 +73,26 @@ const SUNDOWN = [
 export function legendGroups() {
   return [
     {
-      id: 'focus',
-      title: 'WORLD / 757 FOCUS',
-      rows: [
-        { shape: 'chip', color: '#d4af37', glyph: '🌐', label: 'WORLD (default)', plain: 'Everything everywhere: attacks, outages and exposures across the whole planet.', technical: 'No geographic filter; Shodan layers use per-country counts.' },
-        { shape: 'chip', color: '#d4af37', glyph: '⚓', label: '757', plain: 'Zoom the story in on Hampton Roads: attack arcs aim at Norfolk, country layers keep the US, Shodan searches around Norfolk.', technical: 'Client filter on country-level points (US / US states) + server-side Shodan geo filter (36.85,-76.29, 120 km).' },
-      ],
-    },
-    {
       id: 'attack-map',
       title: 'ATTACK MAP',
       rows: [
-        { shape: 'pulse', color: '#ff2b2b', label: 'Attack hotspot (WORLD)', plain: 'A country attacks are coming from. Bigger = more; colour = the kind of attack it sends most.', technical: 'DShield top IPs + AbuseIPDB + sampled blocklist.de, AS-country geolocation.' },
-        { shape: 'glow', color: '#ff2b2b', label: 'Glowing arc (757)', plain: 'The same sources, drawn as arcs into Hampton Roads — your vantage point, not a confirmed target.', technical: 'Great-circle arc to the 757 vantage; width/speed by weight.' },
-        ...Object.values(ATTACK_TYPE_COLORS).map(([label, color]) => ({ shape: 'dot', color, label: `Colour · ${label}`, plain: `Most of this country’s attacks are ${label.toLowerCase()}.`, technical: 'Dominant blocklist.de service among the country’s attacking IPs (48h).' })),
+        { shape: 'glyph', color: '#ff2b2b', glyph: '⌖', label: 'Attack source (crosshair)', plain: 'A country attacks are coming from, with a glowing arc into Hampton Roads — your vantage point, not a confirmed target. Bigger crosshair = more; its colour is the kind of attack it sends most.', technical: 'DShield top IPs + AbuseIPDB + sampled blocklist.de, AS-country geolocation; great-circle arc to 36.85, -76.29.' },
+        ...Object.values(ATTACK_TYPE_COLORS).map(([label, color]) => ({ shape: 'dot', color, label: `Crosshair colour · ${label}`, plain: `Most of this country’s attacks are ${label.toLowerCase()}.`, technical: 'Dominant blocklist.de service among the country’s attacking IPs (48h).' })),
         { shape: 'glyph', color: '#ffffff', glyph: '•', label: 'Moving white dots', plain: 'Animation only — “missiles” riding an arc. Faster means more activity.', technical: 'Visual rate cue; not individual packets.' },
         { shape: 'dash', color: COLORS.ddos, label: 'Pink dashed arc', plain: 'DDoS: floods meant to knock websites or networks offline, from attacker country to target country.', technical: 'Cloudflare Radar L7/L3 top origin→target pairs, % of mitigated traffic (24h).' },
         { shape: 'dotted', color: COLORS.hijack, label: 'Amber dotted arc', plain: 'Internet route hijack: a network claimed someone else’s internet addresses and pulled their traffic toward itself.', technical: 'BGP hijack events (Cloudflare Radar), hijacker country → victim country.' },
         { shape: 'ring', color: COLORS.hijack, label: 'Amber ring', plain: 'Internet route leak: a network passed on directions it shouldn’t have, detouring traffic.', technical: 'BGP route leak events (Cloudflare Radar).' },
-        { shape: 'dot', color: COLORS.malware, label: 'Purple dot', plain: 'Malware control servers and hacking-toolkit servers in that country. Click for the malware names.', technical: 'ThreatFox botnet_cc IOCs + C2IntelFeeds (Cobalt Strike, Sliver…) + SSLBL, AS country.' },
-        { shape: 'dot', color: COLORS.phishing, label: 'Green dot', plain: 'Fake login pages (phishing) hosted in that country, and which brand they impersonate.', technical: 'OpenPhish community feed, host resolved and geolocated.' },
-        { shape: 'pulse', color: COLORS.target, label: 'Pulsing red target (757)', plain: 'Hampton Roads — the vantage point the arcs aim at in 757 focus.', technical: 'Fixed vantage 36.85, -76.29.' },
+        { shape: 'glyph', color: COLORS.malware, glyph: '☣', label: 'Biohazard (malware servers)', plain: 'Malware control servers and hacking-toolkit servers in that country. Click for the malware names.', technical: 'ThreatFox botnet_cc IOCs + C2IntelFeeds (Cobalt Strike, Sliver…) + SSLBL, AS country.' },
+        { shape: 'glyph', color: COLORS.phishing, glyph: '✉', label: 'Envelope (phishing)', plain: 'Fake login pages (phishing) hosted in that country, and which brand they impersonate.', technical: 'OpenPhish community feed, host resolved and geolocated.' },
+        { shape: 'pulse', color: COLORS.target, label: 'Pulsing red target', plain: 'Hampton Roads — the vantage point every attack arc aims at.', technical: 'Fixed vantage 36.85, -76.29.' },
+      ],
+    },
+    {
+      id: 'focus',
+      title: 'WORLD / 757 FOCUS (Cyber & Exposed layers)',
+      rows: [
+        { shape: 'chip', color: '#d4af37', glyph: '🌐', label: 'WORLD (default)', plain: 'The Cyber and Exposed layers show the whole planet. The attack map always shows the whole world.', technical: 'No geographic filter; Shodan layers use per-country counts.' },
+        { shape: 'chip', color: '#d4af37', glyph: '⚓', label: '757', plain: 'Narrow the Cyber and Exposed layers to Hampton Roads / the US. (The attack map ignores this — it is always worldwide.)', technical: 'Client filter on country-level points (US / US states) + server-side Shodan geo filter (36.85,-76.29, 120 km).' },
       ],
     },
     {
