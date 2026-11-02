@@ -6,6 +6,7 @@ import { loadGroundHeights, joinGroundHeights } from './groundHeights.js';
 import { cameraRegion, normalizeSourceItem } from './normalize.js';
 import { loadLithuaniaSources } from './lithuania.js';
 import { loadTaiwanSources } from './taiwan.js';
+import { worldPacks } from './worldPacks.js';
 import {
   loadAustinSourcesFromOpenData,
   loadCaltransSourcesFromOpenData,
@@ -165,6 +166,10 @@ const LIVE_PACKS = [
     enabled: () => envEnabled('CCTV_TAIWAN_ENABLED'),
     load: loadTaiwanSources,
   },
+  // Extra worldwide networks (server/providers/cctv/worldPacks.js): one
+  // config-driven, SSRF-safe loader per country. Open-licence networks load by
+  // default; the rest wait for their CCTV_<ID>_ENABLED=1 opt-in.
+  ...worldPacks(),
 ];
 /**
  * Load CCTV sources from a local JSON file (CCTV_SOURCES_FILE env or default).
