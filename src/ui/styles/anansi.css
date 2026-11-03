@@ -1270,3 +1270,88 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 .attack-map-brief-detail > a,
 .attack-map-brief-detail > span { font-size: 10px; color: #f4cf5e; text-decoration: none; }
 .attack-map-brief-detail > a:hover { text-decoration: underline; }
+
+/* ── SITREP: the rolling plain-English dashboard (src/anansi/sitrep.js) ─────── */
+.sitrep {
+  position: fixed;
+  z-index: 330;
+  top: 82px;
+  right: 16px;
+  width: min(360px, calc(100vw - 32px));
+  height: min(66vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 9, 8, 0.95);
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 26px rgba(212, 175, 55, 0.2), inset 0 0 40px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  backdrop-filter: blur(12px);
+}
+.sitrep[hidden] { display: none; }
+.sitrep-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #f4cf5e;
+}
+.sitrep-close {
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  background: none;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.sitrep-roll { position: relative; flex: 1; overflow: hidden; }
+.sitrep-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  animation: sitrep-roll var(--sitrep-seconds, 60s) linear infinite;
+}
+.sitrep-roll:hover .sitrep-track { animation-play-state: paused; }
+@keyframes sitrep-roll { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .sitrep-track { animation: none; }
+  .sitrep-roll { overflow-y: auto; }
+}
+.sitrep-empty { padding: 16px; font-size: 11px; color: var(--text-secondary); }
+.sitrep-empty[hidden] { display: none; }
+.sitrep-card {
+  padding: 8px 10px;
+  border-left: 3px solid var(--tag, #f4cf5e);
+  background: rgba(255, 255, 255, 0.03);
+}
+.sitrep-card-head { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.sitrep-tag {
+  flex: none;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #0b0a08;
+  background: var(--tag, #f4cf5e);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.sitrep-title { font-size: 12px; font-weight: 600; color: #f4cf5e; line-height: 1.3; }
+.sitrep-plain { margin: 5px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--text-primary); }
+.sitrep-todo { margin: 5px 0 0; font-size: 11px; line-height: 1.4; color: #e8d9a8; }
+.sitrep-todo b { color: #8fd46b; }
+.sitrep-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; align-items: baseline; }
+.sitrep-detail { font-size: 9px; color: var(--text-secondary); font-family: var(--font-mono); }
+.sitrep-src { font-size: 10px; color: #f4cf5e; text-decoration: none; white-space: nowrap; }
+.sitrep-src:hover { text-decoration: underline; }
+@media (max-width: 900px) {
+  .sitrep { right: 16px; left: 16px; width: auto; }
+}

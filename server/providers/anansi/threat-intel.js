@@ -168,7 +168,20 @@ export function createThreatIntelMiddleware({
     } catch (err) {
       throw new Error(`${name}: ${err?.cause?.code || err?.name || 'fetch failed'}`);
     }
-    if (!res.ok) throw new Error(`${name}: HTTP ${res.status}${res.status === 401 || res.status === 403 ? ' (check the key)' : ''}`);
+    if (!res.ok) {
+      // Shodan blocks search filters (tag:ics, screenshot.label:webcam, port:…)
+      // on the free tier, so a filtered count 401/403s. Say that plainly rather
+      // than "check the key", since the key is fine — the plan is the limit.
+      if (name.startsWith('shodan') && (res.status === 401 || res.status === 403)) {
+        try {
+          await res.body?.cancel();
+        } catch {
+          /* no-op */
+        }
+        return { feed: name, status: 'key-required', keyEnv: feed.keyEnv, updatedAt: null, points: [], total: 0, error: 'Shodan rejected this lookup — exposure counts use search filters, which need a paid Shodan membership (your free key works for everything else).' };
+      }
+      throw new Error(`${name}: HTTP ${res.status}${res.status === 401 || res.status === 403 ? ' (check the key)' : ''}`);
+    }
     const text = await res.text();
     if (text.length > MAX_BYTES) throw new Error(`${name}: response too large`);
     let payload;

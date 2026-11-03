@@ -25,6 +25,7 @@ import { registerPickOwner, unregisterPickOwner } from '../data/pickRegistry.js'
 import { governorRequestRender, holdContinuousRender, releaseContinuousRender } from '../renderGovernor.js';
 import { POINT_LIFT_M, attachThreatClick, detachThreatClick, forgetThreatPoint, registerThreatPoint } from './threatLayers.js';
 import { COLORS, renderLegend } from './legend.js';
+import { createSitrep } from './sitrep.js';
 import { glyphBillboard } from './markerIcons.js';
 
 // Distinct glyph per category (monochrome symbols; coloured by the SVG badge).
@@ -223,6 +224,10 @@ function createHud() {
   hud.id = 'attack-map-hud';
   hud.setAttribute('aria-label', 'Attack map');
   const head = el('div', 'attack-map-hud-head');
+  const sitrepBtn = el('button', 'attack-map-brief-btn', 'SITREP');
+  sitrepBtn.type = 'button';
+  sitrepBtn.title = 'Open the rolling plain-English dashboard: attacks and AI-security intel, explained simply';
+  sitrepBtn.setAttribute('aria-expanded', 'false');
   const brief = el('button', 'attack-map-brief-btn', 'BRIEF');
   brief.type = 'button';
   brief.title = 'Open the briefing: every alert in plain English and technical terms, a map legend and source status';
@@ -231,7 +236,7 @@ function createHud() {
   fold.type = 'button';
   fold.title = 'Minimize';
   fold.setAttribute('aria-label', 'Minimize attack map panel');
-  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), brief, fold);
+  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), sitrepBtn, brief, fold);
   head.title = 'Drag to move · double-click to re-dock';
   const counter = el('div', 'attack-map-counter', '—');
   const basis = el('div', 'attack-map-basis', 'waiting for DShield…');
@@ -258,6 +263,17 @@ function createHud() {
   const lane = el('div', 'attack-map-ticker-lane');
   track.append(lane);
   ticker.append(tag, track);
+
+  const sitrep = createSitrep(document);
+  document.body.append(sitrep.element);
+  for (const type of ['pointerdown', 'dblclick']) sitrepBtn.addEventListener(type, (e) => e.stopPropagation());
+  sitrepBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const next = !sitrep.isOpen();
+    sitrep.setOpen(next);
+    sitrepBtn.setAttribute('aria-expanded', String(next));
+    sitrepBtn.classList.toggle('active', next);
+  });
 
   const panel = el('div', 'attack-map-brief');
   panel.hidden = true;
@@ -413,10 +429,12 @@ function createHud() {
       clearInterval(timer);
       clearInterval(rotateTimer);
       timer = rotateTimer = null;
+      sitrep.dispose();
       hud.remove();
     },
     update(body) {
       last = body || {};
+      sitrep.setAttack(body);
       rate = Number(body?.rate?.perMinute) || 0;
       value = Math.max(value, counterStart(rate));
       counter.textContent = rate ? fmt(value) : '—';
@@ -443,7 +461,8 @@ function createHud() {
               node.rel = 'noopener noreferrer';
             }
             node.title = twoVoice(a.plain, a.technical);
-            node.append(el('em', null, `${a.source.toUpperCase()} ▸ `), document.createTextNode(a.title));
+            // Plain English in the ticker itself: headline, then what it means.
+            node.append(el('em', null, `${a.source.toUpperCase()} ▸ `), document.createTextNode(a.plain ? `${a.title} — ${a.plain}` : a.title));
             return node;
           })
         : [el('span', 'attack-map-ticker-item', 'No alerts reachable right now — arcs still update. Open BRIEF to see which sources are live.')];
