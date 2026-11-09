@@ -32,8 +32,15 @@ export const SKY_LAYER = Object.freeze({
 const ID = 'sky:';
 const RECOMPUTE_MS = 20_000;
 const STAR_LABEL_MAG = 1.7; // only the brightest stars get a name label
-const LINE_COLOR = '#7a6a28';
+// Constellations get a cyan-blue glow (an intentional exception to the gold/red
+// theme, for the sky only — the theme guard scans CSS, not this layer).
+const LINE_COLOR = '#3fd0ff';
 const RENDER_HOLD = 'anansi-sky';
+
+// The sky is drawn as one shell floating well above the globe, so the figures
+// read as a dome of light overhead rather than paint stuck to the surface.
+const SHELL_STARS = 260_000; // m — stars and the constellation lines that join them
+const SHELL_BODIES = 320_000; // m — Sun / Moon / planets sit just above the star field
 
 /** Sun, Moon and the naked-eye planets, with a glyph and an on-theme colour. */
 export const BODIES = Object.freeze([
@@ -103,7 +110,7 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
       const entityId = `${ID}star:${hip}:${si}`;
       _ds.entities.add({
         id: entityId,
-        position: pos(p.lat, p.lon, 18_000),
+        position: pos(p.lat, p.lon, SHELL_STARS),
         point: {
           pixelSize: starSizePx(mag),
           color: Cesium.Color.fromCssColorString('#fff3d6').withAlpha(starAlpha(mag)),
@@ -111,7 +118,7 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
         },
       });
       if (name && mag <= STAR_LABEL_MAG) {
-        labels.push({ id: `star:${hip}:${si}`, position: pos(p.lat, p.lon, 18_000), title: name, accent: '#fff3d6', priority: Math.round((6 - mag) * 100) });
+        labels.push({ id: `star:${hip}:${si}`, position: pos(p.lat, p.lon, SHELL_STARS), title: name, accent: '#fff3d6', priority: Math.round((6 - mag) * 100) });
       }
       if (name) {
         ownedIds.add(entityId);
@@ -133,10 +140,15 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
             // a running counter keeps every polyline id unique within the draw.
             id: `${ID}line:${con.abbr}:${i}:${lineSeq++}`,
             polyline: {
-              positions: seg.map((q) => pos(q.lat, q.lon, 16_000)),
-              width: 1.4,
+              positions: seg.map((q) => pos(q.lat, q.lon, SHELL_STARS)),
+              width: 2.4,
               arcType: Cesium.ArcType.NONE,
-              material: Cesium.Color.fromCssColorString(LINE_COLOR).withAlpha(0.7),
+              // Same floating-glow treatment as the attack-map arcs.
+              material: new Cesium.PolylineGlowMaterialProperty({
+                glowPower: 0.3,
+                taperPower: 0.85,
+                color: Cesium.Color.fromCssColorString(LINE_COLOR).withAlpha(0.85),
+              }),
             },
           });
         }
@@ -147,9 +159,9 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
     // (Serpens Caput and Cauda both "Ser"), so the index keeps ids unique.
     _data.constellations.forEach((c, ci) => {
       const p = subPoint(c.ra, c.dec, gmst);
-      labels.push({ id: `con:${c.abbr}:${ci}`, position: pos(p.lat, p.lon, 16_000), title: c.name, accent: '#d4af37', priority: 400 });
+      labels.push({ id: `con:${c.abbr}:${ci}`, position: pos(p.lat, p.lon, SHELL_STARS), title: c.name, accent: LINE_COLOR, priority: 400 });
       const cid = `${ID}con:${c.abbr}:${ci}`;
-      _ds.entities.add({ id: cid, position: pos(p.lat, p.lon, 16_000), point: { pixelSize: 3, color: Cesium.Color.fromCssColorString('#d4af37').withAlpha(0.6), disableDepthTestDistance: 0 } });
+      _ds.entities.add({ id: cid, position: pos(p.lat, p.lon, SHELL_STARS), point: { pixelSize: 4, color: Cesium.Color.fromCssColorString(LINE_COLOR).withAlpha(0.7), disableDepthTestDistance: 0 } });
       ownedIds.add(cid);
       registerThreatPoint(cid, { ...def, icon: '✧', name: 'Constellation', color: '#d4af37' }, {
         title: c.name, place: `Constellation (${c.abbr})`, count: 0, time: null, approximate: true,
@@ -170,7 +182,7 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
       const id = `${ID}body:${b.body}`;
       _ds.entities.add({
         id,
-        position: pos(p.lat, p.lon, 24_000),
+        position: pos(p.lat, p.lon, SHELL_BODIES),
         billboard: {
           image: bodyBadge(b.glyph, b.color),
           width: Math.round(30 * b.size),
@@ -178,7 +190,7 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
           scaleByDistance: new Cesium.NearFarScalar(1.5e6, 1.0, 4.0e7, 0.7),
         },
       });
-      labels.push({ id: `body:${b.body}`, position: pos(p.lat, p.lon, 24_000), title: `${b.glyph} ${b.name}`, accent: b.color, priority: 900 });
+      labels.push({ id: `body:${b.body}`, position: pos(p.lat, p.lon, SHELL_BODIES), title: `${b.glyph} ${b.name}`, accent: b.color, priority: 900 });
       ownedIds.add(id);
       registerThreatPoint(id, { ...def, icon: b.glyph, name: b.name, color: b.color }, {
         title: b.name, place: 'Planet / Solar System body', count: 0, time: null, approximate: true,
