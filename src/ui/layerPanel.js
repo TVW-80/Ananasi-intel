@@ -113,6 +113,11 @@ const PANEL_GROUPS = [
     ids: ['history-sundown-towns'],
   },
   {
+    // Anansi: the live night sky projected onto the globe.
+    label: msg('Sky'),
+    ids: ['sky-overhead'],
+  },
+  {
     label: msg('Utilities'),
     ids: ['directions', 'radio'],
   },

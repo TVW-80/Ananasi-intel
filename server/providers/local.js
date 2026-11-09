@@ -31,6 +31,7 @@ import { cycloneProxy } from './cyclones.js';
 import { windProxy } from './wind.js';
 import { aiSecIntelProxy } from './anansi/ai-sec-intel.js';
 import { attackMapProxy } from './anansi/attack-map.js';
+import { skyProxy } from './anansi/sky.js';
 import { flipperSerialProxy } from './anansi/flipper-serial.js';
 import { n8nProxy } from './anansi/n8n.js';
 import { threatIntelProxy } from './anansi/threat-intel.js';
@@ -77,6 +78,7 @@ function localProviderPlugins({ realtime, gemini } = {}) {
     n8nProxy(),
     threatIntelProxy(),
     attackMapProxy(),
+    skyProxy(),
     keySetupEndpoint(),
   ];
 }

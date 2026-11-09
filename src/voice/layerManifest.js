@@ -427,6 +427,7 @@ export const VOICE_OFF_LAYERS = Object.freeze({
   'flipper-detections': 'Anansi: local hardware sensor on this machine (not shareable)',
   'local-hampton-roads-757': 'Anansi: local 757 feed from your own n8n flows',
   'cyber-attack-map': 'Anansi: personal threat-intel research layer',
+  'sky-overhead': 'Anansi: live sky (stars, planets, constellations)',
   'cyber-botnet-c2': 'Anansi: personal threat-intel research layer',
   'cyber-reported-attackers': 'Anansi: personal threat-intel research layer',
   'cyber-ransomware': 'Anansi: personal threat-intel research layer',
