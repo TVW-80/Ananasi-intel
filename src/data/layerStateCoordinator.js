@@ -124,7 +124,12 @@ export class LayerStateCoordinator {
         /* best effort */
       }
       if (stored) {
-        selected = stored;
+        // Anansi: every ordinary open starts with a clean globe. We keep the
+        // visitor's durable per-layer options (focus, tracking, 3D…) but never
+        // auto-enable the layers they left on last time — opening the app is
+        // not the same deliberate act as following a share link, which still
+        // restores its own layers through the share branch above.
+        selected = { ...stored, enabledLayerIds: [] };
         this._source = 'local';
       }
     } else {

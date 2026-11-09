@@ -1248,7 +1248,11 @@ test('share payload wins over local, passive restore writes nothing, and explici
   coordinator.destroy();
 });
 
-test('absent share payload restores local state without rewriting it', async () => {
+test('an ordinary open starts clean — layers off — but keeps per-layer options, without rewriting storage', async () => {
+  // Anansi: every ordinary open begins with a clean globe. The stored
+  // per-layer options (radio filter/volume) are still applied so they are
+  // ready the moment the visitor turns a layer back on, but no layer the
+  // visitor left enabled last time is auto-enabled, and nothing is rewritten.
   const local = createDefaultLayerState();
   local.enabledLayerIds = ['earthquakes', 'radio'];
   local.options.radio = { filter: 'talk', volume: 0.42 };
@@ -1259,15 +1263,14 @@ test('absent share payload restores local state without rewriting it', async () 
   });
   const results = await coordinator.start();
   assert.equal(coordinator.source, 'local');
-  assert.equal(manager.isEnabled('earthquakes'), true);
-  assert.equal(manager.isEnabled('radio'), true);
-  assert.deepEqual(manager.getLayerParams('radio'), {
-    filter: 'talk',
-    volume: 0.42,
-    selectedStationId: 'private-station',
-    audioState: 'playing',
-    voiceDucked: true,
-  });
+  // Clean globe: neither stored layer comes back on.
+  assert.equal(manager.isEnabled('earthquakes'), false);
+  assert.equal(manager.isEnabled('radio'), false);
+  // Durable per-layer options are preserved for when the layer is re-enabled.
+  assert.equal(coordinator.getDurableState().options.radio.filter, 'talk');
+  assert.equal(coordinator.getDurableState().options.radio.volume, 0.42);
+  assert.deepEqual(coordinator.getDurableState().enabledLayerIds, []);
+  // The restore never persists: opening the app does not rewrite storage.
   assert.equal(
     results.every((result) => result.persistenceWrite === false),
     true,

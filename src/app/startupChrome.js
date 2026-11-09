@@ -1,4 +1,5 @@
 import { initFirstRunExperience } from '../firstRunExperience.js';
+import { initLoginReport } from '../anansi/loginReport.js';
 
 /** Reveal welcome controls only after restoration and the loading transition. */
 export function startApplicationChrome({
@@ -7,11 +8,18 @@ export function startApplicationChrome({
   dataManager,
   signal,
   initializeWelcome = initFirstRunExperience,
+  initializeLoginReport,
   initializeSettings,
 }) {
   let disposed = false;
   let firstRun;
+  let loginReport;
   let revealTimer;
+  // Anansi: the "since you were last here" digest. Resolved lazily and guarded
+  // with typeof so the vm-based unit test (which strips imports) stays happy.
+  const startLoginReport =
+    initializeLoginReport ||
+    (typeof initLoginReport === 'function' ? initLoginReport : null);
   let resolveDelay;
   const minimumDelay = new Promise((resolve) => {
     resolveDelay = resolve;
@@ -20,6 +28,7 @@ export function startApplicationChrome({
   const revealFirstRun = () => {
     if (disposed || signal.aborted || firstRun) return;
     firstRun = initializeWelcome?.({ styleManager, dataManager });
+    loginReport = startLoginReport?.();
     clearTimeout(revealTimer);
     loadingScreen.removeEventListener('transitionend', revealFirstRun);
   };
@@ -49,6 +58,7 @@ export function startApplicationChrome({
     resolveDelay();
     loadingScreen.removeEventListener('transitionend', revealFirstRun);
     firstRun?.destroy();
+    loginReport?.destroy?.();
     (await keySetup.catch(() => null))?.destroy();
   };
 }
