@@ -1408,7 +1408,7 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 /* ── Welcome-back report: "what happened since your last visit" ───────────── */
 .login-report {
   position: fixed;
-  z-index: 420;
+  z-index: 1200;
   right: 18px;
   top: 64px;
   width: min(380px, calc(100vw - 32px));
@@ -1423,12 +1423,16 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
   font-family: var(--font-mono);
   color: var(--text-primary);
 }
+/* The `display: flex` above would otherwise override the UA [hidden] rule and
+   keep the panel on screen after the close button sets `hidden`. */
+.login-report[hidden] { display: none !important; }
 .login-report-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .login-report-kicker { font-size: 9px; letter-spacing: 0.16em; color: #f4cf5e; }
 .login-report-close {
-  font-family: inherit; font-size: 10px; letter-spacing: 0.08em;
+  font-family: inherit; font-size: 11px; letter-spacing: 0.08em;
   color: var(--text-primary); background: rgba(200, 30, 30, 0.18);
-  border: 1px solid rgba(200, 30, 30, 0.6); padding: 4px 8px; cursor: pointer;
+  border: 1px solid rgba(200, 30, 30, 0.6); padding: 7px 11px; cursor: pointer;
+  position: relative; z-index: 1;
 }
 .login-report-close:hover { background: rgba(200, 30, 30, 0.32); }
 .login-report-headline { margin: 10px 0 8px; font-size: 14px; line-height: 1.35; color: #ffe9a8; }

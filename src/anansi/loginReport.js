@@ -216,6 +216,16 @@ export function createLoginReport(
     panel.hidden = true;
   }
   close.addEventListener('click', closePanel);
+  // Escape also closes it, so it is never stuck on screen. Capture phase, so it
+  // fires before the app's own Escape handlers (clean view, menus); when the
+  // panel is closed it no-ops and leaves Escape to the rest of the app.
+  const onKey = (e) => {
+    if (e.key === 'Escape' && shown) {
+      e.stopPropagation();
+      closePanel();
+    }
+  };
+  doc.addEventListener('keydown', onKey, true);
 
   function renderDigest(entries, sinceMs) {
     const nowMs = now();
@@ -265,6 +275,7 @@ export function createLoginReport(
     isOpen: () => shown,
     destroy() {
       closePanel();
+      doc.removeEventListener('keydown', onKey, true);
       panel.remove();
     },
   };
@@ -275,6 +286,9 @@ export function createLoginReport(
  * a handle with destroy(). Safe to call once at app open.
  */
 export function initLoginReport({ now, storage, fetchImpl, doc = document } = {}) {
+  // Remove any earlier instance (HMR, a re-init) so panels never stack — a
+  // stack of identical cards reads as "the report won't close".
+  doc.querySelectorAll('.login-report').forEach((n) => n.remove());
   const report = createLoginReport(doc, { now, storage, fetchImpl });
   doc.body.append(report.element);
   void report.init();
