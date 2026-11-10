@@ -19,6 +19,7 @@ import { registerPickOwner, unregisterPickOwner } from '../data/pickRegistry.js'
 import { governorRequestRender, holdContinuousRender, releaseContinuousRender } from '../renderGovernor.js';
 import { POINT_LIFT_M, attachThreatClick, detachThreatClick, forgetThreatPoint, registerThreatPoint } from './threatLayers.js';
 import { gmstDeg, splitByAntimeridian, starAlpha, starSizePx, subPoint } from './skyMath.js';
+import { AJE } from './ajeAlert.js';
 
 export const SKY_LAYER = Object.freeze({
   id: 'sky-overhead',
@@ -197,6 +198,33 @@ export function createSkyLayer({ overlayHost, fetchImpl = (...a) => globalThis.f
         items: [{ text: `Overhead near ${p.lat.toFixed(1)}°, ${p.lon.toFixed(1)}° right now`, plain: `${b.name} is currently directly above this point on Earth.`, tech: `RA ${rd.ra.toFixed(2)}°, Dec ${rd.dec.toFixed(2)}° (of date).` }],
       });
       planetCount += 1;
+    }
+
+    // Aje — a personally named star (Star Name Deed). Always drawn, highlighted
+    // gold with a ★ so it stands out from the catalogue; its popover carries the
+    // deed details. The AJE WATCH card handles "is it visible from home" timing.
+    {
+      const p = subPoint(AJE.raDeg, AJE.decDeg, gmst);
+      const id = `${ID}aje`;
+      _ds.entities.add({
+        id,
+        position: pos(p.lat, p.lon, SHELL_BODIES),
+        billboard: {
+          image: bodyBadge('★', '#ffd76a'),
+          width: 30,
+          height: 30,
+          scaleByDistance: new Cesium.NearFarScalar(1.5e6, 1.1, 4.0e7, 0.8),
+        },
+      });
+      labels.push({ id: 'aje', position: pos(p.lat, p.lon, SHELL_BODIES), title: '★ Aje', accent: '#ffd76a', priority: 950 });
+      ownedIds.add(id);
+      registerThreatPoint(id, { ...def, icon: '★', name: 'Aje', color: '#ffd76a' }, {
+        title: 'Aje — your named star', place: AJE.designation, count: 0, time: null, approximate: true,
+        items: [
+          { text: `Named ${AJE.named}`, plain: 'This is Aje, the star named on your Star Name Deed.', tech: `RA ${AJE.raText}, Dec ${AJE.decText}, magnitude ${AJE.magnitude}.` },
+          { text: 'Too faint to see by eye', plain: 'At magnitude 10.2 it needs a telescope — the AJE WATCH card tells you when its sky is up in the dark over Williamsburg.', tech: AJE.designation },
+        ],
+      });
     }
 
     labels.sort((a, b) => b.priority - a.priority);

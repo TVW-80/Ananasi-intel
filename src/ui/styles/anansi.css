@@ -1462,3 +1462,41 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 @media (max-width: 560px) {
   .login-report { right: 8px; left: 8px; top: 54px; width: auto; }
 }
+
+/* ── AJE WATCH: visibility alert for the personally named star ────────────── */
+.aje-alert {
+  position: fixed;
+  z-index: 410;
+  left: 18px;
+  bottom: 86px;
+  width: min(320px, calc(100vw - 32px));
+  padding: 12px 13px 11px;
+  background: rgba(10, 9, 8, 0.93);
+  border: 1px solid rgba(255, 215, 106, 0.5);
+  box-shadow: 0 0 22px rgba(255, 215, 106, 0.16), 0 8px 30px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(11px);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+.aje-alert.is-up {
+  border-color: rgba(255, 215, 106, 0.95);
+  box-shadow: 0 0 30px rgba(255, 215, 106, 0.4), 0 8px 30px rgba(0, 0, 0, 0.55);
+}
+.aje-alert-head { display: flex; align-items: center; gap: 7px; }
+.aje-alert-star { color: #ffd76a; font-size: 13px; }
+.aje-alert.is-up .aje-alert-star { animation: aje-twinkle 1.6s ease-in-out infinite; }
+@keyframes aje-twinkle { 0%, 100% { opacity: 1; text-shadow: 0 0 6px #ffd76a; } 50% { opacity: 0.55; text-shadow: 0 0 2px #ffd76a; } }
+.aje-alert-kicker { font-size: 9px; letter-spacing: 0.15em; color: #f4cf5e; flex: 1; }
+.aje-alert-close {
+  font-family: inherit; font-size: 11px; line-height: 1; color: var(--text-secondary);
+  background: none; border: 0; cursor: pointer; padding: 2px 4px;
+}
+.aje-alert-close:hover { color: var(--text-primary); }
+.aje-alert-headline { margin: 9px 0 5px; font-size: 13px; line-height: 1.35; color: #ffe9a8; }
+.aje-alert.is-up .aje-alert-headline { color: #ffd76a; }
+.aje-alert-detail { margin: 0 0 8px; font-size: 11.5px; line-height: 1.4; color: var(--text-primary); }
+.aje-alert-coords { margin: 0 0 6px; font-size: 9.5px; line-height: 1.35; color: var(--text-secondary); }
+.aje-alert-note { margin: 0; font-size: 9.5px; line-height: 1.4; color: var(--text-secondary); opacity: 0.85; }
+@media (max-width: 560px) {
+  .aje-alert { left: 8px; right: 8px; width: auto; bottom: 78px; }
+}
