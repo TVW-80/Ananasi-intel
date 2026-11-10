@@ -318,6 +318,9 @@ export class ShareRestoration {
       });
     const layersPromise = this._layerStateCoordinator
       ? this._layerStateCoordinator.applyShareLayerState({
+          // In-session navigation to a specific view is a deliberate act, so it
+          // restores that view's layers. Only the initial open starts clean
+          // (handled in start(), below).
           shareLayerState: state.layerState || null,
           shareCreatedAtMs: state.sharedAtMs ?? null,
         })
@@ -329,6 +332,21 @@ export class ShareRestoration {
       settle,
     });
   }
+  /**
+   * Anansi: the app writes the live view (camera, style, AND layers) into the
+   * address bar as you browse, so a bookmarked/reloaded view carries whatever
+   * layers were on. Opening such a view must still start with a clean globe, so
+   * we drop its enabled layers while keeping its camera, style and options. A
+   * deliberate share link — stamped with `sharedAtMs` by the Share button —
+   * keeps its layers, because opening someone's share is a chosen act.
+   */
+  _passiveCleanLayers(layerState, sharedAtMs) {
+    if (layerState && sharedAtMs == null) {
+      return { ...layerState, enabledLayerIds: [] };
+    }
+    return layerState;
+  }
+
   connect(dataManager) {
     this._dataManager = dataManager;
     this._layerStateCoordinator?.destroy();
@@ -345,7 +363,10 @@ export class ShareRestoration {
         },
       );
       this._layerStateRestorePromise = this._layerStateCoordinator.start({
-        shareLayerState: this._initialShareState?.layerState || null,
+        shareLayerState: this._passiveCleanLayers(
+          this._initialShareState?.layerState || null,
+          this._initialShareState?.sharedAtMs ?? null,
+        ),
         shareCreatedAtMs: this._initialShareState?.sharedAtMs ?? null,
         // Any valid camera/style share isolates recipient-local preferences,
         // including legacy and malformed-v2 layer payloads.
