@@ -1,0 +1,26 @@
+{
+  "name": "fangs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FANGS - Fast Adversary Network Graphing Suite. Defensive link-analysis + dispatch board for Ananzi.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "bench": "node scripts/bench.js",
+    "gen:fixtures": "node scripts/gen-fixtures.js",
+    "build:attack": "node scripts/build-attack.js"
+  },
+  "dependencies": {
+    "cytoscape": "^3.35.0",
+    "graphology": "^0.26.0",
+    "graphology-communities-louvain": "^2.0.2",
+    "graphology-layout": "^0.6.1",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-metrics": "^2.4.2"
+  }
+}

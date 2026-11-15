@@ -1,0 +1,18 @@
+{
+ "synthetic": true,
+ "note": "SAMPLE values for offline operation and tests. NOT authoritative CISA KEV / FIRST EPSS data. Live fetch replaces this when reachable.",
+ "kev": [
+  "CVE-2021-44228",
+  "CVE-2023-4966",
+  "CVE-2024-3400",
+  "CVE-2023-34362"
+ ],
+ "epss": {
+  "CVE-2021-44228": 0.97,
+  "CVE-2023-4966": 0.94,
+  "CVE-2024-3400": 0.96,
+  "CVE-2023-34362": 0.95,
+  "CVE-2022-0001": 0.02,
+  "CVE-2020-1234": 0.11
+ }
+}

@@ -5,6 +5,8 @@
 1. **Operation 757 — Regional Intelligence Dashboard.** A real-time CesiumJS 3D globe for the Hampton Roads / Historic Triangle region of Virginia. Self-hosted n8n workflows pull live traffic (TomTom), weather alerts (NOAA/NWS), and local news (Google News RSS) into one operational picture.
 2. **AI Security Intelligence Dashboard** *(new)*. Tracks the AI/ML attack surface: actively exploited vulnerabilities in AI infrastructure, AI security research and incidents, frontier-model releases, and AI-related executive orders.
 
+3. **FANGS: Fast Adversary Network Graphing Suite** *(new, runs locally: [`fangs/`](fangs/))*. A cyber-focused mode: a provenance-backed link-analysis graph of adversary infrastructure built from public IOC feeds, with a live CAD-style dispatch queue, severity scoring, and MITRE ATT&CK mapping. Defensive awareness only. Needs Node, so it is not served by GitHub Pages; see [`fangs/README.md`](fangs/README.md) for setup and for exactly which results were measured and which parts are unverified.
+
 🔗 **Live site:** https://tvw-80.github.io/Ananasi-intel/
 📄 **Operation debrief:** [`anansi/`](https://tvw-80.github.io/Ananasi-intel/anansi/)
 🛡️ **AI Security dashboard:** [`ai-security/`](https://tvw-80.github.io/Ananasi-intel/ai-security/)

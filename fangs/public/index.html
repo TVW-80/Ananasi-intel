@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FANGS — Fast Adversary Network Graphing Suite</title>
+<meta name="description" content="FANGS: adversary-infrastructure link-analysis graph and dispatch board for Ananzi. Defensive awareness only.">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip" href="#graph" data-i18n="a11y.skip">Skip to graph</a>
+<header class="bar" role="banner">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">⟁</span>
+    <div>
+      <h1>FANGS</h1>
+      <p class="tag" data-i18n="app.tagline">Fast Adversary Network Graphing Suite</p>
+    </div>
+  </div>
+  <div class="stats" id="stats" role="status" aria-live="off">
+    <span class="chip"><b id="st-nodes">0</b> <span data-i18n="stats.nodes">nodes</span></span>
+    <span class="chip"><b id="st-edges">0</b> <span data-i18n="stats.edges">links</span></span>
+    <span class="chip"><b id="st-comm">0</b> <span data-i18n="stats.communities">clusters</span></span>
+    <span class="chip"><b id="st-q">–</b> <span data-i18n="stats.modularity">modularity</span></span>
+    <span class="chip" id="st-lat-wrap" hidden><b id="st-lat">–</b> <span data-i18n="stats.latency">ms event→board</span></span>
+  </div>
+  <div class="tools">
+    <label class="sel"><span class="sr" data-i18n="ui.language">Language</span>
+      <select id="lang" aria-label="Language"><option value="en">English</option><option value="es">Español</option></select></label>
+    <button id="theme" type="button" data-i18n="ui.theme" aria-pressed="false">Theme</button>
+  </div>
+</header>
+
+<div class="banner" id="banner" hidden role="note"></div>
+<div class="feeds" id="feeds" aria-label="Feed health" data-i18n-aria="feeds.title"></div>
+
+<main class="grid">
+  <section class="graphpane" aria-labelledby="gtitle">
+    <div class="paneHead">
+      <h2 id="gtitle" data-i18n="graph.title">Adversary infrastructure graph</h2>
+      <div class="ctl">
+        <label><span data-i18n="graph.colorBy">Color</span>
+          <select id="colorBy"><option value="type" data-i18n="graph.byType">node type</option><option value="community" data-i18n="graph.byCommunity">cluster</option></select></label>
+        <label><span data-i18n="graph.sizeBy">Size</span>
+          <select id="sizeBy"><option value="degree" data-i18n="graph.byDegree">degree</option><option value="betweenness" data-i18n="graph.byBetweenness">betweenness</option></select></label>
+        <input id="search" type="search" data-i18n-placeholder="graph.search" placeholder="Find IP, host, family…" aria-label="Search nodes">
+        <button id="relayout" type="button" data-i18n="graph.relayout">Re-layout</button>
+        <button id="replay" type="button" data-i18n="graph.replay">Replay synthetic campaign</button>
+      </div>
+    </div>
+    <div id="graph" class="graph" tabindex="0" role="application" aria-label="Link-analysis graph. Use the dispatch queue for a keyboard-accessible list of events."></div>
+    <ul class="legend" id="legend" aria-label="Legend"></ul>
+  </section>
+
+  <aside class="board" aria-labelledby="qtitle">
+    <h2 id="qtitle" data-i18n="queue.title">Dispatch queue</h2>
+    <div class="cols" id="cols">
+      <section class="col" data-state="new"><h3><span data-i18n="state.new">NEW</span> <b id="cnt-new">0</b></h3><ol id="list-new" class="evlist"></ol></section>
+      <section class="col" data-state="triaged"><h3><span data-i18n="state.triaged">TRIAGED</span> <b id="cnt-triaged">0</b></h3><ol id="list-triaged" class="evlist"></ol></section>
+      <section class="col" data-state="acknowledged"><h3><span data-i18n="state.acknowledged">ACKNOWLEDGED</span> <b id="cnt-acknowledged">0</b></h3><ol id="list-acknowledged" class="evlist"></ol></section>
+    </div>
+    <div class="live sr" id="live" aria-live="polite"></div>
+  </aside>
+
+  <section class="detail" id="detail" aria-labelledby="dtitle">
+    <h2 id="dtitle" data-i18n="detail.title">Detail & provenance</h2>
+    <div id="detailBody"><p class="dim" data-i18n="detail.empty">Select an event, node or link to see the source records behind it.</p></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span data-i18n="foot.defensive">Defensive awareness only. FANGS never contacts indicator hosts; every node and link cites a source record.</span>
+  <a href="/../" data-i18n="foot.back">← Ananzi</a>
+</footer>
+
+<script src="/vendor/cytoscape.js"></script>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

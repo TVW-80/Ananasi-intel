@@ -1,0 +1,1951 @@
+{
+ "synthetic": true,
+ "note": "SYNTHETIC. Documentation IP ranges / ASNs, .example domains. Not real threat data.",
+ "seed": 1,
+ "payloads": [
+  {
+   "source": "c2intel",
+   "inputs": [
+    {
+     "file": "IPC2s-30day.csv",
+     "text": "#ip,ioc\n192.0.2.3,Possible Cobalt Strike C2 IP\n192.0.2.4,Possible Cobalt Strike C2 IP\n192.0.2.5,Possible Cobalt Strike C2 IP\n192.0.2.10,Possible Cobalt Strike C2 IP\n192.0.2.16,Possible Sliver C2 IP\n192.0.2.21,Possible Sliver C2 IP\n192.0.2.24,Possible Sliver C2 IP\n192.0.2.27,Possible Havoc C2 IP\n192.0.2.28,Possible Havoc C2 IP\n192.0.2.29,Possible Havoc C2 IP\n192.0.2.32,Possible Havoc C2 IP\n192.0.2.68,Possible Mirai C2 IP\n192.0.2.76,Possible Mirai C2 IP\n192.0.2.77,Possible Mirai C2 IP\n10.0.0.5,Possible Cobalt Strike C2 IP\n127.0.0.1,Possible Sliver C2 IP\nnot-an-ip,Possible Havoc C2 IP\n,\ngarbage line without comma\n192.0.2.4,Possible Cobalt Strike C2 IP",
+     "url": "fixture:synthetic-campaign/seed-1/IPC2s-30day.csv"
+    },
+    {
+     "file": "domainC2swithURLwithIP-30day.csv",
+     "text": "#domain,ioc,uri_path,ip\ncobaltstrike-c2-0.example,Possible Cobalt Strike C2 Domain,/api/v0,192.0.2.14\ncobaltstrike-c2-0.example,Possible Cobalt Strike C2 Domain,/api/v0,192.0.2.2\ncobaltstrike-c2-0.example,Possible Cobalt Strike C2 Domain,/api/v0,192.0.2.1\ncobaltstrike-c2-1.example,Possible Cobalt Strike C2 Domain,/api/v1,192.0.2.5\ncobaltstrike-c2-1.example,Possible Cobalt Strike C2 Domain,/api/v1,192.0.2.13\ncobaltstrike-c2-1.example,Possible Cobalt Strike C2 Domain,/api/v1,192.0.2.8\ncobaltstrike-c2-2.example,Possible Cobalt Strike C2 Domain,/api/v2,192.0.2.10\ncobaltstrike-c2-2.example,Possible Cobalt Strike C2 Domain,/api/v2,192.0.2.3\ncobaltstrike-c2-2.example,Possible Cobalt Strike C2 Domain,/api/v2,192.0.2.14\ncobaltstrike-c2-3.example,Possible Cobalt Strike C2 Domain,/api/v3,192.0.2.14\ncobaltstrike-c2-3.example,Possible Cobalt Strike C2 Domain,/api/v3,192.0.2.3\ncobaltstrike-c2-4.example,Possible Cobalt Strike C2 Domain,/api/v4,192.0.2.2\ncobaltstrike-c2-4.example,Possible Cobalt Strike C2 Domain,/api/v4,192.0.2.6\nsliver-c2-0.example,Possible Sliver C2 Domain,/api/v0,192.0.2.19\nsliver-c2-0.example,Possible Sliver C2 Domain,/api/v0,192.0.2.18\nsliver-c2-1.example,Possible Sliver C2 Domain,/api/v1,192.0.2.18\nsliver-c2-1.example,Possible Sliver C2 Domain,/api/v1,192.0.2.26\nsliver-c2-2.example,Possible Sliver C2 Domain,/api/v2,192.0.2.16\nsliver-c2-2.example,Possible Sliver C2 Domain,/api/v2,192.0.2.18\nsliver-c2-2.example,Possible Sliver C2 Domain,/api/v2,192.0.2.15\nsliver-c2-3.example,Possible Sliver C2 Domain,/api/v3,192.0.2.24\nsliver-c2-3.example,Possible Sliver C2 Domain,/api/v3,192.0.2.19\nsliver-c2-4.example,Possible Sliver C2 Domain,/api/v4,192.0.2.16\nsliver-c2-4.example,Possible Sliver C2 Domain,/api/v4,192.0.2.24\nhavoc-c2-0.example,Possible Havoc C2 Domain,/api/v0,192.0.2.31\nhavoc-c2-0.example,Possible Havoc C2 Domain,/api/v0,192.0.2.35\nhavoc-c2-0.example,Possible Havoc C2 Domain,/api/v0,192.0.2.28\nhavoc-c2-1.example,Possible Havoc C2 Domain,/api/v1,192.0.2.38\nhavoc-c2-1.example,Possible Havoc C2 Domain,/api/v1,192.0.2.34\nhavoc-c2-2.example,Possible Havoc C2 Domain,/api/v2,192.0.2.27\nhavoc-c2-2.example,Possible Havoc C2 Domain,/api/v2,192.0.2.28\nhavoc-c2-2.example,Possible Havoc C2 Domain,/api/v2,192.0.2.34\nhavoc-c2-3.example,Possible Havoc C2 Domain,/api/v3,192.0.2.28\nhavoc-c2-3.example,Possible Havoc C2 Domain,/api/v3,192.0.2.34\nqakbot-c2-0.example,Possible QakBot C2 Domain,/api/v0,192.0.2.45\nqakbot-c2-0.example,Possible QakBot C2 Domain,/api/v0,192.0.2.43\nqakbot-c2-1.example,Possible QakBot C2 Domain,/api/v1,192.0.2.47\nqakbot-c2-1.example,Possible QakBot C2 Domain,/api/v1,192.0.2.45\nqakbot-c2-1.example,Possible QakBot C2 Domain,/api/v1,192.0.2.39\nqakbot-c2-2.example,Possible QakBot C2 Domain,/api/v2,192.0.2.39\nqakbot-c2-2.example,Possible QakBot C2 Domain,/api/v2,192.0.2.49\nqakbot-c2-2.example,Possible QakBot C2 Domain,/api/v2,192.0.2.52\nemotet-c2-0.example,Possible Emotet C2 Domain,/api/v0,192.0.2.60\nemotet-c2-0.example,Possible Emotet C2 Domain,/api/v0,192.0.2.63\nemotet-c2-0.example,Possible Emotet C2 Domain,/api/v0,192.0.2.57\nemotet-c2-1.example,Possible Emotet C2 Domain,/api/v1,192.0.2.53\nemotet-c2-1.example,Possible Emotet C2 Domain,/api/v1,192.0.2.58\nemotet-c2-1.example,Possible Emotet C2 Domain,/api/v1,192.0.2.55\nemotet-c2-2.example,Possible Emotet C2 Domain,/api/v2,192.0.2.59\nemotet-c2-2.example,Possible Emotet C2 Domain,/api/v2,192.0.2.58\nmirai-c2-0.example,Possible Mirai C2 Domain,/api/v0,192.0.2.77\nmirai-c2-0.example,Possible Mirai C2 Domain,/api/v0,192.0.2.74\nmirai-c2-0.example,Possible Mirai C2 Domain,/api/v0,192.0.2.67\nmirai-c2-1.example,Possible Mirai C2 Domain,/api/v1,192.0.2.67\nmirai-c2-1.example,Possible Mirai C2 Domain,/api/v1,192.0.2.74\nmirai-c2-2.example,Possible Mirai C2 Domain,/api/v2,192.0.2.72\nmirai-c2-2.example,Possible Mirai C2 Domain,/api/v2,192.0.2.71\nmirai-c2-3.example,Possible Mirai C2 Domain,/api/v3,192.0.2.74\nmirai-c2-3.example,Possible Mirai C2 Domain,/api/v3,192.0.2.76\ncdn-front-a.example,Possible Cobalt Strike C2 Fronting Domain,/front,192.0.2.12\ncdn-front-a.example,Possible Sliver C2 Fronting Domain,/front,192.0.2.16\ncdn-front-a.example,Possible Havoc C2 Fronting Domain,/front,192.0.2.37\ncdn-front-a.example,Possible QakBot C2 Fronting Domain,/front,192.0.2.46\ncdn-front-a.example,Possible Emotet C2 Fronting Domain,/front,192.0.2.57\ncdn-front-a.example,Possible Mirai C2 Fronting Domain,/front,192.0.2.78\ncdn-front-b.example,Possible Cobalt Strike C2 Fronting Domain,/front,192.0.2.8\ncdn-front-b.example,Possible Sliver C2 Fronting Domain,/front,192.0.2.19\ncdn-front-b.example,Possible Havoc C2 Fronting Domain,/front,192.0.2.31\ncdn-front-b.example,Possible QakBot C2 Fronting Domain,/front,192.0.2.50\ncdn-front-b.example,Possible Emotet C2 Fronting Domain,/front,192.0.2.59\ncdn-front-b.example,Possible Mirai C2 Fronting Domain,/front,192.0.2.77",
+     "url": "fixture:synthetic-campaign/seed-1/domainC2swithURLwithIP-30day.csv"
+    }
+   ]
+  },
+  {
+   "source": "feodo",
+   "inputs": [
+    {
+     "text": "[{\"ip_address\":\"192.0.2.39\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64508,\"as_name\":\"SYNTH-AS64508\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.40\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64503,\"as_name\":\"SYNTH-AS64503\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.41\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64503,\"as_name\":\"SYNTH-AS64503\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.42\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64509,\"as_name\":\"SYNTH-AS64509\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.43\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64509,\"as_name\":\"SYNTH-AS64509\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.44\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64502,\"as_name\":\"SYNTH-AS64502\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.46\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64509,\"as_name\":\"SYNTH-AS64509\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.47\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64503,\"as_name\":\"SYNTH-AS64503\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.48\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64502,\"as_name\":\"SYNTH-AS64502\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.49\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64502,\"as_name\":\"SYNTH-AS64502\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.50\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64502,\"as_name\":\"SYNTH-AS64502\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.52\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64502,\"as_name\":\"SYNTH-AS64502\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"QakBot\"},{\"ip_address\":\"192.0.2.53\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64505,\"as_name\":\"SYNTH-AS64505\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.54\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64505,\"as_name\":\"SYNTH-AS64505\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.55\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64505,\"as_name\":\"SYNTH-AS64505\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.56\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64505,\"as_name\":\"SYNTH-AS64505\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.58\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64505,\"as_name\":\"SYNTH-AS64505\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.59\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64504,\"as_name\":\"SYNTH-AS64504\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.60\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64505,\"as_name\":\"SYNTH-AS64505\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.62\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64504,\"as_name\":\"SYNTH-AS64504\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"},{\"ip_address\":\"192.0.2.63\",\"port\":443,\"status\":\"online\",\"hostname\":null,\"as_number\":64508,\"as_name\":\"SYNTH-AS64508\",\"country\":\"ZZ\",\"first_seen\":\"2026-11-02 10:00:00\",\"last_online\":\"2026-11-14\",\"malware\":\"Emotet\"}]",
+     "url": "fixture:synthetic-campaign/seed-1/feodo.json"
+    }
+   ]
+  },
+  {
+   "source": "threatfox",
+   "inputs": [
+    {
+     "text": "{\"1000\":[{\"ioc_value\":\"192.0.2.1:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1001\":[{\"ioc_value\":\"192.0.2.2:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1002\":[{\"ioc_value\":\"192.0.2.6:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1003\":[{\"ioc_value\":\"192.0.2.7:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1004\":[{\"ioc_value\":\"192.0.2.9:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1005\":[{\"ioc_value\":\"192.0.2.12:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1006\":[{\"ioc_value\":\"192.0.2.13:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"1007\":[{\"ioc_value\":\"192.0.2.14:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.cobaltstrike\",\"malware_printable\":\"Cobalt Strike\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"cobaltstrike,c2,campaign:cobaltstrike-wave1\",\"reference\":null}],\"101008\":[{\"ioc_value\":\"192.0.2.15:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.sliver\",\"malware_printable\":\"Sliver\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"sliver,c2,campaign:sliver-wave1\",\"reference\":null}],\"101009\":[{\"ioc_value\":\"192.0.2.18:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.sliver\",\"malware_printable\":\"Sliver\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"sliver,c2,campaign:sliver-wave1\",\"reference\":null}],\"101010\":[{\"ioc_value\":\"192.0.2.19:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.sliver\",\"malware_printable\":\"Sliver\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"sliver,c2,campaign:sliver-wave1\",\"reference\":null}],\"101011\":[{\"ioc_value\":\"192.0.2.26:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.sliver\",\"malware_printable\":\"Sliver\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"sliver,c2,campaign:sliver-wave1\",\"reference\":null}],\"201012\":[{\"ioc_value\":\"192.0.2.31:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.havoc\",\"malware_printable\":\"Havoc\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"havoc,c2,campaign:havoc-wave1\",\"reference\":null}],\"201013\":[{\"ioc_value\":\"192.0.2.33:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.havoc\",\"malware_printable\":\"Havoc\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"havoc,c2,campaign:havoc-wave1\",\"reference\":null}],\"201014\":[{\"ioc_value\":\"192.0.2.35:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.havoc\",\"malware_printable\":\"Havoc\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"havoc,c2,campaign:havoc-wave1\",\"reference\":null}],\"201015\":[{\"ioc_value\":\"192.0.2.37:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.havoc\",\"malware_printable\":\"Havoc\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"havoc,c2,campaign:havoc-wave1\",\"reference\":null}],\"501016\":[{\"ioc_value\":\"192.0.2.65:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501017\":[{\"ioc_value\":\"192.0.2.66:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501018\":[{\"ioc_value\":\"192.0.2.67:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501019\":[{\"ioc_value\":\"192.0.2.70:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501020\":[{\"ioc_value\":\"192.0.2.71:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501021\":[{\"ioc_value\":\"192.0.2.75:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501022\":[{\"ioc_value\":\"192.0.2.78:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}],\"501023\":[{\"ioc_value\":\"192.0.2.79:443\",\"ioc_type\":\"ip:port\",\"threat_type\":\"botnet_cc\",\"fk_malware\":\"win.mirai\",\"malware_printable\":\"Mirai\",\"confidence_level\":75,\"first_seen_utc\":\"2026-11-10 08:00:00\",\"tags\":\"mirai,c2,campaign:mirai-wave1\",\"reference\":null}]}",
+     "url": "fixture:synthetic-campaign/seed-1/threatfox.json"
+    }
+   ]
+  },
+  {
+   "source": "openphish",
+   "inputs": [
+    {
+     "text": "{\"url\":\"https://login-0.phish.example/signin\",\"brand\":\"ExampleBank\"}\n{\"url\":\"https://login-1.phish.example/signin\",\"brand\":\"TestPay\"}\n{\"url\":\"https://login-2.phish.example/signin\",\"brand\":\"SampleMail\"}\n{\"url\":\"https://login-3.phish.example/signin\",\"brand\":\"DemoCloud\"}\n{\"url\":\"https://login-4.phish.example/signin\",\"brand\":\"ExampleBank\"}\n{\"url\":\"https://login-5.phish.example/signin\",\"brand\":\"SampleMail\"}\n{\"url\":\"https://login-6.phish.example/signin\",\"brand\":\"SampleMail\"}\n{\"url\":\"https://login-7.phish.example/signin\",\"brand\":\"DemoCloud\"}",
+     "url": "fixture:synthetic-campaign/seed-1/openphish.txt"
+    }
+   ]
+  },
+  {
+   "source": "dshield",
+   "inputs": [
+    {
+     "text": "[{\"rank\":1,\"source\":\"192.0.2.8\",\"reports\":314,\"targets\":99,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.11\",\"reports\":372,\"targets\":70,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.17\",\"reports\":325,\"targets\":88,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.20\",\"reports\":298,\"targets\":18,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.22\",\"reports\":467,\"targets\":58,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.23\",\"reports\":358,\"targets\":89,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.25\",\"reports\":918,\"targets\":87,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.30\",\"reports\":712,\"targets\":14,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.34\",\"reports\":336,\"targets\":17,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.36\",\"reports\":979,\"targets\":11,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.38\",\"reports\":201,\"targets\":45,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.45\",\"reports\":284,\"targets\":23,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.51\",\"reports\":240,\"targets\":23,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.57\",\"reports\":679,\"targets\":81,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.61\",\"reports\":467,\"targets\":92,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.64\",\"reports\":997,\"targets\":64,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.69\",\"reports\":381,\"targets\":17,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.72\",\"reports\":925,\"targets\":53,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.73\",\"reports\":819,\"targets\":54,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"rank\":1,\"source\":\"192.0.2.74\",\"reports\":117,\"targets\":33,\"firstseen\":\"2026-11-01\",\"lastseen\":\"2026-11-14\"},{\"source\":\"192.168.1.9\",\"reports\":5},{\"source\":\"bad\",\"reports\":1}]",
+     "url": "fixture:synthetic-campaign/seed-1/dshield.json"
+    }
+   ]
+  }
+ ],
+ "enrichment": [
+  {
+   "raw": {
+    "ip": "192.0.2.1",
+    "asn": "64497",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64497"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.1"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.2",
+    "asn": "64497",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64497"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.2"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.3",
+    "asn": "64497",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64497"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.3"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.4",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.4"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.5",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.5"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.6",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.6"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.7",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.7"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.8",
+    "asn": "64497",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64497"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.8"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.9",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.9"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.10",
+    "asn": "64497",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64497"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.10"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.11",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.11"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.12",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.12"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.13",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.13"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.14",
+    "asn": "64496",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64496"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.14"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.15",
+    "asn": "64499",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64499"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.15"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.16",
+    "asn": "64499",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64499"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.16"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.17",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.17"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.18",
+    "asn": "64498",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64498"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.18"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.19",
+    "asn": "64498",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64498"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.19"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.20",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.20"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.21",
+    "asn": "64499",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64499"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.21"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.22",
+    "asn": "64499",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64499"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.22"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.23",
+    "asn": "64498",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64498"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.23"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.24",
+    "asn": "64499",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64499"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.24"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.25",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.25"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.26",
+    "asn": "64499",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64499"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.26"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.27",
+    "asn": "64500",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64500"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.27"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.28",
+    "asn": "64500",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64500"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.28"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.29",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.29"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.30",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.30"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.31",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.31"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.32",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.32"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.33",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.33"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.34",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.34"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.35",
+    "asn": "64500",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64500"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.35"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.36",
+    "asn": "64500",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64500"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.36"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.37",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.37"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.38",
+    "asn": "64501",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64501"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.38"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.39",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.39"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.40",
+    "asn": "64503",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64503"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.40"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.41",
+    "asn": "64503",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64503"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.41"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.42",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.42"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.43",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.43"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.44",
+    "asn": "64502",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64502"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.44"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.45",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.45"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.46",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.46"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.47",
+    "asn": "64503",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64503"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.47"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.48",
+    "asn": "64502",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64502"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.48"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.49",
+    "asn": "64502",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64502"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.49"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.50",
+    "asn": "64502",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64502"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.50"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.51",
+    "asn": "64502",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64502"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.51"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.52",
+    "asn": "64502",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64502"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.52"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.53",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.53"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.54",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.54"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.55",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.55"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.56",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.56"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.57",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.57"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.58",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.58"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.59",
+    "asn": "64504",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64504"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.59"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.60",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.60"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.61",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.61"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.62",
+    "asn": "64504",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64504"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.62"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.63",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.63"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.64",
+    "asn": "64505",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64505"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.64"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.65",
+    "asn": "64507",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64507"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.65"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.66",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.66"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.67",
+    "asn": "64507",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64507"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.67"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.68",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.68"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.69",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.69"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.70",
+    "asn": "64509",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64509"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.70"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.71",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.71"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.72",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.72"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.73",
+    "asn": "64507",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64507"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.73"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.74",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.74"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.75",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.75"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.76",
+    "asn": "64508",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64508"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.76"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.77",
+    "asn": "64507",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64507"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.77"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.78",
+    "asn": "64507",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64507"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.78"
+  },
+  {
+   "raw": {
+    "ip": "192.0.2.79",
+    "asn": "64506",
+    "prefix": null,
+    "cc": "ZZ",
+    "registry": "synthetic",
+    "as_name": "SYNTH-AS64506"
+   },
+   "retrieved_at": "2026-11-15T00:00:00Z",
+   "url": "fixture:synthetic-enrichment/192.0.2.79"
+  }
+ ],
+ "truth": {
+  "observable": [
+   "attacks|host:login-0.phish.example|victim:examplebank",
+   "attacks|host:login-1.phish.example|victim:testpay",
+   "attacks|host:login-2.phish.example|victim:samplemail",
+   "attacks|host:login-3.phish.example|victim:democloud",
+   "attacks|host:login-4.phish.example|victim:examplebank",
+   "attacks|host:login-5.phish.example|victim:samplemail",
+   "attacks|host:login-6.phish.example|victim:samplemail",
+   "attacks|host:login-7.phish.example|victim:democloud",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.1",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.12",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.13",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.14",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.2",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.6",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.7",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.9",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.31",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.33",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.35",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.37",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.65",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.66",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.67",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.70",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.71",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.75",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.78",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.79",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.15",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.18",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.19",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.26",
+   "hosts|family:cobaltstrike|host:cdn-front-a.example",
+   "hosts|family:cobaltstrike|host:cdn-front-b.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-0.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-1.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-2.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-3.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-4.example",
+   "hosts|family:cobaltstrike|ip:192.0.2.1",
+   "hosts|family:cobaltstrike|ip:192.0.2.10",
+   "hosts|family:cobaltstrike|ip:192.0.2.12",
+   "hosts|family:cobaltstrike|ip:192.0.2.13",
+   "hosts|family:cobaltstrike|ip:192.0.2.14",
+   "hosts|family:cobaltstrike|ip:192.0.2.2",
+   "hosts|family:cobaltstrike|ip:192.0.2.3",
+   "hosts|family:cobaltstrike|ip:192.0.2.4",
+   "hosts|family:cobaltstrike|ip:192.0.2.5",
+   "hosts|family:cobaltstrike|ip:192.0.2.6",
+   "hosts|family:cobaltstrike|ip:192.0.2.7",
+   "hosts|family:cobaltstrike|ip:192.0.2.9",
+   "hosts|family:emotet|host:cdn-front-a.example",
+   "hosts|family:emotet|host:cdn-front-b.example",
+   "hosts|family:emotet|host:emotet-c2-0.example",
+   "hosts|family:emotet|host:emotet-c2-1.example",
+   "hosts|family:emotet|host:emotet-c2-2.example",
+   "hosts|family:emotet|ip:192.0.2.53",
+   "hosts|family:emotet|ip:192.0.2.54",
+   "hosts|family:emotet|ip:192.0.2.55",
+   "hosts|family:emotet|ip:192.0.2.56",
+   "hosts|family:emotet|ip:192.0.2.58",
+   "hosts|family:emotet|ip:192.0.2.59",
+   "hosts|family:emotet|ip:192.0.2.60",
+   "hosts|family:emotet|ip:192.0.2.62",
+   "hosts|family:emotet|ip:192.0.2.63",
+   "hosts|family:havoc|host:cdn-front-a.example",
+   "hosts|family:havoc|host:cdn-front-b.example",
+   "hosts|family:havoc|host:havoc-c2-0.example",
+   "hosts|family:havoc|host:havoc-c2-1.example",
+   "hosts|family:havoc|host:havoc-c2-2.example",
+   "hosts|family:havoc|host:havoc-c2-3.example",
+   "hosts|family:havoc|ip:192.0.2.27",
+   "hosts|family:havoc|ip:192.0.2.28",
+   "hosts|family:havoc|ip:192.0.2.29",
+   "hosts|family:havoc|ip:192.0.2.31",
+   "hosts|family:havoc|ip:192.0.2.32",
+   "hosts|family:havoc|ip:192.0.2.33",
+   "hosts|family:havoc|ip:192.0.2.35",
+   "hosts|family:havoc|ip:192.0.2.37",
+   "hosts|family:mirai|host:cdn-front-a.example",
+   "hosts|family:mirai|host:cdn-front-b.example",
+   "hosts|family:mirai|host:mirai-c2-0.example",
+   "hosts|family:mirai|host:mirai-c2-1.example",
+   "hosts|family:mirai|host:mirai-c2-2.example",
+   "hosts|family:mirai|host:mirai-c2-3.example",
+   "hosts|family:mirai|ip:192.0.2.65",
+   "hosts|family:mirai|ip:192.0.2.66",
+   "hosts|family:mirai|ip:192.0.2.67",
+   "hosts|family:mirai|ip:192.0.2.68",
+   "hosts|family:mirai|ip:192.0.2.70",
+   "hosts|family:mirai|ip:192.0.2.71",
+   "hosts|family:mirai|ip:192.0.2.75",
+   "hosts|family:mirai|ip:192.0.2.76",
+   "hosts|family:mirai|ip:192.0.2.77",
+   "hosts|family:mirai|ip:192.0.2.78",
+   "hosts|family:mirai|ip:192.0.2.79",
+   "hosts|family:qakbot|host:cdn-front-a.example",
+   "hosts|family:qakbot|host:cdn-front-b.example",
+   "hosts|family:qakbot|host:qakbot-c2-0.example",
+   "hosts|family:qakbot|host:qakbot-c2-1.example",
+   "hosts|family:qakbot|host:qakbot-c2-2.example",
+   "hosts|family:qakbot|ip:192.0.2.39",
+   "hosts|family:qakbot|ip:192.0.2.40",
+   "hosts|family:qakbot|ip:192.0.2.41",
+   "hosts|family:qakbot|ip:192.0.2.42",
+   "hosts|family:qakbot|ip:192.0.2.43",
+   "hosts|family:qakbot|ip:192.0.2.44",
+   "hosts|family:qakbot|ip:192.0.2.46",
+   "hosts|family:qakbot|ip:192.0.2.47",
+   "hosts|family:qakbot|ip:192.0.2.48",
+   "hosts|family:qakbot|ip:192.0.2.49",
+   "hosts|family:qakbot|ip:192.0.2.50",
+   "hosts|family:qakbot|ip:192.0.2.52",
+   "hosts|family:sliver|host:cdn-front-a.example",
+   "hosts|family:sliver|host:cdn-front-b.example",
+   "hosts|family:sliver|host:sliver-c2-0.example",
+   "hosts|family:sliver|host:sliver-c2-1.example",
+   "hosts|family:sliver|host:sliver-c2-2.example",
+   "hosts|family:sliver|host:sliver-c2-3.example",
+   "hosts|family:sliver|host:sliver-c2-4.example",
+   "hosts|family:sliver|ip:192.0.2.15",
+   "hosts|family:sliver|ip:192.0.2.16",
+   "hosts|family:sliver|ip:192.0.2.18",
+   "hosts|family:sliver|ip:192.0.2.19",
+   "hosts|family:sliver|ip:192.0.2.21",
+   "hosts|family:sliver|ip:192.0.2.24",
+   "hosts|family:sliver|ip:192.0.2.26",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.12",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.16",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.37",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.46",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.57",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.78",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.19",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.31",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.50",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.59",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.77",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.8",
+   "resolves-to|host:cobaltstrike-c2-0.example|ip:192.0.2.1",
+   "resolves-to|host:cobaltstrike-c2-0.example|ip:192.0.2.14",
+   "resolves-to|host:cobaltstrike-c2-0.example|ip:192.0.2.2",
+   "resolves-to|host:cobaltstrike-c2-1.example|ip:192.0.2.13",
+   "resolves-to|host:cobaltstrike-c2-1.example|ip:192.0.2.5",
+   "resolves-to|host:cobaltstrike-c2-1.example|ip:192.0.2.8",
+   "resolves-to|host:cobaltstrike-c2-2.example|ip:192.0.2.10",
+   "resolves-to|host:cobaltstrike-c2-2.example|ip:192.0.2.14",
+   "resolves-to|host:cobaltstrike-c2-2.example|ip:192.0.2.3",
+   "resolves-to|host:cobaltstrike-c2-3.example|ip:192.0.2.14",
+   "resolves-to|host:cobaltstrike-c2-3.example|ip:192.0.2.3",
+   "resolves-to|host:cobaltstrike-c2-4.example|ip:192.0.2.2",
+   "resolves-to|host:cobaltstrike-c2-4.example|ip:192.0.2.6",
+   "resolves-to|host:emotet-c2-0.example|ip:192.0.2.57",
+   "resolves-to|host:emotet-c2-0.example|ip:192.0.2.60",
+   "resolves-to|host:emotet-c2-0.example|ip:192.0.2.63",
+   "resolves-to|host:emotet-c2-1.example|ip:192.0.2.53",
+   "resolves-to|host:emotet-c2-1.example|ip:192.0.2.55",
+   "resolves-to|host:emotet-c2-1.example|ip:192.0.2.58",
+   "resolves-to|host:emotet-c2-2.example|ip:192.0.2.58",
+   "resolves-to|host:emotet-c2-2.example|ip:192.0.2.59",
+   "resolves-to|host:havoc-c2-0.example|ip:192.0.2.28",
+   "resolves-to|host:havoc-c2-0.example|ip:192.0.2.31",
+   "resolves-to|host:havoc-c2-0.example|ip:192.0.2.35",
+   "resolves-to|host:havoc-c2-1.example|ip:192.0.2.34",
+   "resolves-to|host:havoc-c2-1.example|ip:192.0.2.38",
+   "resolves-to|host:havoc-c2-2.example|ip:192.0.2.27",
+   "resolves-to|host:havoc-c2-2.example|ip:192.0.2.28",
+   "resolves-to|host:havoc-c2-2.example|ip:192.0.2.34",
+   "resolves-to|host:havoc-c2-3.example|ip:192.0.2.28",
+   "resolves-to|host:havoc-c2-3.example|ip:192.0.2.34",
+   "resolves-to|host:mirai-c2-0.example|ip:192.0.2.67",
+   "resolves-to|host:mirai-c2-0.example|ip:192.0.2.74",
+   "resolves-to|host:mirai-c2-0.example|ip:192.0.2.77",
+   "resolves-to|host:mirai-c2-1.example|ip:192.0.2.67",
+   "resolves-to|host:mirai-c2-1.example|ip:192.0.2.74",
+   "resolves-to|host:mirai-c2-2.example|ip:192.0.2.71",
+   "resolves-to|host:mirai-c2-2.example|ip:192.0.2.72",
+   "resolves-to|host:mirai-c2-3.example|ip:192.0.2.74",
+   "resolves-to|host:mirai-c2-3.example|ip:192.0.2.76",
+   "resolves-to|host:qakbot-c2-0.example|ip:192.0.2.43",
+   "resolves-to|host:qakbot-c2-0.example|ip:192.0.2.45",
+   "resolves-to|host:qakbot-c2-1.example|ip:192.0.2.39",
+   "resolves-to|host:qakbot-c2-1.example|ip:192.0.2.45",
+   "resolves-to|host:qakbot-c2-1.example|ip:192.0.2.47",
+   "resolves-to|host:qakbot-c2-2.example|ip:192.0.2.39",
+   "resolves-to|host:qakbot-c2-2.example|ip:192.0.2.49",
+   "resolves-to|host:qakbot-c2-2.example|ip:192.0.2.52",
+   "resolves-to|host:sliver-c2-0.example|ip:192.0.2.18",
+   "resolves-to|host:sliver-c2-0.example|ip:192.0.2.19",
+   "resolves-to|host:sliver-c2-1.example|ip:192.0.2.18",
+   "resolves-to|host:sliver-c2-1.example|ip:192.0.2.26",
+   "resolves-to|host:sliver-c2-2.example|ip:192.0.2.15",
+   "resolves-to|host:sliver-c2-2.example|ip:192.0.2.16",
+   "resolves-to|host:sliver-c2-2.example|ip:192.0.2.18",
+   "resolves-to|host:sliver-c2-3.example|ip:192.0.2.19",
+   "resolves-to|host:sliver-c2-3.example|ip:192.0.2.24",
+   "resolves-to|host:sliver-c2-4.example|ip:192.0.2.16",
+   "resolves-to|host:sliver-c2-4.example|ip:192.0.2.24",
+   "same-asn|ip:192.0.2.10|asn:AS64497",
+   "same-asn|ip:192.0.2.11|asn:AS64496",
+   "same-asn|ip:192.0.2.12|asn:AS64496",
+   "same-asn|ip:192.0.2.13|asn:AS64508",
+   "same-asn|ip:192.0.2.14|asn:AS64496",
+   "same-asn|ip:192.0.2.15|asn:AS64499",
+   "same-asn|ip:192.0.2.16|asn:AS64499",
+   "same-asn|ip:192.0.2.17|asn:AS64508",
+   "same-asn|ip:192.0.2.18|asn:AS64498",
+   "same-asn|ip:192.0.2.19|asn:AS64498",
+   "same-asn|ip:192.0.2.1|asn:AS64497",
+   "same-asn|ip:192.0.2.20|asn:AS64508",
+   "same-asn|ip:192.0.2.21|asn:AS64499",
+   "same-asn|ip:192.0.2.22|asn:AS64499",
+   "same-asn|ip:192.0.2.23|asn:AS64498",
+   "same-asn|ip:192.0.2.24|asn:AS64499",
+   "same-asn|ip:192.0.2.25|asn:AS64508",
+   "same-asn|ip:192.0.2.26|asn:AS64499",
+   "same-asn|ip:192.0.2.27|asn:AS64500",
+   "same-asn|ip:192.0.2.28|asn:AS64500",
+   "same-asn|ip:192.0.2.29|asn:AS64501",
+   "same-asn|ip:192.0.2.2|asn:AS64497",
+   "same-asn|ip:192.0.2.30|asn:AS64501",
+   "same-asn|ip:192.0.2.31|asn:AS64508",
+   "same-asn|ip:192.0.2.32|asn:AS64501",
+   "same-asn|ip:192.0.2.33|asn:AS64501",
+   "same-asn|ip:192.0.2.34|asn:AS64501",
+   "same-asn|ip:192.0.2.35|asn:AS64500",
+   "same-asn|ip:192.0.2.36|asn:AS64500",
+   "same-asn|ip:192.0.2.37|asn:AS64501",
+   "same-asn|ip:192.0.2.38|asn:AS64501",
+   "same-asn|ip:192.0.2.39|asn:AS64508",
+   "same-asn|ip:192.0.2.3|asn:AS64497",
+   "same-asn|ip:192.0.2.40|asn:AS64503",
+   "same-asn|ip:192.0.2.41|asn:AS64503",
+   "same-asn|ip:192.0.2.42|asn:AS64509",
+   "same-asn|ip:192.0.2.43|asn:AS64509",
+   "same-asn|ip:192.0.2.44|asn:AS64502",
+   "same-asn|ip:192.0.2.45|asn:AS64509",
+   "same-asn|ip:192.0.2.46|asn:AS64509",
+   "same-asn|ip:192.0.2.47|asn:AS64503",
+   "same-asn|ip:192.0.2.48|asn:AS64502",
+   "same-asn|ip:192.0.2.49|asn:AS64502",
+   "same-asn|ip:192.0.2.4|asn:AS64496",
+   "same-asn|ip:192.0.2.50|asn:AS64502",
+   "same-asn|ip:192.0.2.51|asn:AS64502",
+   "same-asn|ip:192.0.2.52|asn:AS64502",
+   "same-asn|ip:192.0.2.53|asn:AS64505",
+   "same-asn|ip:192.0.2.54|asn:AS64505",
+   "same-asn|ip:192.0.2.55|asn:AS64505",
+   "same-asn|ip:192.0.2.56|asn:AS64505",
+   "same-asn|ip:192.0.2.57|asn:AS64509",
+   "same-asn|ip:192.0.2.58|asn:AS64505",
+   "same-asn|ip:192.0.2.59|asn:AS64504",
+   "same-asn|ip:192.0.2.5|asn:AS64496",
+   "same-asn|ip:192.0.2.60|asn:AS64505",
+   "same-asn|ip:192.0.2.61|asn:AS64509",
+   "same-asn|ip:192.0.2.62|asn:AS64504",
+   "same-asn|ip:192.0.2.63|asn:AS64508",
+   "same-asn|ip:192.0.2.64|asn:AS64505",
+   "same-asn|ip:192.0.2.65|asn:AS64507",
+   "same-asn|ip:192.0.2.66|asn:AS64509",
+   "same-asn|ip:192.0.2.67|asn:AS64507",
+   "same-asn|ip:192.0.2.68|asn:AS64506",
+   "same-asn|ip:192.0.2.69|asn:AS64506",
+   "same-asn|ip:192.0.2.6|asn:AS64508",
+   "same-asn|ip:192.0.2.70|asn:AS64509",
+   "same-asn|ip:192.0.2.71|asn:AS64506",
+   "same-asn|ip:192.0.2.72|asn:AS64506",
+   "same-asn|ip:192.0.2.73|asn:AS64507",
+   "same-asn|ip:192.0.2.74|asn:AS64506",
+   "same-asn|ip:192.0.2.75|asn:AS64506",
+   "same-asn|ip:192.0.2.76|asn:AS64508",
+   "same-asn|ip:192.0.2.77|asn:AS64507",
+   "same-asn|ip:192.0.2.78|asn:AS64507",
+   "same-asn|ip:192.0.2.79|asn:AS64506",
+   "same-asn|ip:192.0.2.7|asn:AS64496",
+   "same-asn|ip:192.0.2.8|asn:AS64497",
+   "same-asn|ip:192.0.2.9|asn:AS64496"
+  ],
+  "world": [
+   "attacks|host:login-0.phish.example|victim:examplebank",
+   "attacks|host:login-1.phish.example|victim:testpay",
+   "attacks|host:login-2.phish.example|victim:samplemail",
+   "attacks|host:login-3.phish.example|victim:democloud",
+   "attacks|host:login-4.phish.example|victim:examplebank",
+   "attacks|host:login-5.phish.example|victim:samplemail",
+   "attacks|host:login-6.phish.example|victim:samplemail",
+   "attacks|host:login-7.phish.example|victim:democloud",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.1",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.12",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.13",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.14",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.2",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.6",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.7",
+   "hosts|campaign:cobaltstrike-wave1|ip:192.0.2.9",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.31",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.33",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.35",
+   "hosts|campaign:havoc-wave1|ip:192.0.2.37",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.65",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.66",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.67",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.70",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.71",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.75",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.78",
+   "hosts|campaign:mirai-wave1|ip:192.0.2.79",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.15",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.18",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.19",
+   "hosts|campaign:sliver-wave1|ip:192.0.2.26",
+   "hosts|family:cobaltstrike|host:cdn-front-a.example",
+   "hosts|family:cobaltstrike|host:cdn-front-b.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-0.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-1.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-2.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-3.example",
+   "hosts|family:cobaltstrike|host:cobaltstrike-c2-4.example",
+   "hosts|family:cobaltstrike|ip:192.0.2.1",
+   "hosts|family:cobaltstrike|ip:192.0.2.10",
+   "hosts|family:cobaltstrike|ip:192.0.2.11",
+   "hosts|family:cobaltstrike|ip:192.0.2.12",
+   "hosts|family:cobaltstrike|ip:192.0.2.13",
+   "hosts|family:cobaltstrike|ip:192.0.2.14",
+   "hosts|family:cobaltstrike|ip:192.0.2.2",
+   "hosts|family:cobaltstrike|ip:192.0.2.3",
+   "hosts|family:cobaltstrike|ip:192.0.2.4",
+   "hosts|family:cobaltstrike|ip:192.0.2.5",
+   "hosts|family:cobaltstrike|ip:192.0.2.6",
+   "hosts|family:cobaltstrike|ip:192.0.2.7",
+   "hosts|family:cobaltstrike|ip:192.0.2.8",
+   "hosts|family:cobaltstrike|ip:192.0.2.9",
+   "hosts|family:emotet|host:cdn-front-a.example",
+   "hosts|family:emotet|host:cdn-front-b.example",
+   "hosts|family:emotet|host:emotet-c2-0.example",
+   "hosts|family:emotet|host:emotet-c2-1.example",
+   "hosts|family:emotet|host:emotet-c2-2.example",
+   "hosts|family:emotet|ip:192.0.2.53",
+   "hosts|family:emotet|ip:192.0.2.54",
+   "hosts|family:emotet|ip:192.0.2.55",
+   "hosts|family:emotet|ip:192.0.2.56",
+   "hosts|family:emotet|ip:192.0.2.57",
+   "hosts|family:emotet|ip:192.0.2.58",
+   "hosts|family:emotet|ip:192.0.2.59",
+   "hosts|family:emotet|ip:192.0.2.60",
+   "hosts|family:emotet|ip:192.0.2.61",
+   "hosts|family:emotet|ip:192.0.2.62",
+   "hosts|family:emotet|ip:192.0.2.63",
+   "hosts|family:emotet|ip:192.0.2.64",
+   "hosts|family:havoc|host:cdn-front-a.example",
+   "hosts|family:havoc|host:cdn-front-b.example",
+   "hosts|family:havoc|host:havoc-c2-0.example",
+   "hosts|family:havoc|host:havoc-c2-1.example",
+   "hosts|family:havoc|host:havoc-c2-2.example",
+   "hosts|family:havoc|host:havoc-c2-3.example",
+   "hosts|family:havoc|ip:192.0.2.27",
+   "hosts|family:havoc|ip:192.0.2.28",
+   "hosts|family:havoc|ip:192.0.2.29",
+   "hosts|family:havoc|ip:192.0.2.30",
+   "hosts|family:havoc|ip:192.0.2.31",
+   "hosts|family:havoc|ip:192.0.2.32",
+   "hosts|family:havoc|ip:192.0.2.33",
+   "hosts|family:havoc|ip:192.0.2.34",
+   "hosts|family:havoc|ip:192.0.2.35",
+   "hosts|family:havoc|ip:192.0.2.36",
+   "hosts|family:havoc|ip:192.0.2.37",
+   "hosts|family:havoc|ip:192.0.2.38",
+   "hosts|family:mirai|host:cdn-front-a.example",
+   "hosts|family:mirai|host:cdn-front-b.example",
+   "hosts|family:mirai|host:mirai-c2-0.example",
+   "hosts|family:mirai|host:mirai-c2-1.example",
+   "hosts|family:mirai|host:mirai-c2-2.example",
+   "hosts|family:mirai|host:mirai-c2-3.example",
+   "hosts|family:mirai|ip:192.0.2.65",
+   "hosts|family:mirai|ip:192.0.2.66",
+   "hosts|family:mirai|ip:192.0.2.67",
+   "hosts|family:mirai|ip:192.0.2.68",
+   "hosts|family:mirai|ip:192.0.2.69",
+   "hosts|family:mirai|ip:192.0.2.70",
+   "hosts|family:mirai|ip:192.0.2.71",
+   "hosts|family:mirai|ip:192.0.2.72",
+   "hosts|family:mirai|ip:192.0.2.73",
+   "hosts|family:mirai|ip:192.0.2.74",
+   "hosts|family:mirai|ip:192.0.2.75",
+   "hosts|family:mirai|ip:192.0.2.76",
+   "hosts|family:mirai|ip:192.0.2.77",
+   "hosts|family:mirai|ip:192.0.2.78",
+   "hosts|family:mirai|ip:192.0.2.79",
+   "hosts|family:qakbot|host:cdn-front-a.example",
+   "hosts|family:qakbot|host:cdn-front-b.example",
+   "hosts|family:qakbot|host:qakbot-c2-0.example",
+   "hosts|family:qakbot|host:qakbot-c2-1.example",
+   "hosts|family:qakbot|host:qakbot-c2-2.example",
+   "hosts|family:qakbot|ip:192.0.2.39",
+   "hosts|family:qakbot|ip:192.0.2.40",
+   "hosts|family:qakbot|ip:192.0.2.41",
+   "hosts|family:qakbot|ip:192.0.2.42",
+   "hosts|family:qakbot|ip:192.0.2.43",
+   "hosts|family:qakbot|ip:192.0.2.44",
+   "hosts|family:qakbot|ip:192.0.2.45",
+   "hosts|family:qakbot|ip:192.0.2.46",
+   "hosts|family:qakbot|ip:192.0.2.47",
+   "hosts|family:qakbot|ip:192.0.2.48",
+   "hosts|family:qakbot|ip:192.0.2.49",
+   "hosts|family:qakbot|ip:192.0.2.50",
+   "hosts|family:qakbot|ip:192.0.2.51",
+   "hosts|family:qakbot|ip:192.0.2.52",
+   "hosts|family:sliver|host:cdn-front-a.example",
+   "hosts|family:sliver|host:cdn-front-b.example",
+   "hosts|family:sliver|host:sliver-c2-0.example",
+   "hosts|family:sliver|host:sliver-c2-1.example",
+   "hosts|family:sliver|host:sliver-c2-2.example",
+   "hosts|family:sliver|host:sliver-c2-3.example",
+   "hosts|family:sliver|host:sliver-c2-4.example",
+   "hosts|family:sliver|ip:192.0.2.15",
+   "hosts|family:sliver|ip:192.0.2.16",
+   "hosts|family:sliver|ip:192.0.2.17",
+   "hosts|family:sliver|ip:192.0.2.18",
+   "hosts|family:sliver|ip:192.0.2.19",
+   "hosts|family:sliver|ip:192.0.2.20",
+   "hosts|family:sliver|ip:192.0.2.21",
+   "hosts|family:sliver|ip:192.0.2.22",
+   "hosts|family:sliver|ip:192.0.2.23",
+   "hosts|family:sliver|ip:192.0.2.24",
+   "hosts|family:sliver|ip:192.0.2.25",
+   "hosts|family:sliver|ip:192.0.2.26",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.12",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.16",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.37",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.46",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.57",
+   "resolves-to|host:cdn-front-a.example|ip:192.0.2.78",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.19",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.31",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.50",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.59",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.77",
+   "resolves-to|host:cdn-front-b.example|ip:192.0.2.8",
+   "resolves-to|host:cobaltstrike-c2-0.example|ip:192.0.2.1",
+   "resolves-to|host:cobaltstrike-c2-0.example|ip:192.0.2.14",
+   "resolves-to|host:cobaltstrike-c2-0.example|ip:192.0.2.2",
+   "resolves-to|host:cobaltstrike-c2-1.example|ip:192.0.2.13",
+   "resolves-to|host:cobaltstrike-c2-1.example|ip:192.0.2.5",
+   "resolves-to|host:cobaltstrike-c2-1.example|ip:192.0.2.8",
+   "resolves-to|host:cobaltstrike-c2-2.example|ip:192.0.2.10",
+   "resolves-to|host:cobaltstrike-c2-2.example|ip:192.0.2.14",
+   "resolves-to|host:cobaltstrike-c2-2.example|ip:192.0.2.3",
+   "resolves-to|host:cobaltstrike-c2-3.example|ip:192.0.2.14",
+   "resolves-to|host:cobaltstrike-c2-3.example|ip:192.0.2.3",
+   "resolves-to|host:cobaltstrike-c2-4.example|ip:192.0.2.2",
+   "resolves-to|host:cobaltstrike-c2-4.example|ip:192.0.2.6",
+   "resolves-to|host:emotet-c2-0.example|ip:192.0.2.57",
+   "resolves-to|host:emotet-c2-0.example|ip:192.0.2.60",
+   "resolves-to|host:emotet-c2-0.example|ip:192.0.2.63",
+   "resolves-to|host:emotet-c2-1.example|ip:192.0.2.53",
+   "resolves-to|host:emotet-c2-1.example|ip:192.0.2.55",
+   "resolves-to|host:emotet-c2-1.example|ip:192.0.2.58",
+   "resolves-to|host:emotet-c2-2.example|ip:192.0.2.58",
+   "resolves-to|host:emotet-c2-2.example|ip:192.0.2.59",
+   "resolves-to|host:havoc-c2-0.example|ip:192.0.2.28",
+   "resolves-to|host:havoc-c2-0.example|ip:192.0.2.31",
+   "resolves-to|host:havoc-c2-0.example|ip:192.0.2.35",
+   "resolves-to|host:havoc-c2-1.example|ip:192.0.2.34",
+   "resolves-to|host:havoc-c2-1.example|ip:192.0.2.38",
+   "resolves-to|host:havoc-c2-2.example|ip:192.0.2.27",
+   "resolves-to|host:havoc-c2-2.example|ip:192.0.2.28",
+   "resolves-to|host:havoc-c2-2.example|ip:192.0.2.34",
+   "resolves-to|host:havoc-c2-3.example|ip:192.0.2.28",
+   "resolves-to|host:havoc-c2-3.example|ip:192.0.2.34",
+   "resolves-to|host:mirai-c2-0.example|ip:192.0.2.67",
+   "resolves-to|host:mirai-c2-0.example|ip:192.0.2.74",
+   "resolves-to|host:mirai-c2-0.example|ip:192.0.2.77",
+   "resolves-to|host:mirai-c2-1.example|ip:192.0.2.67",
+   "resolves-to|host:mirai-c2-1.example|ip:192.0.2.74",
+   "resolves-to|host:mirai-c2-2.example|ip:192.0.2.71",
+   "resolves-to|host:mirai-c2-2.example|ip:192.0.2.72",
+   "resolves-to|host:mirai-c2-3.example|ip:192.0.2.74",
+   "resolves-to|host:mirai-c2-3.example|ip:192.0.2.76",
+   "resolves-to|host:qakbot-c2-0.example|ip:192.0.2.43",
+   "resolves-to|host:qakbot-c2-0.example|ip:192.0.2.45",
+   "resolves-to|host:qakbot-c2-1.example|ip:192.0.2.39",
+   "resolves-to|host:qakbot-c2-1.example|ip:192.0.2.45",
+   "resolves-to|host:qakbot-c2-1.example|ip:192.0.2.47",
+   "resolves-to|host:qakbot-c2-2.example|ip:192.0.2.39",
+   "resolves-to|host:qakbot-c2-2.example|ip:192.0.2.49",
+   "resolves-to|host:qakbot-c2-2.example|ip:192.0.2.52",
+   "resolves-to|host:sliver-c2-0.example|ip:192.0.2.18",
+   "resolves-to|host:sliver-c2-0.example|ip:192.0.2.19",
+   "resolves-to|host:sliver-c2-1.example|ip:192.0.2.18",
+   "resolves-to|host:sliver-c2-1.example|ip:192.0.2.26",
+   "resolves-to|host:sliver-c2-2.example|ip:192.0.2.15",
+   "resolves-to|host:sliver-c2-2.example|ip:192.0.2.16",
+   "resolves-to|host:sliver-c2-2.example|ip:192.0.2.18",
+   "resolves-to|host:sliver-c2-3.example|ip:192.0.2.19",
+   "resolves-to|host:sliver-c2-3.example|ip:192.0.2.24",
+   "resolves-to|host:sliver-c2-4.example|ip:192.0.2.16",
+   "resolves-to|host:sliver-c2-4.example|ip:192.0.2.24",
+   "same-asn|ip:192.0.2.10|asn:AS64497",
+   "same-asn|ip:192.0.2.11|asn:AS64496",
+   "same-asn|ip:192.0.2.12|asn:AS64496",
+   "same-asn|ip:192.0.2.13|asn:AS64508",
+   "same-asn|ip:192.0.2.14|asn:AS64496",
+   "same-asn|ip:192.0.2.15|asn:AS64499",
+   "same-asn|ip:192.0.2.16|asn:AS64499",
+   "same-asn|ip:192.0.2.17|asn:AS64508",
+   "same-asn|ip:192.0.2.18|asn:AS64498",
+   "same-asn|ip:192.0.2.19|asn:AS64498",
+   "same-asn|ip:192.0.2.1|asn:AS64497",
+   "same-asn|ip:192.0.2.20|asn:AS64508",
+   "same-asn|ip:192.0.2.21|asn:AS64499",
+   "same-asn|ip:192.0.2.22|asn:AS64499",
+   "same-asn|ip:192.0.2.23|asn:AS64498",
+   "same-asn|ip:192.0.2.24|asn:AS64499",
+   "same-asn|ip:192.0.2.25|asn:AS64508",
+   "same-asn|ip:192.0.2.26|asn:AS64499",
+   "same-asn|ip:192.0.2.27|asn:AS64500",
+   "same-asn|ip:192.0.2.28|asn:AS64500",
+   "same-asn|ip:192.0.2.29|asn:AS64501",
+   "same-asn|ip:192.0.2.2|asn:AS64497",
+   "same-asn|ip:192.0.2.30|asn:AS64501",
+   "same-asn|ip:192.0.2.31|asn:AS64508",
+   "same-asn|ip:192.0.2.32|asn:AS64501",
+   "same-asn|ip:192.0.2.33|asn:AS64501",
+   "same-asn|ip:192.0.2.34|asn:AS64501",
+   "same-asn|ip:192.0.2.35|asn:AS64500",
+   "same-asn|ip:192.0.2.36|asn:AS64500",
+   "same-asn|ip:192.0.2.37|asn:AS64501",
+   "same-asn|ip:192.0.2.38|asn:AS64501",
+   "same-asn|ip:192.0.2.39|asn:AS64508",
+   "same-asn|ip:192.0.2.3|asn:AS64497",
+   "same-asn|ip:192.0.2.40|asn:AS64503",
+   "same-asn|ip:192.0.2.41|asn:AS64503",
+   "same-asn|ip:192.0.2.42|asn:AS64509",
+   "same-asn|ip:192.0.2.43|asn:AS64509",
+   "same-asn|ip:192.0.2.44|asn:AS64502",
+   "same-asn|ip:192.0.2.45|asn:AS64509",
+   "same-asn|ip:192.0.2.46|asn:AS64509",
+   "same-asn|ip:192.0.2.47|asn:AS64503",
+   "same-asn|ip:192.0.2.48|asn:AS64502",
+   "same-asn|ip:192.0.2.49|asn:AS64502",
+   "same-asn|ip:192.0.2.4|asn:AS64496",
+   "same-asn|ip:192.0.2.50|asn:AS64502",
+   "same-asn|ip:192.0.2.51|asn:AS64502",
+   "same-asn|ip:192.0.2.52|asn:AS64502",
+   "same-asn|ip:192.0.2.53|asn:AS64505",
+   "same-asn|ip:192.0.2.54|asn:AS64505",
+   "same-asn|ip:192.0.2.55|asn:AS64505",
+   "same-asn|ip:192.0.2.56|asn:AS64505",
+   "same-asn|ip:192.0.2.57|asn:AS64509",
+   "same-asn|ip:192.0.2.58|asn:AS64505",
+   "same-asn|ip:192.0.2.59|asn:AS64504",
+   "same-asn|ip:192.0.2.5|asn:AS64496",
+   "same-asn|ip:192.0.2.60|asn:AS64505",
+   "same-asn|ip:192.0.2.61|asn:AS64509",
+   "same-asn|ip:192.0.2.62|asn:AS64504",
+   "same-asn|ip:192.0.2.63|asn:AS64508",
+   "same-asn|ip:192.0.2.64|asn:AS64505",
+   "same-asn|ip:192.0.2.65|asn:AS64507",
+   "same-asn|ip:192.0.2.66|asn:AS64509",
+   "same-asn|ip:192.0.2.67|asn:AS64507",
+   "same-asn|ip:192.0.2.68|asn:AS64506",
+   "same-asn|ip:192.0.2.69|asn:AS64506",
+   "same-asn|ip:192.0.2.6|asn:AS64508",
+   "same-asn|ip:192.0.2.70|asn:AS64509",
+   "same-asn|ip:192.0.2.71|asn:AS64506",
+   "same-asn|ip:192.0.2.72|asn:AS64506",
+   "same-asn|ip:192.0.2.73|asn:AS64507",
+   "same-asn|ip:192.0.2.74|asn:AS64506",
+   "same-asn|ip:192.0.2.75|asn:AS64506",
+   "same-asn|ip:192.0.2.76|asn:AS64508",
+   "same-asn|ip:192.0.2.77|asn:AS64507",
+   "same-asn|ip:192.0.2.78|asn:AS64507",
+   "same-asn|ip:192.0.2.79|asn:AS64506",
+   "same-asn|ip:192.0.2.7|asn:AS64496",
+   "same-asn|ip:192.0.2.8|asn:AS64497",
+   "same-asn|ip:192.0.2.9|asn:AS64496"
+  ],
+  "hostCampaign": {
+   "ip:192.0.2.1": "cobaltstrike",
+   "ip:192.0.2.2": "cobaltstrike",
+   "ip:192.0.2.3": "cobaltstrike",
+   "ip:192.0.2.4": "cobaltstrike",
+   "ip:192.0.2.5": "cobaltstrike",
+   "ip:192.0.2.6": "cobaltstrike",
+   "ip:192.0.2.7": "cobaltstrike",
+   "ip:192.0.2.8": "cobaltstrike",
+   "ip:192.0.2.9": "cobaltstrike",
+   "ip:192.0.2.10": "cobaltstrike",
+   "ip:192.0.2.11": "cobaltstrike",
+   "ip:192.0.2.12": "cobaltstrike",
+   "ip:192.0.2.13": "cobaltstrike",
+   "ip:192.0.2.14": "cobaltstrike",
+   "ip:192.0.2.15": "sliver",
+   "ip:192.0.2.16": "sliver",
+   "ip:192.0.2.17": "sliver",
+   "ip:192.0.2.18": "sliver",
+   "ip:192.0.2.19": "sliver",
+   "ip:192.0.2.20": "sliver",
+   "ip:192.0.2.21": "sliver",
+   "ip:192.0.2.22": "sliver",
+   "ip:192.0.2.23": "sliver",
+   "ip:192.0.2.24": "sliver",
+   "ip:192.0.2.25": "sliver",
+   "ip:192.0.2.26": "sliver",
+   "ip:192.0.2.27": "havoc",
+   "ip:192.0.2.28": "havoc",
+   "ip:192.0.2.29": "havoc",
+   "ip:192.0.2.30": "havoc",
+   "ip:192.0.2.31": "havoc",
+   "ip:192.0.2.32": "havoc",
+   "ip:192.0.2.33": "havoc",
+   "ip:192.0.2.34": "havoc",
+   "ip:192.0.2.35": "havoc",
+   "ip:192.0.2.36": "havoc",
+   "ip:192.0.2.37": "havoc",
+   "ip:192.0.2.38": "havoc",
+   "ip:192.0.2.39": "qakbot",
+   "ip:192.0.2.40": "qakbot",
+   "ip:192.0.2.41": "qakbot",
+   "ip:192.0.2.42": "qakbot",
+   "ip:192.0.2.43": "qakbot",
+   "ip:192.0.2.44": "qakbot",
+   "ip:192.0.2.45": "qakbot",
+   "ip:192.0.2.46": "qakbot",
+   "ip:192.0.2.47": "qakbot",
+   "ip:192.0.2.48": "qakbot",
+   "ip:192.0.2.49": "qakbot",
+   "ip:192.0.2.50": "qakbot",
+   "ip:192.0.2.51": "qakbot",
+   "ip:192.0.2.52": "qakbot",
+   "ip:192.0.2.53": "emotet",
+   "ip:192.0.2.54": "emotet",
+   "ip:192.0.2.55": "emotet",
+   "ip:192.0.2.56": "emotet",
+   "ip:192.0.2.57": "emotet",
+   "ip:192.0.2.58": "emotet",
+   "ip:192.0.2.59": "emotet",
+   "ip:192.0.2.60": "emotet",
+   "ip:192.0.2.61": "emotet",
+   "ip:192.0.2.62": "emotet",
+   "ip:192.0.2.63": "emotet",
+   "ip:192.0.2.64": "emotet",
+   "ip:192.0.2.65": "mirai",
+   "ip:192.0.2.66": "mirai",
+   "ip:192.0.2.67": "mirai",
+   "ip:192.0.2.68": "mirai",
+   "ip:192.0.2.69": "mirai",
+   "ip:192.0.2.70": "mirai",
+   "ip:192.0.2.71": "mirai",
+   "ip:192.0.2.72": "mirai",
+   "ip:192.0.2.73": "mirai",
+   "ip:192.0.2.74": "mirai",
+   "ip:192.0.2.75": "mirai",
+   "ip:192.0.2.76": "mirai",
+   "ip:192.0.2.77": "mirai",
+   "ip:192.0.2.78": "mirai",
+   "ip:192.0.2.79": "mirai"
+  },
+  "ipAsn": {
+   "ip:192.0.2.1": "AS64497",
+   "ip:192.0.2.2": "AS64497",
+   "ip:192.0.2.3": "AS64497",
+   "ip:192.0.2.4": "AS64496",
+   "ip:192.0.2.5": "AS64496",
+   "ip:192.0.2.6": "AS64508",
+   "ip:192.0.2.7": "AS64496",
+   "ip:192.0.2.8": "AS64497",
+   "ip:192.0.2.9": "AS64496",
+   "ip:192.0.2.10": "AS64497",
+   "ip:192.0.2.11": "AS64496",
+   "ip:192.0.2.12": "AS64496",
+   "ip:192.0.2.13": "AS64508",
+   "ip:192.0.2.14": "AS64496",
+   "ip:192.0.2.15": "AS64499",
+   "ip:192.0.2.16": "AS64499",
+   "ip:192.0.2.17": "AS64508",
+   "ip:192.0.2.18": "AS64498",
+   "ip:192.0.2.19": "AS64498",
+   "ip:192.0.2.20": "AS64508",
+   "ip:192.0.2.21": "AS64499",
+   "ip:192.0.2.22": "AS64499",
+   "ip:192.0.2.23": "AS64498",
+   "ip:192.0.2.24": "AS64499",
+   "ip:192.0.2.25": "AS64508",
+   "ip:192.0.2.26": "AS64499",
+   "ip:192.0.2.27": "AS64500",
+   "ip:192.0.2.28": "AS64500",
+   "ip:192.0.2.29": "AS64501",
+   "ip:192.0.2.30": "AS64501",
+   "ip:192.0.2.31": "AS64508",
+   "ip:192.0.2.32": "AS64501",
+   "ip:192.0.2.33": "AS64501",
+   "ip:192.0.2.34": "AS64501",
+   "ip:192.0.2.35": "AS64500",
+   "ip:192.0.2.36": "AS64500",
+   "ip:192.0.2.37": "AS64501",
+   "ip:192.0.2.38": "AS64501",
+   "ip:192.0.2.39": "AS64508",
+   "ip:192.0.2.40": "AS64503",
+   "ip:192.0.2.41": "AS64503",
+   "ip:192.0.2.42": "AS64509",
+   "ip:192.0.2.43": "AS64509",
+   "ip:192.0.2.44": "AS64502",
+   "ip:192.0.2.45": "AS64509",
+   "ip:192.0.2.46": "AS64509",
+   "ip:192.0.2.47": "AS64503",
+   "ip:192.0.2.48": "AS64502",
+   "ip:192.0.2.49": "AS64502",
+   "ip:192.0.2.50": "AS64502",
+   "ip:192.0.2.51": "AS64502",
+   "ip:192.0.2.52": "AS64502",
+   "ip:192.0.2.53": "AS64505",
+   "ip:192.0.2.54": "AS64505",
+   "ip:192.0.2.55": "AS64505",
+   "ip:192.0.2.56": "AS64505",
+   "ip:192.0.2.57": "AS64509",
+   "ip:192.0.2.58": "AS64505",
+   "ip:192.0.2.59": "AS64504",
+   "ip:192.0.2.60": "AS64505",
+   "ip:192.0.2.61": "AS64509",
+   "ip:192.0.2.62": "AS64504",
+   "ip:192.0.2.63": "AS64508",
+   "ip:192.0.2.64": "AS64505",
+   "ip:192.0.2.65": "AS64507",
+   "ip:192.0.2.66": "AS64509",
+   "ip:192.0.2.67": "AS64507",
+   "ip:192.0.2.68": "AS64506",
+   "ip:192.0.2.69": "AS64506",
+   "ip:192.0.2.70": "AS64509",
+   "ip:192.0.2.71": "AS64506",
+   "ip:192.0.2.72": "AS64506",
+   "ip:192.0.2.73": "AS64507",
+   "ip:192.0.2.74": "AS64506",
+   "ip:192.0.2.75": "AS64506",
+   "ip:192.0.2.76": "AS64508",
+   "ip:192.0.2.77": "AS64507",
+   "ip:192.0.2.78": "AS64507",
+   "ip:192.0.2.79": "AS64506"
+  },
+  "hidden": [
+   "ip:192.0.2.11",
+   "ip:192.0.2.17",
+   "ip:192.0.2.20",
+   "ip:192.0.2.22",
+   "ip:192.0.2.23",
+   "ip:192.0.2.25",
+   "ip:192.0.2.30",
+   "ip:192.0.2.34",
+   "ip:192.0.2.36",
+   "ip:192.0.2.38",
+   "ip:192.0.2.45",
+   "ip:192.0.2.51",
+   "ip:192.0.2.57",
+   "ip:192.0.2.61",
+   "ip:192.0.2.64",
+   "ip:192.0.2.69",
+   "ip:192.0.2.72",
+   "ip:192.0.2.73",
+   "ip:192.0.2.74",
+   "ip:192.0.2.8"
+  ],
+  "campaigns": [
+   {
+    "family": "cobaltstrike",
+    "hosts": [
+     "ip:192.0.2.1",
+     "ip:192.0.2.2",
+     "ip:192.0.2.3",
+     "ip:192.0.2.4",
+     "ip:192.0.2.5",
+     "ip:192.0.2.6",
+     "ip:192.0.2.7",
+     "ip:192.0.2.8",
+     "ip:192.0.2.9",
+     "ip:192.0.2.10",
+     "ip:192.0.2.11",
+     "ip:192.0.2.12",
+     "ip:192.0.2.13",
+     "ip:192.0.2.14"
+    ],
+    "hidden": [
+     "ip:192.0.2.8",
+     "ip:192.0.2.11"
+    ],
+    "domains": [
+     "cobaltstrike-c2-0.example",
+     "cobaltstrike-c2-1.example",
+     "cobaltstrike-c2-2.example",
+     "cobaltstrike-c2-3.example",
+     "cobaltstrike-c2-4.example"
+    ]
+   },
+   {
+    "family": "sliver",
+    "hosts": [
+     "ip:192.0.2.15",
+     "ip:192.0.2.16",
+     "ip:192.0.2.17",
+     "ip:192.0.2.18",
+     "ip:192.0.2.19",
+     "ip:192.0.2.20",
+     "ip:192.0.2.21",
+     "ip:192.0.2.22",
+     "ip:192.0.2.23",
+     "ip:192.0.2.24",
+     "ip:192.0.2.25",
+     "ip:192.0.2.26"
+    ],
+    "hidden": [
+     "ip:192.0.2.17",
+     "ip:192.0.2.20",
+     "ip:192.0.2.22",
+     "ip:192.0.2.23",
+     "ip:192.0.2.25"
+    ],
+    "domains": [
+     "sliver-c2-0.example",
+     "sliver-c2-1.example",
+     "sliver-c2-2.example",
+     "sliver-c2-3.example",
+     "sliver-c2-4.example"
+    ]
+   },
+   {
+    "family": "havoc",
+    "hosts": [
+     "ip:192.0.2.27",
+     "ip:192.0.2.28",
+     "ip:192.0.2.29",
+     "ip:192.0.2.30",
+     "ip:192.0.2.31",
+     "ip:192.0.2.32",
+     "ip:192.0.2.33",
+     "ip:192.0.2.34",
+     "ip:192.0.2.35",
+     "ip:192.0.2.36",
+     "ip:192.0.2.37",
+     "ip:192.0.2.38"
+    ],
+    "hidden": [
+     "ip:192.0.2.30",
+     "ip:192.0.2.34",
+     "ip:192.0.2.36",
+     "ip:192.0.2.38"
+    ],
+    "domains": [
+     "havoc-c2-0.example",
+     "havoc-c2-1.example",
+     "havoc-c2-2.example",
+     "havoc-c2-3.example"
+    ]
+   },
+   {
+    "family": "qakbot",
+    "hosts": [
+     "ip:192.0.2.39",
+     "ip:192.0.2.40",
+     "ip:192.0.2.41",
+     "ip:192.0.2.42",
+     "ip:192.0.2.43",
+     "ip:192.0.2.44",
+     "ip:192.0.2.45",
+     "ip:192.0.2.46",
+     "ip:192.0.2.47",
+     "ip:192.0.2.48",
+     "ip:192.0.2.49",
+     "ip:192.0.2.50",
+     "ip:192.0.2.51",
+     "ip:192.0.2.52"
+    ],
+    "hidden": [
+     "ip:192.0.2.45",
+     "ip:192.0.2.51"
+    ],
+    "domains": [
+     "qakbot-c2-0.example",
+     "qakbot-c2-1.example",
+     "qakbot-c2-2.example"
+    ]
+   },
+   {
+    "family": "emotet",
+    "hosts": [
+     "ip:192.0.2.53",
+     "ip:192.0.2.54",
+     "ip:192.0.2.55",
+     "ip:192.0.2.56",
+     "ip:192.0.2.57",
+     "ip:192.0.2.58",
+     "ip:192.0.2.59",
+     "ip:192.0.2.60",
+     "ip:192.0.2.61",
+     "ip:192.0.2.62",
+     "ip:192.0.2.63",
+     "ip:192.0.2.64"
+    ],
+    "hidden": [
+     "ip:192.0.2.57",
+     "ip:192.0.2.61",
+     "ip:192.0.2.64"
+    ],
+    "domains": [
+     "emotet-c2-0.example",
+     "emotet-c2-1.example",
+     "emotet-c2-2.example"
+    ]
+   },
+   {
+    "family": "mirai",
+    "hosts": [
+     "ip:192.0.2.65",
+     "ip:192.0.2.66",
+     "ip:192.0.2.67",
+     "ip:192.0.2.68",
+     "ip:192.0.2.69",
+     "ip:192.0.2.70",
+     "ip:192.0.2.71",
+     "ip:192.0.2.72",
+     "ip:192.0.2.73",
+     "ip:192.0.2.74",
+     "ip:192.0.2.75",
+     "ip:192.0.2.76",
+     "ip:192.0.2.77",
+     "ip:192.0.2.78",
+     "ip:192.0.2.79"
+    ],
+    "hidden": [
+     "ip:192.0.2.69",
+     "ip:192.0.2.72",
+     "ip:192.0.2.73",
+     "ip:192.0.2.74"
+    ],
+    "domains": [
+     "mirai-c2-0.example",
+     "mirai-c2-1.example",
+     "mirai-c2-2.example",
+     "mirai-c2-3.example"
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,6 @@
+{
+  "source": "https://github.com/drb-ra/C2IntelFeeds (feeds/*.csv)",
+  "retrieved_at": "2026-11-15T21:18:00Z",
+  "note": "Real, unmodified record-level IOC snapshot. Bundled so tests and offline runs are reproducible. Provenance for graph elements built from it points at file+line.",
+  "license_note": "Check upstream repository terms before redistributing outside this project."
+}
