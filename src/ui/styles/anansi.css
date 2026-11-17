@@ -1566,3 +1566,18 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 .analyst-pill.conf-high { border-color: rgba(143, 212, 107, 0.8); color: #8fd46b; }
 .analyst-pill.conf-medium { border-color: rgba(255, 138, 31, 0.8); color: #ff8a1f; }
 .analyst-pill.conf-low { border-color: rgba(255, 43, 43, 0.85); color: #ff5a5a; }
+
+/* ── FANGS: ATT&CK heat map at the top of the SITREP pane ───────────────────── */
+.attack-heat { padding: 8px 12px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+.attack-heat-head { font-size: 9px; letter-spacing: 0.12em; color: #f4cf5e; margin-bottom: 6px; }
+.attack-heat-list { display: flex; flex-direction: column; gap: 2px; }
+.attack-heat-row {
+  display: grid; grid-template-columns: 46px 1fr 64px 20px; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 10px; text-decoration: none; color: var(--text-primary); padding: 1px 2px;
+}
+.attack-heat-row:hover { background: rgba(212, 175, 55, 0.08); }
+.attack-heat-id { color: #f4cf5e; font-weight: 600; }
+.attack-heat-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attack-heat-bar { height: 8px; min-width: 4px; border-radius: 1px; }
+.attack-heat-count { text-align: right; font-size: 9px; color: var(--text-secondary); }
+.attack-heat-empty { font-size: 10px; color: var(--text-secondary); }

@@ -9,6 +9,8 @@
  *
  * Personal research tooling: English-only by design.
  */
+import { createAttackHeatmap } from './attackHeatmap.js';
+
 const AI_SEC_ENDPOINT = '/api/ai-sec-intel';
 const CYBER_NEWS_ENDPOINT = '/api/cyber-news';
 const AI_SEC_POLL_MS = 15 * 60_000;
@@ -175,11 +177,12 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
   close.type = 'button';
   close.setAttribute('aria-label', 'Close SITREP');
   head.append(title, close);
+  const heat = createAttackHeatmap(doc); // live ATT&CK heat map at the top
   const roll = el(doc, 'div', 'sitrep-roll');
   const track = el(doc, 'div', 'sitrep-track');
   roll.append(track);
   const empty = el(doc, 'p', 'sitrep-empty', 'Waiting for the first intel to roll in…');
-  panel.append(head, roll, empty);
+  panel.append(head, heat.element, roll, empty);
 
   let attackBody = null;
   let aiSnapshot = null;
@@ -189,6 +192,16 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
 
   function render() {
     const entries = buildSitrep(attackBody, aiSnapshot, cyberSnapshot);
+    // Feed the ATT&CK heat map from the attack + cyber-news + exploited-vuln
+    // entries (the ones that map to a technique).
+    heat.update(
+      entries
+        .filter((e) => ['attack', 'cyber-news', 'vuln'].includes(e.kind))
+        .map((e) => ({
+          layerId: e.kind === 'attack' ? 'cyber-attack-map' : undefined,
+          text: `${e.title || ''} ${e.plain || ''} ${e.tag || ''}`,
+        })),
+    );
     empty.hidden = entries.length > 0;
     if (!entries.length) {
       track.replaceChildren();
