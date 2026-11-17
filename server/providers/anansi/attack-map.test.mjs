@@ -376,3 +376,31 @@ test('with no Shodan key the exposure scoreboard is key-required, enrichment sti
   assert.equal(feedIds.internetdb, 'ok', 'InternetDB is keyless');
   assert.equal(body.exposure.length, 0);
 });
+
+import { buildScatterSources } from './attack-map.js';
+
+test('buildScatterSources groups attacker IPs by city into arc-ready source rows', () => {
+  const attackerIps = [
+    { ip: '198.51.100.7', sources: ['CINS Army', 'blocklist.de'], country: 'RU', malware: '' },
+    { ip: '198.51.100.8', sources: ['CINS Army'], country: 'RU', malware: '' },
+    { ip: '203.0.113.9', sources: ['Feodo C2'], country: 'CN', malware: 'QakBot' },
+  ];
+  const geo = new Map([
+    ['198.51.100.7', { lat: 55.75, lon: 37.62, city: 'Moscow', country: 'RU' }],
+    ['198.51.100.8', { lat: 55.75, lon: 37.62, city: 'Moscow', country: 'RU' }],
+    ['203.0.113.9', { lat: 39.9, lon: 116.4, city: 'Beijing', country: 'CN' }],
+  ]);
+  const rows = buildScatterSources(attackerIps, geo);
+  // Moscow has two IPs → ranked first, higher weight, unique key, arc-ready fields.
+  assert.equal(rows[0].name, 'Moscow, RU');
+  assert.equal(rows[0].blocklist, 2);
+  assert.equal(rows[0].key, 'scatter:0');
+  assert.ok(rows[0].weight >= rows[1].weight);
+  assert.ok(Number.isFinite(rows[0].lat) && Number.isFinite(rows[0].lon));
+  // Popup lines carry the corroborating lists and any malware.
+  assert.match(rows[0].ips[0].lines[1].text, /Listed by: CINS Army, blocklist.de/);
+  const beijing = rows.find((r) => r.name === 'Beijing, CN');
+  assert.ok(beijing.ips[0].lines.some((l) => /QakBot/.test(l.text)));
+  // IPs with no geolocation are skipped entirely.
+  assert.equal(buildScatterSources(attackerIps, new Map()).length, 0);
+});

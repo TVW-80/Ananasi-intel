@@ -120,3 +120,38 @@ test('Shodan count facets normalize to a total and top countries', () => {
   assert.deepEqual(c.top.map((t) => t.country), ['US', 'CN']);
   assert.ok(EXPOSURE_QUERIES.every((q) => q.id && q.query && q.plain && q.technical));
 });
+
+import { parseFeodoIps, buildAttackerIps } from './attack-sources.js';
+
+test('Feodo ipblocklist JSON → C2 source IPs with country and malware; junk dropped', () => {
+  const rows = parseFeodoIps([
+    { ip_address: '198.51.100.7', port: 443, country: 'ru', malware: 'Emotet', last_online: '2026-11-17' },
+    { ip_address: 'not-an-ip', country: 'US' },
+    { ip_address: '203.0.113.9', port: 8080, country: 'cn', malware: 'QakBot' },
+  ]);
+  assert.deepEqual(rows.map((r) => [r.ip, r.country, r.malware, r.port]), [
+    ['198.51.100.7', 'RU', 'Emotet', 443],
+    ['203.0.113.9', 'CN', 'QakBot', 8080],
+  ]);
+  assert.deepEqual(parseFeodoIps(null), []);
+});
+
+test('buildAttackerIps merges + dedupes feeds, ranks by corroboration, caps', () => {
+  const merged = buildAttackerIps({
+    cins: '198.51.100.7\n203.0.113.9\n# comment\n',
+    et: '198.51.100.7\n192.0.2.4',
+    blocklistAll: '198.51.100.7',
+    feodo: [{ ip: '203.0.113.9', country: 'CN', malware: 'QakBot', port: 8080 }],
+  });
+  // 198.51.100.7 is on three lists → ranked first.
+  assert.equal(merged[0].ip, '198.51.100.7');
+  assert.deepEqual(merged[0].sources, ['CINS Army', 'Emerging Threats', 'blocklist.de']);
+  // Feodo metadata flows onto the deduped 203.0.113.9 entry.
+  const q = merged.find((m) => m.ip === '203.0.113.9');
+  assert.equal(q.malware, 'QakBot');
+  assert.equal(q.country, 'CN');
+  assert.ok(q.sources.includes('CINS Army') && q.sources.includes('Feodo C2'));
+  // Cap is honored.
+  assert.ok(buildAttackerIps({ cins: Array.from({ length: 50 }, (_, i) => `10.0.0.${i}`).join('\n') }, { limit: 10 }).length <= 10);
+  assert.deepEqual(buildAttackerIps({}), []);
+});

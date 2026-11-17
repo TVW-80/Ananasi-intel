@@ -54,7 +54,10 @@ import {
   normalizeInternetDb,
   normalizeShodanCount,
   prettyCpe,
+  parseFeodoIps,
+  buildAttackerIps,
 } from './attack-sources.js';
+import { createIpGeo } from './ip-geo.js';
 import { resolve4 as dnsResolve4 } from 'node:dns/promises';
 import {
   DDOS,
@@ -118,6 +121,11 @@ const SOURCE_TTL = Object.freeze({
   c2intel: 6 * 60 * MIN,
   malpedia: 7 * 24 * 60 * MIN,
   exposure: 6 * 60 * MIN, // free Shodan count facets
+  // Worldwide-scatter attacker-IP feeds.
+  cins: 60 * MIN,
+  et: 60 * MIN,
+  blocklistAll: 60 * MIN,
+  feodo: 60 * MIN,
 });
 const INTERNETDB_TTL = 24 * 60 * MIN;
 const INTERNETDB_PER_REFRESH = 20; // keyless and rate-limited; enrich the top IPs
@@ -235,7 +243,7 @@ export function buildSources(dshieldIps, abusePoints = [], blocklistIps = []) {
       const c = countryCentroid(code);
       if (!c) return null;
       byCountry.set(code, {
-        country: code, name: c.name, lat: c.lat, lon: c.lon,
+        key: code, country: code, name: c.name, lat: c.lat, lon: c.lon,
         reports: 0, targets: 0, abuse: 0, blocklist: 0,
         services: {}, flags: { tor: 0, drop: 0, strong: 0 }, ips: [],
       });
@@ -284,6 +292,64 @@ export function buildSources(dshieldIps, abusePoints = [], blocklistIps = []) {
     r.dominantService = top ? top[0] : null;
   }
   return rows.sort((a, b) => b.weight - a.weight).slice(0, 36);
+}
+
+/** Popup lines for one scattered attacker IP (city-level source). */
+function describeScatterIp(a) {
+  const lines = [{ text: `${a.ip}${a.country ? ` · ${a.country}` : ''}` }];
+  if (a.sources?.length) {
+    lines.push({
+      text: `↳ Listed by: ${a.sources.join(', ')}`,
+      plain: 'Named as a current attack source by community blocklists — the more lists agree, the more certain.',
+      tech: `Appears on ${a.sources.join(', ')} (last-24–48h attacker-IP feeds).`,
+    });
+  }
+  if (a.malware) {
+    lines.push({
+      text: `↳ Malware: ${a.malware}`,
+      plain: 'Tied to a known malware or botnet family.',
+      tech: `abuse.ch Feodo Tracker: ${a.malware} C2.`,
+    });
+  }
+  return lines;
+}
+
+/**
+ * City-level attack sources from the high-volume feeds, geolocated per IP.
+ * Same row shape as buildSources so the renderer draws an arc into the vantage
+ * point for each — the globe fills with worldwide origins. Grouped by city,
+ * ranked by how many attacker IPs resolve there, and capped for the map.
+ */
+export function buildScatterSources(attackerIps = [], geoMap = new Map(), { maxCities = 80, maxPerCity = 6 } = {}) {
+  const byCity = new Map();
+  for (const a of attackerIps) {
+    const g = geoMap.get(a.ip);
+    if (!g || !Number.isFinite(g.lat) || !Number.isFinite(g.lon)) continue;
+    const cc = a.country || g.country || '';
+    const key = `${g.city || '?'}|${cc}|${g.lat.toFixed(1)}|${g.lon.toFixed(1)}`;
+    let grp = byCity.get(key);
+    if (!grp) {
+      grp = { city: g.city, country: cc, lat: g.lat, lon: g.lon, count: 0, ips: [] };
+      byCity.set(key, grp);
+    }
+    grp.count += 1;
+    if (grp.ips.length < maxPerCity) grp.ips.push({ ...a, country: cc });
+  }
+  const groups = [...byCity.values()].sort((x, y) => y.count - x.count).slice(0, maxCities);
+  const maxCount = Math.max(1, ...groups.map((g) => g.count));
+  return groups.map((g, i) => ({
+    key: `scatter:${i}`,
+    country: g.country,
+    name: g.city ? `${g.city}${g.country ? `, ${g.country}` : ''}` : g.country || 'Unknown origin',
+    lat: g.lat,
+    lon: g.lon,
+    reports: 0, targets: 0, abuse: 0, blocklist: g.count,
+    services: {}, flags: { tor: 0, drop: 0, strong: 0 },
+    weight: Math.round((Math.log1p(g.count) / Math.log1p(maxCount)) * 1000) / 1000,
+    dominantService: null,
+    scatter: true,
+    ips: g.ips.map((a) => ({ ip: a.ip, lines: describeScatterIp(a) })),
+  }));
 }
 
 /** Popup lines for one IP: what we know, in both voices. */
@@ -468,6 +534,7 @@ export function createAttackMapService({
   const hostCache = new Map(); // phishing host -> { at, ip }
   const epssCache = new Map(); // CVE -> { at, value }
   const gnCache = new Map(); // ip -> { at, info }
+  const geoCache = new Map(); // ip -> { at, geo } for the worldwide scatter
   const gnBudget = { day: '', used: 0 };
   const idbCache = new Map(); // ip -> { at, info } (Shodan InternetDB)
   const sources = new Map(); // id -> { at, ok, status, value, error }
@@ -495,6 +562,10 @@ export function createAttackMapService({
     return res.text();
   }
   const getJson = async (url, options) => JSON.parse(await getText(url, options));
+
+  // Per-IP city geolocation for the worldwide scatter: local GeoLite2 when
+  // GEOLITE2_CITY_DB is set, else ip-api.com's keyless batch (shares fetchImpl).
+  const ipGeo = createIpGeo({ getJson, env: envSource, clock, cache: geoCache });
 
   /** Per-source cache: fresh value, last good on failure, key-required without calling out. */
   async function cached(id, ttl, fn) {
@@ -776,6 +847,11 @@ export function createAttackMapService({
     c2intel: async () => parseC2Intel(await getText(URLS.c2intel)),
     malpedia: async () => normalizeMalpedia(await getJson(URLS.malpedia)),
     exposure: exposureScoreboard,
+    // Worldwide-scatter attacker-IP feeds (all keyless); geolocated per-IP below.
+    cins: async () => await getText(URLS.cins),
+    et: async () => await getText(URLS.etCompromised),
+    blocklistAll: async () => await getText(URLS.blocklistAll),
+    feodo: async () => parseFeodoIps(await getJson(URLS.feodoIps)),
   };
 
   async function resolveHosts(hosts, errors) {
@@ -878,6 +954,19 @@ export function createAttackMapService({
     const abusePoints = abuse && (abuse.status === 'ok' || abuse.status === 'stale') ? abuse.points || [] : [];
     const rows = buildSources(dsh.ips, abusePoints, blocklistIps);
     for (const r of rows) r.ips = r.ips.map((ip) => ({ ip: ip.ip, lines: describeIp(ip) }));
+
+    // Worldwide scatter: merge the high-volume attacker-IP feeds, geolocate
+    // each to a city, and append city-level source rows so the globe fills
+    // with origins from all over — not just a cluster of country centroids.
+    // Fully degrades to nothing when the feeds or geolocation are unavailable.
+    const attackerIps = buildAttackerIps({
+      cins: val('cins') || '',
+      et: val('et') || '',
+      blocklistAll: val('blocklistAll') || '',
+      feodo: val('feodo') || [],
+    });
+    const geoMap = attackerIps.length ? await ipGeo.resolve(attackerIps.map((a) => a.ip), errors) : new Map();
+    rows.push(...buildScatterSources(attackerIps, geoMap));
 
     const radar = val('radar') || { pairs: [], industries: [], targets: [] };
     const pairs = buildPairs(radar.pairs);
@@ -999,6 +1088,10 @@ const FEED_LABELS = Object.freeze({
   c2intel: 'C2IntelFeeds',
   malpedia: 'Malpedia',
   exposure: 'Shodan exposure counts (free)',
+  cins: 'CINS Army (attacker IPs)',
+  et: 'Emerging Threats (compromised IPs)',
+  blocklistAll: 'blocklist.de (all attackers)',
+  feodo: 'abuse.ch Feodo Tracker (C2 IPs)',
 });
 const FEED_KEYS = Object.freeze({
   radar: 'CLOUDFLARE_API_TOKEN',

@@ -17,6 +17,11 @@ import { createHmac } from 'node:crypto';
 export const URLS = Object.freeze({
   radar: 'https://api.cloudflare.com/client/v4/radar/attacks',
   blocklist: (service) => `https://lists.blocklist.de/lists/${service}.txt`,
+  // High-volume attacker-IP lists for the worldwide scatter (all keyless).
+  cins: 'https://cinsscore.com/list/ci-badguys.txt',
+  etCompromised: 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt',
+  blocklistAll: 'https://lists.blocklist.de/lists/all.txt',
+  feodoIps: 'https://feodotracker.abuse.ch/downloads/ipblocklist.json',
   threatfox: 'https://threatfox-api.abuse.ch/api/v1/',
   urlhaus: 'https://urlhaus-api.abuse.ch/v1/urls/recent/limit/200/',
   otx: 'https://otx.alienvault.com/api/v1/pulses/subscribed?limit=20&page=1',
@@ -123,6 +128,60 @@ export function findRange(ip, ranges) {
     else return r;
   }
   return null;
+}
+
+// ── High-volume attacker-IP feeds (for the worldwide scatter) ────────────────
+// CINS Army, Emerging Threats and blocklist.de/all are plain IP-per-line lists;
+// Feodo Tracker is JSON and already carries country + malware family. Merged,
+// deduped and ranked by how many lists corroborate each IP, then geolocated
+// per-IP so the globe fills with city-level sources instead of one dot per
+// country.
+
+/** Feodo Tracker ipblocklist.json → botnet C2 source IPs with country + malware. */
+export function parseFeodoIps(payload) {
+  const rows = Array.isArray(payload) ? payload : [];
+  const out = [];
+  for (const r of rows) {
+    const ip = str(r?.ip_address);
+    if (ipToInt(ip) === null) continue;
+    out.push({
+      ip,
+      port: num(r.port) || null,
+      country: str(r.country).toUpperCase().slice(0, 2),
+      malware: str(r.malware),
+      lastOnline: str(r.last_online),
+    });
+  }
+  return out;
+}
+
+/**
+ * Merge the attacker-IP feeds into one deduped, ranked set. Each IP is tagged
+ * with which lists named it (more lists = more corroborated = ranked higher);
+ * country/port/malware flow through when a source supplies them.
+ * @returns {Array<{ip, sources: string[], country, port, malware}>}
+ */
+export function buildAttackerIps(feeds = {}, { limit = 800 } = {}) {
+  const { cins = '', et = '', blocklistAll = '', feodo = [] } = feeds;
+  const byIp = new Map();
+  const add = (ip, source, extra = {}) => {
+    if (ipToInt(ip) === null) return;
+    const cur = byIp.get(ip) || { ip, sources: [], country: '', port: null, malware: '' };
+    if (!cur.sources.includes(source)) cur.sources.push(source);
+    if (extra.country && !cur.country) cur.country = extra.country;
+    if (extra.port && !cur.port) cur.port = extra.port;
+    if (extra.malware && !cur.malware) cur.malware = extra.malware;
+    byIp.set(ip, cur);
+  };
+  for (const ip of parseIpList(cins)) add(ip, 'CINS Army');
+  for (const ip of parseIpList(et)) add(ip, 'Emerging Threats');
+  for (const ip of parseIpList(blocklistAll)) add(ip, 'blocklist.de');
+  for (const f of Array.isArray(feodo) ? feodo : []) {
+    add(f?.ip, 'Feodo C2', { country: f?.country, port: f?.port, malware: f?.malware });
+  }
+  return [...byIp.values()]
+    .sort((a, b) => b.sources.length - a.sources.length || a.ip.localeCompare(b.ip))
+    .slice(0, limit);
 }
 
 // ── Cloudflare Radar ─────────────────────────────────────────────────────────

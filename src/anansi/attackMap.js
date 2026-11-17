@@ -544,11 +544,12 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
   }
 
   function addArc(source, target, index, attackTypes) {
+    const key = source.key || source.country;
     const positions = liftedArc(source, target, POINT_LIFT_M.world, POINT_LIFT_M.local);
     const css = sourceColor(source, attackTypes);
     const color = Cesium.Color.fromCssColorString(css);
     const w = source.weight || 0;
-    const arcId = `${ID_PREFIX}arc:${source.country}`;
+    const arcId = `${ID_PREFIX}arc:${key}`;
     _ds.entities.add({
       id: arcId,
       polyline: {
@@ -558,8 +559,8 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         material: new Cesium.PolylineGlowMaterialProperty({ glowPower: 0.22, taperPower: 0.9, color: color.withAlpha(0.35 + w * 0.45) }),
       },
     });
-    addHeads(source.country, positions, color, w, index);
-    const markerId = `${ID_PREFIX}src:${source.country}`;
+    addHeads(key, positions, color, w, index);
+    const markerId = `${ID_PREFIX}src:${key}`;
     _ds.entities.add({
       id: markerId,
       position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
@@ -568,7 +569,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
     const point = sourcePopup(source, attackTypes, target);
     clickable(markerId, point);
     clickable(arcId, point);
-    return { id: source.country, position: positions[0], title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
+    return { id: key, position: positions[0], title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
   }
 
   /** Popup for an attack-source country (shared by WORLD hotspots and 757 arcs). */
