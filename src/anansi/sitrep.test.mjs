@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { attackAlertEntries, buildSitrep, plainAiSecEntries, tidy } from './sitrep.js';
+import { attackAlertEntries, buildSitrep, plainAiSecEntries, plainCyberNewsEntries, tidy } from './sitrep.js';
 
 test('tidy trims to a word boundary with an ellipsis', () => {
   assert.equal(tidy('  hello   world  '), 'hello world');
@@ -36,4 +36,19 @@ test('attack alerts merge in, most important first, capped', () => {
   assert.ok(merged.length >= 2);
   assert.equal(merged[0].tag, 'EXPLOITED NOW', 'KEV vuln outranks a plain alert');
   assert.ok(merged.length <= 40);
+});
+
+test('cyber-news items become plain SITREP cards and merge into the board', () => {
+  const snapshot = { items: [
+    { title: 'Cyber attack takes websites offline', summary: 'DDoS wave.', plain: 'An attack knocked websites offline.', source: 'The Hacker News', url: 'https://x', date: '2026-11-17T10:00:00Z', tag: 'OUTAGE', priority: 86, isNew: true },
+  ] };
+  const [card] = plainCyberNewsEntries(snapshot);
+  assert.equal(card.kind, 'cyber-news');
+  assert.equal(card.tag, 'OUTAGE');
+  assert.match(card.plain, /knocked websites offline/);
+  assert.equal(card.link, 'https://x');
+  // It outranks a plain attack alert in the merged board.
+  const body = { alerts: [{ source: 'DShield', title: 'scan', plain: 'Scanning.', time: '2026-11-17T09:00:00Z' }] };
+  const merged = buildSitrep(body, null, snapshot);
+  assert.equal(merged[0].tag, 'OUTAGE');
 });

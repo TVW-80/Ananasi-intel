@@ -1505,8 +1505,11 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 @keyframes aje-twinkle { 0%, 100% { opacity: 1; text-shadow: 0 0 6px #ffd76a; } 50% { opacity: 0.55; text-shadow: 0 0 2px #ffd76a; } }
 .aje-alert-kicker { font-size: 9px; letter-spacing: 0.15em; color: #f4cf5e; flex: 1; }
 .aje-alert-close {
-  font-family: inherit; font-size: 11px; line-height: 1; color: var(--text-secondary);
-  background: none; border: 0; cursor: pointer; padding: 2px 4px;
+  font-family: inherit; font-size: 13px; line-height: 1; color: var(--text-secondary);
+  background: none; border: 0; cursor: pointer;
+  /* ≥24px hit target (WCAG 2.5.8) without enlarging the glyph's visual weight. */
+  min-width: 24px; min-height: 24px; display: inline-flex; align-items: center; justify-content: center;
+  margin: -4px -6px -4px 0; padding: 0;
 }
 .aje-alert-close:hover { color: var(--text-primary); }
 .aje-alert-headline { margin: 9px 0 5px; font-size: 13px; line-height: 1.35; color: #ffe9a8; }
