@@ -1581,3 +1581,31 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 .attack-heat-bar { height: 8px; min-width: 4px; border-radius: 1px; }
 .attack-heat-count { text-align: right; font-size: 9px; color: var(--text-secondary); }
 .attack-heat-empty { font-size: 10px; color: var(--text-secondary); }
+
+/* FANGS vulnerability patch-priority scorecard (CySA+ action queue). */
+.vuln-score { padding: 8px 12px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+.vuln-score-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px;
+}
+.vuln-score-title { font-size: 9px; letter-spacing: 0.12em; color: #f4cf5e; }
+.vuln-score-tally { font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary); white-space: nowrap; }
+.vuln-score-list { display: flex; flex-direction: column; gap: 3px; }
+.vuln-score-row {
+  display: grid; grid-template-columns: 26px 1fr; align-items: start; gap: 8px;
+  text-decoration: none; color: var(--text-primary); padding: 2px; border-left: 2px solid var(--band, #d4af37);
+  padding-left: 6px;
+}
+.vuln-score-row:hover { background: rgba(212, 175, 55, 0.08); }
+.vuln-score-band {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--band, #d4af37);
+  line-height: 1.3;
+}
+.vuln-score-main { display: flex; flex-direction: column; min-width: 0; }
+.vuln-score-name {
+  font-size: 11px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vuln-score-why {
+  font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vuln-score-empty { font-size: 10px; color: var(--text-secondary); }
