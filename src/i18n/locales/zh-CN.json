@@ -2890,5 +2890,8 @@
   "Adds North Carolina DOT (DriveNC) traffic cameras to the Cameras layer. Free developer key from the DriveNC site.": "将北卡罗来纳州交通局（DriveNC）的交通摄像头添加到“摄像头”图层。可在 DriveNC 网站免费获取开发者密钥。",
   "Exposure counts (how many ICS, cameras, databases, RDP and more are exposed, per country) and the attack map’s exposure scoreboard. All free — no paid membership and no query credits. Exact system locations are an opt-in that needs a paid plan.": "暴露计数（各国有多少工控系统、摄像头、数据库、RDP 等被暴露）以及攻击地图的暴露记分板。全部免费——无需付费会员或查询额度。精确的系统位置是需付费套餐的可选项。",
   "Sky (stars & planets)": "星空（恒星与行星）",
-  "Sky": "星空"
+  "Sky": "星空",
+  "Weather Alerts": "天气警报",
+  "News Events": "新闻事件",
+  "Incidents": "突发事件"
 }

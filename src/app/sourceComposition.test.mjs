@@ -37,7 +37,7 @@ test('every acquisition source can be omitted without losing catalog membership'
 
 test('all acquisition sources may be absent, and enable fails before initializing or fetching', async (t) => {
   const actual = catalog({}, t);
-  assert.equal(actual.layers.length, 45); // 33 upstream + Anansi flipper + 7 Cyber + exposed cameras + sundown towns + 757 + sky
+  assert.equal(actual.layers.length, 47); // 33 upstream + Anansi flipper + 7 Cyber + exposed cameras + sundown towns + 757 + sky + 2 incident layers
   const manager = new LayerLifecycle(
     {},
     { getSourceAvailability: actual.getSourceAvailability },

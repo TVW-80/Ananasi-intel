@@ -13,6 +13,7 @@ import { registerPickOwner, unregisterPickOwner, resolvePickId } from '../data/p
 import { governorRequestRender } from '../renderGovernor.js';
 import { getFocus, inFocus, onFocusChange } from './focus.js';
 import { glyphBillboard } from './markerIcons.js';
+import { loadTimeline } from './incidentTimeline.js';
 
 /**
  * Layer definitions: id, feeds it merges, look, and attribution. `keyId` names
@@ -29,6 +30,9 @@ export const THREAT_LAYERS = Object.freeze([
   { id: 'cyber-ics-exposure', name: 'Exposed ICS', icon: '⚙', feeds: ['shodan-ics'], keyId: 'shodan', color: '#d4af37', source: 'Shodan', updateInterval: 60 * 60_000 },
   // Lives in the Cameras group: how many internet-exposed cameras, never which ones (no IPs, no images).
   { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', feeds: ['shodan-cameras'], keyId: 'shodan', color: '#e8a33c', source: 'Shodan (counts only)', updateInterval: 60 * 60_000 },
+  // Incidents: keyless, follow the WORLD / 757 focus server-side (US-wide vs Hampton Roads).
+  { id: 'incident-weather-alerts', name: 'Weather Alerts', icon: '☂', feeds: ['incidents-alerts'], color: '#4fc3f7', source: 'NWS · api.weather.gov', updateInterval: 5 * 60_000 },
+  { id: 'incident-news-events', name: 'News Events', icon: '✺', feeds: ['incidents-news'], color: '#ff6b4a', timeline: true, source: 'GDELT GEO (geolocated news)', updateInterval: 15 * 60_000 },
   // History: a dataset you supply (src/data/local_data/sundown). Icons are colored by evidence level.
   { id: 'history-sundown-towns', name: 'Sundown Towns (historical)', icon: '◐', feeds: ['sundown'], color: '#c81e1e', source: 'Your sundown-towns research file (local)', updateInterval: 5 * 60_000, focusFilter: false },
 ]);
@@ -115,7 +119,19 @@ function showPopover({ layer, point }, screen) {
   }
   const more = point.count && point.count > (point.items || []).length ? text('div', 'threat-popover-more', `+${point.count - point.items.length} more`) : null;
   const src = text('div', 'threat-popover-source', `Source: ${layer.source}`);
-  el.replaceChildren(head, title, meta, list, ...(more ? [more] : []), src);
+  const extras = [];
+  if (layer.timeline && point.place) {
+    const button = text('button', 'threat-popover-timeline-btn', 'BUILD TIMELINE');
+    button.type = 'button';
+    const out = document.createElement('div');
+    out.className = 'incident-timeline';
+    button.addEventListener('click', () => {
+      button.disabled = true;
+      loadTimeline(out, point.place);
+    });
+    extras.push(button, out);
+  }
+  el.replaceChildren(head, title, meta, list, ...(more ? [more] : []), ...extras, src);
   el.hidden = false;
   const pad = 12;
   const w = el.offsetWidth || 320;

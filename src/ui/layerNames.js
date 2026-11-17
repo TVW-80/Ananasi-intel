@@ -41,6 +41,8 @@ export const LAYER_NAME_KEYS = Object.freeze({
   'cyber-outage-reports': msg('Outage Reports'),
   'cyber-ics-exposure': msg('Exposed ICS'),
   'exposed-cameras': msg('Exposed Cameras'),
+  'incident-weather-alerts': msg('Weather Alerts'),
+  'incident-news-events': msg('News Events'),
   'history-sundown-towns': msg('Sundown Towns (historical)'),
   transit: msg('Transit'),
   'recent-imagery': msg('Recent Imagery'),

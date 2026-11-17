@@ -35,6 +35,7 @@ import { skyProxy } from './anansi/sky.js';
 import { flipperSerialProxy } from './anansi/flipper-serial.js';
 import { n8nProxy } from './anansi/n8n.js';
 import { threatIntelProxy } from './anansi/threat-intel.js';
+import { incidentTimelineProxy } from './anansi/incident-timeline.js';
 
 /**
  * Construct the local provider plugins in their established order.
@@ -77,6 +78,7 @@ function localProviderPlugins({ realtime, gemini } = {}) {
     flipperSerialProxy(),
     n8nProxy(),
     threatIntelProxy(),
+    incidentTimelineProxy(),
     attackMapProxy(),
     skyProxy(),
     keySetupEndpoint(),

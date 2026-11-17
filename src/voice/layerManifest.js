@@ -435,6 +435,8 @@ export const VOICE_OFF_LAYERS = Object.freeze({
   'cyber-outage-reports': 'Anansi: personal threat-intel research layer',
   'cyber-ics-exposure': 'Anansi: personal threat-intel research layer',
   'exposed-cameras': 'Anansi: personal threat-intel research layer (counts only)',
+  'incident-weather-alerts': 'Anansi: live NWS alerts research layer',
+  'incident-news-events': 'Anansi: live geolocated-news research layer',
   'history-sundown-towns': 'Anansi: personal historical research layer (local file)',
 });
 

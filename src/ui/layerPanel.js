@@ -108,6 +108,11 @@ const PANEL_GROUPS = [
     ],
   },
   {
+    // Anansi: live incidents, US-wide or the 757 (follows the WORLD / 757 focus).
+    label: msg('Incidents'),
+    ids: ['incident-weather-alerts', 'incident-news-events'],
+  },
+  {
     // Anansi: historical research layers from files you supply.
     label: msg('Historical'),
     ids: ['history-sundown-towns'],

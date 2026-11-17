@@ -17,6 +17,8 @@ export const LEGEND_LAYERS = Object.freeze([
   { id: 'cyber-outage-reports', name: 'Outage Reports', icon: '⚠', color: '#e8d9a8' },
   { id: 'cyber-ics-exposure', name: 'Exposed ICS', icon: '⚙', color: '#d4af37' },
   { id: 'exposed-cameras', name: 'Exposed Cameras', icon: '◉', color: '#e8a33c' },
+  { id: 'incident-weather-alerts', name: 'Weather Alerts', icon: '☂', color: '#4fc3f7' },
+  { id: 'incident-news-events', name: 'News Events', icon: '✺', color: '#ff6b4a' },
 ]);
 export const LEGEND_757 = Object.freeze({
   traffic: { label: 'Traffic', glyph: '🚦', color: '#ff8a1f' },
@@ -57,6 +59,8 @@ const LAYER_TEXT = {
   'cyber-outage-reports': ['Confirmed internet outages and their cause (power, cable cut, government shutdown).', 'Cloudflare Radar outage annotations.'],
   'cyber-ics-exposure': ['Industrial control systems answering openly on the internet. WORLD = how many per country; 757 = individual systems around Hampton Roads.', 'Shodan tag:ics — host/count facets (WORLD) or host/search (757).'],
   'exposed-cameras': ['How many cameras anyone can reach online, per country (or per 757 city). Counts only — no addresses or images.', 'Shodan host/count, camera screenshot label, country/city facets.'],
+  'incident-weather-alerts': ['Active National Weather Service warnings and watches. WORLD = one icon per state; 757 = the alerts covering Hampton Roads.', 'NWS api.weather.gov active alerts (CAP), grouped by UGC state.'],
+  'incident-news-events': ['Places where recent news reports crashes, fires, shootings, floods or outages. Position comes from the place named in the story, so treat it as a lead, not a confirmed incident.', 'GDELT GEO 2.0 geolocated article clusters (US sources; 757 = Hampton Roads place names, 48h).'],
   'history-sundown-towns': ['Historical record from your own research file, coloured by strength of evidence.', 'Local dataset; Loewen/Tougaloo-style evidence ratings.'],
 };
 

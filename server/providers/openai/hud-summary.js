@@ -28,6 +28,69 @@ function toFiveWordHudSummary(value) {
     .join(' ');
 }
 
+/**
+ * Optional free / OpenAI-compatible backend for the HUD summary only
+ * (see https://github.com/open-free-llm-api/awesome-freellm-apis).
+ * Active when GEV_HUD_LLM_BASE_URL and GEV_HUD_LLM_API_KEY are both set;
+ * otherwise the summary uses OpenAI exactly as before. Voice is unaffected.
+ */
+function freeHudLlmConfig() {
+  const baseUrl = String(process.env.GEV_HUD_LLM_BASE_URL || '')
+    .trim()
+    .replace(/\/+$/, '');
+  const apiKey = String(process.env.GEV_HUD_LLM_API_KEY || '').trim();
+  const model = String(process.env.GEV_HUD_LLM_MODEL || '').trim();
+  if (!baseUrl || !apiKey || !model) return null;
+  return { baseUrl, apiKey, model };
+}
+
+function extractChatCompletionText(data) {
+  const content = data?.choices?.[0]?.message?.content;
+  return typeof content === 'string' ? content.trim() : '';
+}
+
+async function requestFreeHudSummary(config, context) {
+  const response = await fetch(`${config.baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        { role: 'system', content: HUD_SUMMARY_INSTRUCTIONS },
+        { role: 'user', content: JSON.stringify(context) },
+      ],
+      max_tokens: 100,
+      temperature: 0.2,
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  return { response, text: extractChatCompletionText(data) };
+}
+
+async function requestOpenAiHudSummary(apiKey, context) {
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model:
+        process.env.OPENAI_HUD_SUMMARY_MODEL ||
+        OPENAI_HUD_SUMMARY_MODEL_DEFAULT,
+      instructions: HUD_SUMMARY_INSTRUCTIONS,
+      input: JSON.stringify(context),
+      reasoning: { effort: 'minimal' },
+      max_output_tokens: 100,
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  return { response, text: extractOpenAiResponseText(data) };
+}
+
 async function handleHudSummary(req, res) {
   if (req.method !== 'POST') {
     res.statusCode = 405;
@@ -36,8 +99,9 @@ async function handleHudSummary(req, res) {
     return;
   }
 
+  const freeLlm = freeHudLlmConfig();
   const apiKey = process.env.OPENAI_API_KEY;
-  const keyless = keylessHudSummaryResponse(apiKey);
+  const keyless = keylessHudSummaryResponse(freeLlm ? freeLlm.apiKey : apiKey);
   if (keyless) {
     res.statusCode = keyless.statusCode;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -54,24 +118,10 @@ async function handleHudSummary(req, res) {
   try {
     const body = await readRequestBody(req, 64 * 1024);
     const context = JSON.parse(body || '{}');
-    const response = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model:
-          process.env.OPENAI_HUD_SUMMARY_MODEL ||
-          OPENAI_HUD_SUMMARY_MODEL_DEFAULT,
-        instructions: HUD_SUMMARY_INSTRUCTIONS,
-        input: JSON.stringify(context),
-        reasoning: { effort: 'minimal' },
-        max_output_tokens: 100,
-      }),
-    });
-    const data = await response.json().catch(() => ({}));
-    const summary = toFiveWordHudSummary(extractOpenAiResponseText(data));
+    const { response, text } = freeLlm
+      ? await requestFreeHudSummary(freeLlm, context)
+      : await requestOpenAiHudSummary(apiKey, context);
+    const summary = toFiveWordHudSummary(text);
     res.statusCode = response.ok && summary ? 200 : response.status || 502;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
@@ -80,8 +130,8 @@ async function handleHudSummary(req, res) {
     res.end(
       JSON.stringify({
         summary: summary || null,
-        // Never relay `data.error.message`: that is OpenAI's own wording, and
-        // it carries request ids, organization hints and quota phrasing.
+        // Never relay `data.error.message`: provider wording carries request
+        // ids, organization hints and quota phrasing.
         error: response.ok ? null : 'OpenAI HUD summary request failed',
       }),
     );

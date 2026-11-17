@@ -853,6 +853,19 @@ body.console-mode #command-dock.angular-panel {
   overflow-wrap: anywhere;
 }
 .threat-popover-more, .threat-popover-source { margin-top: 6px; color: var(--text-secondary); font-size: 10px; }
+.threat-popover-timeline-btn {
+  margin-top: 8px; padding: 3px 8px; cursor: pointer; font: inherit; font-size: 10px;
+  letter-spacing: 0.12em; color: #ff6b4a; background: transparent; border: 1px solid #ff6b4a;
+}
+.threat-popover-timeline-btn:disabled { opacity: 0.5; cursor: default; }
+.incident-timeline { margin-top: 6px; max-height: 220px; overflow-y: auto; font-size: 10px; line-height: 1.4; }
+.incident-timeline-summary { color: var(--text-primary); }
+.incident-timeline-hour { margin-top: 6px; color: #ff6b4a; font-size: 9px; letter-spacing: 0.1em; }
+.incident-timeline-list { margin: 2px 0 0; padding: 0; list-style: none; }
+.incident-timeline-list li { margin: 2px 0; }
+.incident-timeline-list a { color: var(--text-primary); text-decoration: underline; }
+.incident-timeline-domain { color: var(--text-secondary); }
+.incident-timeline-disclaimer { margin-top: 6px; color: var(--text-secondary); font-style: italic; }
 
 /* ── Attack Map HUD + FortiGuard ticker (src/anansi/attackMap.js) ──────────── */
 /* A slim strip docked top-center, clear of the Data Layers column, the right

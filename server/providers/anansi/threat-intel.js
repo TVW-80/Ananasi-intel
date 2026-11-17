@@ -24,6 +24,7 @@ import {
   normalizeShodanFacets,
 } from './threat-feeds.js';
 import { loadSundownFeed } from './sundown.js';
+import { normalizeNwsAlerts, normalizeGdeltEvents, nwsAlertsUrl, gdeltGeoUrl } from './incidents.js';
 
 const USER_AGENT = 'Anansi/1.0 (personal threat-intel dashboard)';
 const TIMEOUT_MS = 30_000;
@@ -39,6 +40,21 @@ export const FEEDS = Object.freeze({
     ttl: 60_000,
     keyEnv: null,
     local: loadSundownFeed,
+  },
+  // Incidents: keyless, US-wide or the 757 (see server/providers/anansi/incidents.js).
+  'incidents-alerts': {
+    ttl: 5 * MIN,
+    keyEnv: null,
+    focusAware: true,
+    request: (_e, _now, focus) => ({ url: nwsAlertsUrl(focus), headers: { Accept: 'application/geo+json' } }),
+    normalize: (p, focus) => normalizeNwsAlerts(p, focus),
+  },
+  'incidents-news': {
+    ttl: 15 * MIN,
+    keyEnv: null,
+    focusAware: true,
+    request: (_e, _now, focus) => ({ url: gdeltGeoUrl(focus), headers: {} }),
+    normalize: (p, focus) => normalizeGdeltEvents(p, focus),
   },
   feodo: {
     ttl: 30 * MIN,
