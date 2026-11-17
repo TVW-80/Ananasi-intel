@@ -25,12 +25,37 @@ export function createVulnScorecard(doc = document, { now = () => Date.now() } =
   const wrap = el(doc, 'section', 'vuln-score');
   wrap.setAttribute('aria-label', 'Vulnerability patch priority');
   const head = el(doc, 'div', 'vuln-score-head');
+  const headL = el(doc, 'div', 'vuln-score-headL');
+  const toggle = el(doc, 'button', 'vuln-score-toggle', '▾');
+  toggle.type = 'button';
   const title = el(doc, 'span', 'vuln-score-title', '◆ PATCH PRIORITY · live');
   const tally = el(doc, 'span', 'vuln-score-tally', '');
-  head.append(title, tally);
+  headL.append(toggle, title);
+  head.append(headL, tally);
   const list = el(doc, 'div', 'vuln-score-list');
   const empty = el(doc, 'div', 'vuln-score-empty', 'No open vulnerabilities to triage.');
   wrap.append(head, list, empty);
+
+  // Collapse toggle — remembered per viewer (best-effort; never throws).
+  const STORE_KEY = 'ananzi.fangs.patchPriority.collapsed';
+  let collapsed = false;
+  try { collapsed = globalThis.localStorage?.getItem(STORE_KEY) === '1'; } catch { /* private mode */ }
+  function applyCollapsed() {
+    wrap.classList.toggle('collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    const label = collapsed ? 'Expand patch priority' : 'Collapse patch priority';
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+  }
+  function setCollapsed(next) {
+    collapsed = next;
+    try { globalThis.localStorage?.setItem(STORE_KEY, next ? '1' : '0'); } catch { /* private mode */ }
+    applyCollapsed();
+  }
+  toggle.addEventListener('click', () => setCollapsed(!collapsed));
+  title.style.cursor = 'pointer';
+  title.addEventListener('click', () => setCollapsed(!collapsed));
+  applyCollapsed();
 
   function update(vulns) {
     const ranked = rankVulns(vulns, { now: now(), limit: 6 });

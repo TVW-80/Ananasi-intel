@@ -211,11 +211,8 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
       track.replaceChildren();
       return;
     }
-    const cards = entries.map((e) => card(doc, e));
-    // Two copies make the vertical marquee seamless.
-    track.replaceChildren(...cards, ...cards.map((c) => c.cloneNode(true)));
-    // Slow, readable crawl: ~7s per card, paused on hover (CSS).
-    track.style.setProperty('--sitrep-seconds', `${Math.max(40, entries.length * 7)}s`);
+    // A single, naturally-flowing list the user can scroll freely.
+    track.replaceChildren(...entries.map((e) => card(doc, e)));
   }
 
   async function pollAiSec() {
@@ -244,6 +241,40 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
 
   close.addEventListener('click', () => api.setOpen(false));
 
+  // Gentle auto-advance of the rolling column — a medium, steady pace that
+  // gently ping-pongs. The reader stays in control: it pauses while the
+  // pointer is over the roll and yields for a moment whenever they scroll,
+  // wheel, touch or key through it, then quietly resumes.
+  const AUTO_STEP_MS = 40;
+  const AUTO_PX = 0.7; // ~17px/s
+  const YIELD_MS = 2500;
+  let hovering = false;
+  let yieldUntil = 0;
+  let autoTimer = null;
+  let dir = 1;
+  roll.addEventListener('pointerenter', () => { hovering = true; });
+  roll.addEventListener('pointerleave', () => { hovering = false; });
+  const nudge = () => { yieldUntil = Date.now() + YIELD_MS; };
+  roll.addEventListener('wheel', nudge, { passive: true });
+  roll.addEventListener('pointerdown', nudge);
+  roll.addEventListener('touchstart', nudge, { passive: true });
+  roll.addEventListener('keydown', nudge);
+  function autoTick() {
+    if (!open || hovering || Date.now() < yieldUntil) return;
+    const maxTop = roll.scrollHeight - roll.clientHeight;
+    if (maxTop <= 1) return; // nothing to scroll
+    roll.scrollTop += AUTO_PX * dir;
+    if (roll.scrollTop >= maxTop - 0.5) { dir = -1; yieldUntil = Date.now() + 1500; }
+    else if (roll.scrollTop <= 0.5) { dir = 1; yieldUntil = Date.now() + 1500; }
+  }
+  function startAuto() {
+    if (autoTimer == null && typeof setInterval === 'function') autoTimer = setInterval(autoTick, AUTO_STEP_MS);
+  }
+  function stopAuto() {
+    clearInterval(autoTimer);
+    autoTimer = null;
+  }
+
   const api = {
     element: panel,
     setAttack(body) {
@@ -255,15 +286,19 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
       panel.hidden = !next;
       if (next) {
         render();
+        startAuto();
         if (!aiSnapshot) pollAiSec();
         if (!cyberSnapshot) pollCyberNews();
         aiTimer ??= setInterval(() => { pollAiSec(); pollCyberNews(); }, AI_SEC_POLL_MS);
+      } else {
+        stopAuto();
       }
     },
     isOpen: () => open,
     dispose() {
       clearInterval(aiTimer);
       aiTimer = null;
+      stopAuto();
       panel.remove();
     },
   };

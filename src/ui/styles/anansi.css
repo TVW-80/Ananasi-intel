@@ -1321,23 +1321,23 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
   color: var(--text-primary);
   cursor: pointer;
 }
-.sitrep-roll { position: relative; flex: 1; overflow: hidden; }
+.sitrep-roll {
+  position: relative;
+  flex: 1;
+  min-height: 60px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.5) transparent;
+}
+.sitrep-roll::-webkit-scrollbar { width: 8px; }
+.sitrep-roll::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.45); border-radius: 4px; }
+.sitrep-roll::-webkit-scrollbar-track { background: transparent; }
 .sitrep-track {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 10px;
-  animation: sitrep-roll var(--sitrep-seconds, 60s) linear infinite;
-}
-.sitrep-roll:hover .sitrep-track { animation-play-state: paused; }
-@keyframes sitrep-roll { from { transform: translateY(0); } to { transform: translateY(-50%); } }
-@media (prefers-reduced-motion: reduce) {
-  .sitrep-track { animation: none; }
-  .sitrep-roll { overflow-y: auto; }
 }
 .sitrep-empty { padding: 16px; font-size: 11px; color: var(--text-secondary); }
 .sitrep-empty[hidden] { display: none; }
@@ -1587,6 +1587,17 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 .vuln-score-head {
   display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px;
 }
+.vuln-score.collapsed .vuln-score-head { margin-bottom: 0; }
+.vuln-score.collapsed .vuln-score-list,
+.vuln-score.collapsed .vuln-score-empty { display: none; }
+.vuln-score-headL { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.vuln-score-toggle {
+  flex: none; background: none; border: none; cursor: pointer; padding: 0 2px;
+  color: #f4cf5e; font-size: 9px; line-height: 1; font-family: var(--font-mono);
+  transition: transform 0.15s ease;
+}
+.vuln-score-toggle:hover { color: var(--text-primary); }
+.vuln-score.collapsed .vuln-score-toggle { transform: rotate(-90deg); }
 .vuln-score-title { font-size: 9px; letter-spacing: 0.12em; color: #f4cf5e; }
 .vuln-score-tally { font-family: var(--font-mono); font-size: 9px; color: var(--text-secondary); white-space: nowrap; }
 .vuln-score-list { display: flex; flex-direction: column; gap: 3px; }
