@@ -12,6 +12,7 @@
  * the classic four-vertex figure with the connecting edges.
  */
 import { ttpFor } from '../data/attackTtp.js';
+import { KILL_CHAIN, killChainPhase, pyramidLevel, confidenceOf } from '../data/analystFrames.js';
 
 export const HOME_VICTIM = 'Hampton Roads, VA';
 
@@ -107,5 +108,69 @@ export function renderDiamond(doc, diamond) {
   link.rel = 'noopener noreferrer';
   ttp.append(link);
   wrap.appendChild(ttp);
+  return wrap;
+}
+
+/* ── analyst frames: Kill Chain · Pyramid of Pain · Confidence ─────────────── */
+
+/**
+ * The CySA+ lenses on this event, derived from the same activity kind as the
+ * Diamond. @returns {{kind, killChain, pyramid, confidence}}
+ */
+export function buildAnalysis(layer, point, { now = Date.now() } = {}) {
+  const p = point || {};
+  const hints = `${p.title || ''} ${p.place || ''} ${(p.items || []).map((i) => `${i.text || ''} ${i.tech || ''}`).join(' ')}`;
+  const { kind } = ttpFor(layer?.id, hints);
+  return {
+    kind,
+    killChain: killChainPhase(kind),
+    pyramid: pyramidLevel(kind),
+    confidence: confidenceOf({ source: layer?.source, time: p.time, title: p.title, place: p.place }, { now }),
+  };
+}
+
+/** The Kill Chain / Pyramid / Confidence strip under the Diamond. */
+export function renderAnalysis(doc, analysis) {
+  const box = el(doc, 'div', 'analyst');
+
+  // Cyber Kill Chain: 7 segments, the current one lit.
+  const kc = el(doc, 'div', 'analyst-row');
+  kc.append(el(doc, 'span', 'analyst-label', `KILL CHAIN · ${analysis.killChain.name}`));
+  const chain = el(doc, 'div', 'killchain');
+  KILL_CHAIN.forEach((name, i) => {
+    const seg = el(doc, 'span', `killchain-seg${i + 1 === analysis.killChain.index ? ' active' : ''}${i + 1 < analysis.killChain.index ? ' past' : ''}`);
+    seg.title = `${i + 1}. ${name}`;
+    chain.appendChild(seg);
+  });
+  kc.appendChild(chain);
+
+  // Pyramid of Pain.
+  const py = el(doc, 'div', 'analyst-row');
+  py.append(
+    el(doc, 'span', 'analyst-label', 'PYRAMID OF PAIN'),
+    el(doc, 'span', `analyst-pill pyr-r${analysis.pyramid.rank}`, analysis.pyramid.level),
+    el(doc, 'span', 'analyst-note', analysis.pyramid.pain),
+  );
+
+  // Intelligence confidence + its three factors.
+  const cf = el(doc, 'div', 'analyst-row');
+  const c = analysis.confidence;
+  cf.append(
+    el(doc, 'span', 'analyst-label', 'CONFIDENCE'),
+    el(doc, 'span', `analyst-pill conf-${c.level.toLowerCase()}`, c.level),
+    el(doc, 'span', 'analyst-note', `fresh: ${c.timeliness} · relevant: ${c.relevance} · reliable: ${c.accuracy}`),
+  );
+
+  box.append(kc, py, cf);
+  return box;
+}
+
+/** The full intrusion-analysis worksheet for a clicked event: Diamond + frames. */
+export function renderIntrusionAnalysis(doc, layer, point, opts = {}) {
+  const wrap = el(doc, 'div', 'intrusion-analysis');
+  wrap.append(
+    renderDiamond(doc, buildDiamond(layer, point, opts)),
+    renderAnalysis(doc, buildAnalysis(layer, point, opts)),
+  );
   return wrap;
 }

@@ -14,7 +14,7 @@ import { governorRequestRender } from '../renderGovernor.js';
 import { getFocus, inFocus, onFocusChange } from './focus.js';
 import { glyphBillboard } from './markerIcons.js';
 import { loadTimeline } from './incidentTimeline.js';
-import { buildDiamond, renderDiamond } from './diamond.js';
+import { renderIntrusionAnalysis } from './diamond.js';
 
 /**
  * Layer definitions: id, feeds it merges, look, and attribution. `keyId` names
@@ -121,9 +121,10 @@ function showPopover({ layer, point }, screen) {
   const more = point.count && point.count > (point.items || []).length ? text('div', 'threat-popover-more', `+${point.count - point.items.length} more`) : null;
   const src = text('div', 'threat-popover-source', `Source: ${layer.source}`);
   const extras = [];
-  // FANGS: a Diamond Model worksheet + MITRE ATT&CK technique for this event.
+  // FANGS: the intrusion-analysis worksheet — Diamond Model + ATT&CK technique,
+  // Cyber Kill Chain phase, Pyramid of Pain and intel confidence.
   try {
-    extras.push(renderDiamond(document, buildDiamond(layer, point)));
+    extras.push(renderIntrusionAnalysis(document, layer, point));
   } catch {
     /* a malformed point should never break the popover */
   }
