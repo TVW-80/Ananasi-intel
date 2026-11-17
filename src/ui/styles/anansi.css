@@ -1525,3 +1525,25 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
    pane (attacks + AI-security + cyber-news), so its separate panel is hidden to
    keep one pane of glass. Reversible: delete this rule to bring it back. */
 #ai-sec-panel { display: none !important; }
+
+/* ── FANGS: Diamond Model of Intrusion Analysis (src/anansi/diamond.js) ─────── */
+.diamond { margin-top: 9px; padding-top: 8px; border-top: 1px solid rgba(212, 175, 55, 0.3); }
+.diamond-kicker { font-size: 9px; letter-spacing: 0.12em; color: #f4cf5e; margin-bottom: 4px; }
+.diamond-grid { position: relative; height: 158px; }
+.diamond-edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.diamond-edges line { stroke: rgba(212, 175, 55, 0.4); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.diamond-node {
+  position: absolute; width: 44%; transform: translate(-50%, -50%);
+  text-align: center; background: rgba(8, 7, 6, 0.82);
+  border: 1px solid rgba(212, 175, 55, 0.5); padding: 4px 5px; box-sizing: border-box;
+}
+.diamond-role { display: block; font-size: 7.5px; letter-spacing: 0.1em; color: #f4cf5e; }
+.diamond-val { display: block; font-size: 10px; color: var(--text-primary); line-height: 1.2; overflow-wrap: anywhere; }
+.diamond-node.n-adversary { left: 50%; top: 13%; border-color: rgba(255, 43, 43, 0.6); }
+.diamond-node.n-capability { left: 23%; top: 50%; }
+.diamond-node.n-infrastructure { left: 77%; top: 50%; }
+.diamond-node.n-victim { left: 50%; top: 87%; border-color: rgba(255, 43, 43, 0.6); }
+.diamond-ttp { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.diamond-ttp-tag { font-size: 8px; letter-spacing: 0.1em; padding: 2px 5px; border: 1px solid rgba(212, 175, 55, 0.5); color: #f4cf5e; white-space: nowrap; }
+.diamond-ttp-link { font-size: 10.5px; color: #f4cf5e; text-decoration: none; overflow-wrap: anywhere; }
+.diamond-ttp-link:hover { text-decoration: underline; }
