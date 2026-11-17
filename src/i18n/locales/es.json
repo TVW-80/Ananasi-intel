@@ -3014,7 +3014,6 @@
   "Optional free key — works without one, raises limits": "Clave gratuita opcional: funciona sin ella y aumenta los límites",
   "Reported Attackers layer: IPs flagged for attacks, grouped by country. Free account; refreshed a few times a day.": "Capa Atacantes reportados: IP señaladas por ataques, agrupadas por país. Cuenta gratuita; se actualiza varias veces al día.",
   "AI Security panel advisories work without a key. A free GitHub token (no scopes needed) lifts the 60-requests-per-hour limit.": "Los avisos del panel de Seguridad de IA funcionan sin clave. Un token gratuito de GitHub (sin permisos) eleva el límite de 60 solicitudes por hora.",
-  "Attack Map": "Mapa de ataques",
   "Hampton Roads 757": "Hampton Roads 757",
   "Outage Reports layer, plus the Attack Map’s DDoS arcs and most-attacked industries. Free account; create an API token with Radar read access.": "Capa Informes de cortes, además de los arcos DDoS del Mapa de ataques y las industrias más atacadas. Cuenta gratuita; crea un token de API con acceso de lectura a Radar.",
   "Attack Map malware names (ThreatFox) and live malware links (URLhaus). Free key; the Botnet C2 Servers layer works without one.": "Nombres de malware (ThreatFox) y enlaces de malware activos (URLhaus) en el Mapa de ataques. Clave gratuita; la capa Servidores C2 de botnets funciona sin ella.",
@@ -3031,5 +3030,6 @@
   "Sky": "Cielo",
   "Weather Alerts": "Alertas meteorológicas",
   "News Events": "Eventos en las noticias",
-  "Incidents": "Incidentes"
+  "Incidents": "Incidentes",
+  "F.A.N.G.S": "F.A.N.G.S"
 }

@@ -78,7 +78,7 @@ export function legendGroups() {
   return [
     {
       id: 'attack-map',
-      title: 'ATTACK MAP',
+      title: 'F.A.N.G.S',
       rows: [
         { shape: 'glyph', color: '#ff2b2b', glyph: '⌖', label: 'Attack source (crosshair)', plain: 'A country attacks are coming from, with a glowing arc into Hampton Roads — your vantage point, not a confirmed target. Bigger crosshair = more; its colour is the kind of attack it sends most.', technical: 'DShield top IPs + AbuseIPDB + sampled blocklist.de, AS-country geolocation; great-circle arc to 36.85, -76.29.' },
         ...Object.values(ATTACK_TYPE_COLORS).map(([label, color]) => ({ shape: 'dot', color, label: `Crosshair colour · ${label}`, plain: `Most of this country’s attacks are ${label.toLowerCase()}.`, technical: 'Dominant blocklist.de service among the country’s attacking IPs (48h).' })),

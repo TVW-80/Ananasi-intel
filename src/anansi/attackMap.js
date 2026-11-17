@@ -236,7 +236,7 @@ function createHud() {
   fold.type = 'button';
   fold.title = 'Minimize';
   fold.setAttribute('aria-label', 'Minimize attack map panel');
-  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'ATTACK MAP'), sitrepBtn, brief, fold);
+  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'F.A.N.G.S'), sitrepBtn, brief, fold);
   head.title = 'Drag to move · double-click to re-dock';
   const counter = el('div', 'attack-map-counter', '—');
   const basis = el('div', 'attack-map-basis', 'waiting for DShield…');
@@ -432,6 +432,12 @@ function createHud() {
       sitrep.dispose();
       hud.remove();
     },
+    /** Open the one-pane rolling dashboard (attacks + AI-security + cyber news). */
+    openSitrep() {
+      sitrep.setOpen(true);
+      sitrepBtn.setAttribute('aria-expanded', 'true');
+      sitrepBtn.classList.add('active');
+    },
     update(body) {
       last = body || {};
       sitrep.setAttack(body);
@@ -468,7 +474,9 @@ function createHud() {
         : [el('span', 'attack-map-ticker-item', 'No alerts reachable right now — arcs still update. Open BRIEF to see which sources are live.')];
       // Two copies make the CSS marquee seamless.
       lane.replaceChildren(...nodes, ...nodes.map((n) => n.cloneNode(true)));
-      lane.style.setProperty('--ticker-seconds', `${Math.max(50, items.length * 10)}s`);
+      // Medium, steady crawl: a fixed seconds-per-item keeps the speed constant
+      // whatever the alert count; ~18s/item reads comfortably without rushing.
+      lane.style.setProperty('--ticker-seconds', `${Math.max(90, items.length * 18)}s`);
       renderBrief(body);
     },
   };
@@ -710,6 +718,8 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       attachThreatClick(viewer || _viewer);
       _hud = createHud();
       _hud.mount();
+      // One pane of glass: opening FANGS opens the unified cyber dashboard.
+      _hud.openSitrep();
       holdContinuousRender(RENDER_HOLD);
     },
 

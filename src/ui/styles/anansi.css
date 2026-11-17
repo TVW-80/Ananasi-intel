@@ -1520,3 +1520,8 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 @media (max-width: 560px) {
   .aje-alert { left: 8px; right: 8px; width: auto; bottom: 78px; }
 }
+
+/* The standalone AI Security Intel panel is consolidated into the FANGS SITREP
+   pane (attacks + AI-security + cyber-news), so its separate panel is hidden to
+   keep one pane of glass. Reversible: delete this rule to bring it back. */
+#ai-sec-panel { display: none !important; }

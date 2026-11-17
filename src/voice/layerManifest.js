@@ -426,7 +426,7 @@ export const VOICE_OFF_LAYERS = Object.freeze({
   'bhote-koshi-locator': 'scene-driven event layer (control_scene)',
   'flipper-detections': 'Anansi: local hardware sensor on this machine (not shareable)',
   'local-hampton-roads-757': 'Anansi: local 757 feed from your own n8n flows',
-  'cyber-attack-map': 'Anansi: personal threat-intel research layer',
+  'cyber-attack-map': 'Anansi: FANGS — live attack map and cyber dashboard (threat-intel research)',
   'sky-overhead': 'Anansi: live sky (stars, planets, constellations)',
   'cyber-botnet-c2': 'Anansi: personal threat-intel research layer',
   'cyber-reported-attackers': 'Anansi: personal threat-intel research layer',
