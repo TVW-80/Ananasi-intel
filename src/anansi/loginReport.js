@@ -16,6 +16,7 @@ import { buildSitrep } from './sitrep.js';
 export const LAST_LOGIN_KEY = 'anansi:last-login';
 const ATTACK_ENDPOINT = '/api/attackmap';
 const AI_SEC_ENDPOINT = '/api/ai-sec-intel';
+const CYBER_NEWS_ENDPOINT = '/api/cyber-news';
 const MAX_ITEMS = 24;
 
 /** Milliseconds for a time string/number, or null when it can't be read. */
@@ -252,11 +253,12 @@ export function createLoginReport(
    */
   async function init() {
     const lastLogin = readLastLogin(storage);
-    const [attack, ai] = await Promise.all([
+    const [attack, ai, cyber] = await Promise.all([
       fetchJson(ATTACK_ENDPOINT),
       fetchJson(AI_SEC_ENDPOINT),
+      fetchJson(CYBER_NEWS_ENDPOINT),
     ]);
-    const entries = selectNewSince(buildSitrep(attack, ai, 200), lastLogin);
+    const entries = selectNewSince(buildSitrep(attack, ai, cyber, 200), lastLogin);
     renderDigest(entries, lastLogin);
     // Stamp AFTER computing, so this visit's cutoff is "now".
     writeLastLogin(storage, now());

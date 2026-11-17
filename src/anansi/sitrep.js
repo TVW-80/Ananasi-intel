@@ -10,6 +10,7 @@
  * Personal research tooling: English-only by design.
  */
 const AI_SEC_ENDPOINT = '/api/ai-sec-intel';
+const CYBER_NEWS_ENDPOINT = '/api/cyber-news';
 const AI_SEC_POLL_MS = 15 * 60_000;
 
 /** Trim a sentence to a readable length without cutting a word in half. */
@@ -80,9 +81,31 @@ export function attackAlertEntries(body) {
   }));
 }
 
+/**
+ * Cyber-attack NEWS wire (/api/cyber-news) → the same SITREP entry shape.
+ * The headline leads; the plain line says, in a sentence a non-expert gets,
+ * what kind of thing happened.
+ */
+export function plainCyberNewsEntries(snapshot) {
+  return (snapshot?.items || []).slice(0, 20).map((item) => ({
+    kind: 'cyber-news',
+    tag: item.tag || 'NEWS',
+    title: tidy(item.title || '(untitled)', 120),
+    plain: tidy(item.plain || item.summary || 'New cyber-security headline.', 200),
+    detail: [item.source, item.plain && item.summary ? tidy(item.summary, 120) : null].filter(Boolean).join(' · '),
+    link: item.url || '',
+    time: item.date || null,
+    priority: (item.priority || 30) + (item.isNew ? 10 : 0),
+  }));
+}
+
 /** Merge, newest/most-important first, and cap. */
-export function buildSitrep(body, aiSnapshot, limit = 40) {
-  const entries = [...attackAlertEntries(body), ...plainAiSecEntries(aiSnapshot)];
+export function buildSitrep(body, aiSnapshot, cyberSnapshot = null, limit = 40) {
+  const entries = [
+    ...attackAlertEntries(body),
+    ...plainAiSecEntries(aiSnapshot),
+    ...plainCyberNewsEntries(cyberSnapshot),
+  ];
   entries.sort((a, b) => (b.priority || 0) - (a.priority || 0) || String(b.time || '').localeCompare(String(a.time || '')));
   return entries.slice(0, limit);
 }
@@ -100,6 +123,14 @@ const TAG_COLOR = {
   'AI MODELS': '#8fd46b',
   RESEARCH: '#d4af37',
   'AI POLICY': '#e0457b',
+  // Cyber-news wire categories (/api/cyber-news).
+  BREACH: '#e0457b',
+  RANSOMWARE: '#ff2b2b',
+  OUTAGE: '#ff8a1f',
+  'NATION-STATE': '#c061dd',
+  EXPLOIT: '#ff6b4a',
+  ADVISORY: '#f4cf5e',
+  NEWS: '#e8d9a8',
   attack: '#f4cf5e',
 };
 
@@ -152,11 +183,12 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
 
   let attackBody = null;
   let aiSnapshot = null;
+  let cyberSnapshot = null;
   let aiTimer = null;
   let open = false;
 
   function render() {
-    const entries = buildSitrep(attackBody, aiSnapshot);
+    const entries = buildSitrep(attackBody, aiSnapshot, cyberSnapshot);
     empty.hidden = entries.length > 0;
     if (!entries.length) {
       track.replaceChildren();
@@ -181,6 +213,18 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
     }
   }
 
+  async function pollCyberNews() {
+    try {
+      const res = await fetchImpl(CYBER_NEWS_ENDPOINT, { cache: 'no-store' });
+      if (res.ok) {
+        cyberSnapshot = await res.json();
+        if (open) render();
+      }
+    } catch {
+      // leave the last wire; the rest of the board still rolls
+    }
+  }
+
   close.addEventListener('click', () => api.setOpen(false));
 
   const api = {
@@ -195,7 +239,8 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
       if (next) {
         render();
         if (!aiSnapshot) pollAiSec();
-        aiTimer ??= setInterval(pollAiSec, AI_SEC_POLL_MS);
+        if (!cyberSnapshot) pollCyberNews();
+        aiTimer ??= setInterval(() => { pollAiSec(); pollCyberNews(); }, AI_SEC_POLL_MS);
       }
     },
     isOpen: () => open,

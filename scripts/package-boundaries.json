@@ -942,6 +942,7 @@
       "src/data/hamptonRoads757.js",
       "src/data/aiSecIntelFeed.js",
       "src/data/aiSecIntel.js",
+      "src/data/cyberNews.js",
       "src/data/hamptonRoadsMaritime.js"
     ],
     "external": [
@@ -2851,6 +2852,7 @@
       "src/data/hamptonRoads757.js",
       "src/data/aiSecIntelFeed.js",
       "src/data/aiSecIntel.js",
+      "src/data/cyberNews.js",
       "src/anansi/consoleScene.js",
       "src/hudFrame.js",
       "src/graticule.js",
@@ -3681,6 +3683,7 @@
       "src/data/hamptonRoads757.js",
       "src/data/aiSecIntelFeed.js",
       "src/data/aiSecIntel.js",
+      "src/data/cyberNews.js",
       "src/data/hamptonRoadsMaritime.js"
     ],
     "external": []
