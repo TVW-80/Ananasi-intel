@@ -11,10 +11,13 @@
  */
 import { createAttackHeatmap } from './attackHeatmap.js';
 import { createVulnScorecard } from './vulnScorecard.js';
+import { createServiceBoard } from './serviceStatus.js';
 
 const AI_SEC_ENDPOINT = '/api/ai-sec-intel';
 const CYBER_NEWS_ENDPOINT = '/api/cyber-news';
+const SERVICE_STATUS_ENDPOINT = '/api/service-status';
 const AI_SEC_POLL_MS = 15 * 60_000;
+const SERVICE_STATUS_POLL_MS = 2 * 60_000; // outages move fast
 
 /** Trim a sentence to a readable length without cutting a word in half. */
 export function tidy(text, max = 180) {
@@ -180,16 +183,19 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
   head.append(title, close);
   const heat = createAttackHeatmap(doc); // live ATT&CK heat map at the top
   const vulnScore = createVulnScorecard(doc); // CySA+ patch-priority queue
+  const serviceBoard = createServiceBoard(doc); // "is it down right now" board
   const roll = el(doc, 'div', 'sitrep-roll');
   const track = el(doc, 'div', 'sitrep-track');
   roll.append(track);
   const empty = el(doc, 'p', 'sitrep-empty', 'Waiting for the first intel to roll in…');
-  panel.append(head, heat.element, vulnScore.element, roll, empty);
+  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, roll, empty);
 
   let attackBody = null;
   let aiSnapshot = null;
   let cyberSnapshot = null;
+  let svcSnapshot = null;
   let aiTimer = null;
+  let svcTimer = null;
   let open = false;
 
   function render() {
@@ -206,6 +212,8 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
     );
     // Re-triage the live vuln feed into a CySA+ patch-priority queue.
     vulnScore.update(aiSnapshot?.vulns || []);
+    // Providers' own status: what's degraded or down right now.
+    serviceBoard.update(svcSnapshot);
     empty.hidden = entries.length > 0;
     if (!entries.length) {
       track.replaceChildren();
@@ -236,6 +244,18 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
       }
     } catch {
       // leave the last wire; the rest of the board still rolls
+    }
+  }
+
+  async function pollServiceStatus() {
+    try {
+      const res = await fetchImpl(SERVICE_STATUS_ENDPOINT, { cache: 'no-store' });
+      if (res.ok) {
+        svcSnapshot = await res.json();
+        if (open) render();
+      }
+    } catch {
+      // leave the last status; the rest of the board still works
     }
   }
 
@@ -289,7 +309,9 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
         startAuto();
         if (!aiSnapshot) pollAiSec();
         if (!cyberSnapshot) pollCyberNews();
+        if (!svcSnapshot) pollServiceStatus();
         aiTimer ??= setInterval(() => { pollAiSec(); pollCyberNews(); }, AI_SEC_POLL_MS);
+        svcTimer ??= setInterval(() => pollServiceStatus(), SERVICE_STATUS_POLL_MS);
       } else {
         stopAuto();
       }
@@ -297,7 +319,9 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
     isOpen: () => open,
     dispose() {
       clearInterval(aiTimer);
+      clearInterval(svcTimer);
       aiTimer = null;
+      svcTimer = null;
       stopAuto();
       panel.remove();
     },

@@ -936,6 +936,7 @@
       "src/anansi/sitrep.js",
       "src/anansi/attackHeatmap.js",
       "src/anansi/vulnScorecard.js",
+      "src/anansi/serviceStatus.js",
       "src/anansi/loginReport.js",
       "src/anansi/ajeAlert.js",
       "src/anansi/skyLayer.js",
@@ -950,6 +951,7 @@
       "src/data/aiSecIntelFeed.js",
       "src/data/aiSecIntel.js",
       "src/data/cyberNews.js",
+      "src/data/serviceStatus.js",
       "src/data/hamptonRoadsMaritime.js"
     ],
     "external": [
@@ -2853,6 +2855,7 @@
       "src/anansi/sitrep.js",
       "src/anansi/attackHeatmap.js",
       "src/anansi/vulnScorecard.js",
+      "src/anansi/serviceStatus.js",
       "src/anansi/loginReport.js",
       "src/anansi/ajeAlert.js",
       "src/anansi/skyLayer.js",
@@ -2867,6 +2870,7 @@
       "src/data/aiSecIntelFeed.js",
       "src/data/aiSecIntel.js",
       "src/data/cyberNews.js",
+      "src/data/serviceStatus.js",
       "src/anansi/consoleScene.js",
       "src/hudFrame.js",
       "src/graticule.js",
@@ -2881,6 +2885,7 @@
       "src/anansi/sitrep.js",
       "src/anansi/attackHeatmap.js",
       "src/anansi/vulnScorecard.js",
+      "src/anansi/serviceStatus.js",
       "src/anansi/loginReport.js",
       "src/anansi/ajeAlert.js",
       "src/anansi/skyLayer.js",
@@ -3484,6 +3489,7 @@
       "src/anansi/sitrep.js",
       "src/anansi/attackHeatmap.js",
       "src/anansi/vulnScorecard.js",
+      "src/anansi/serviceStatus.js",
       "src/anansi/loginReport.js",
       "src/anansi/ajeAlert.js",
       "src/anansi/skyLayer.js",
@@ -3706,6 +3712,7 @@
       "src/anansi/sitrep.js",
       "src/anansi/attackHeatmap.js",
       "src/anansi/vulnScorecard.js",
+      "src/anansi/serviceStatus.js",
       "src/anansi/loginReport.js",
       "src/anansi/ajeAlert.js",
       "src/anansi/skyLayer.js",
@@ -3719,6 +3726,7 @@
       "src/data/aiSecIntelFeed.js",
       "src/data/aiSecIntel.js",
       "src/data/cyberNews.js",
+      "src/data/serviceStatus.js",
       "src/data/hamptonRoadsMaritime.js"
     ],
     "external": []
