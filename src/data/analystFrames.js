@@ -64,7 +64,7 @@ export function pyramidLevel(kind) {
 /* ── intelligence confidence (Timeliness · Relevance · Accuracy) ──────────── */
 
 // Sources FANGS trusts most (abuse.ch, CISA, government, big infra providers).
-const HIGH_SOURCE = /abuse\.ch|threatfox|urlhaus|feodo|sslbl|cisa|kev|dshield|sans|cloudflare|openphish|shodan|abuseipdb|otx|alienvault/i;
+const HIGH_SOURCE = /abuse\.ch|threatfox|urlhaus|feodo|sslbl|cisa|kev|dshield|sans|cloudflare|openphish|shodan|greynoise|abuseipdb|otx|alienvault/i;
 // Close-to-home / critical-infrastructure relevance.
 const RELEVANCE_RE = /\b(united\s+states|u\.?s\.?|america|federal|critical\s+infrastructure|hospital|power\s+grid|water|911|virginia|hampton\s+roads|norfolk|newport\s+news)\b/i;
 

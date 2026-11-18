@@ -2891,5 +2891,6 @@
   "Weather Alerts": "天气警报",
   "News Events": "新闻事件",
   "Incidents": "突发事件",
-  "F.A.N.G.S": "F.A.N.G.S"
+  "F.A.N.G.S": "F.A.N.G.S",
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "攻击地图的“是否真实？”标签：区分大规模互联网扫描器与可能有目标的攻击者。无需密钥即可使用；密钥（仅限工作邮箱账户）可提高每日限额。"
 }

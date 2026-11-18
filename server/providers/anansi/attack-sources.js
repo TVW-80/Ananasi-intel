@@ -7,6 +7,7 @@
 //   blocklist.de       IPs that attacked its members' servers in 48h, per service
 //   abuse.ch           ThreatFox IOCs (malware family) + URLhaus malware URLs
 //   AlienVault OTX     community threat "pulses" (campaign reports)
+//   GreyNoise          mass scanner vs. targeted, per IP
 //   Spamhaus DROP      criminal / hijacked netblocks
 //   Tor Project        current Tor exit relays
 //   CISA KEV           vulnerabilities exploited in the wild
@@ -14,6 +15,7 @@
 export const URLS = Object.freeze({
   radar: 'https://api.cloudflare.com/client/v4/radar/attacks',
   blocklist: (service) => `https://lists.blocklist.de/lists/${service}.txt`,
+  greynoise: (ip) => `https://api.greynoise.io/v3/community/${ip}`,
   // High-volume attacker-IP lists for the worldwide scatter (all keyless).
   cins: 'https://cinsscore.com/list/ci-badguys.txt',
   etCompromised: 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt',
@@ -303,6 +305,20 @@ export function normalizeOtx(payload) {
       tags: Array.isArray(p.tags) ? p.tags.map(str) : [],
       time: str(p.modified || p.created),
     }));
+}
+
+// ── GreyNoise Community ──────────────────────────────────────────────────────
+/** 200 and 404 both answer the question ("not observed" is an answer). */
+export function normalizeGreyNoise(payload, httpStatus = 200) {
+  if (!payload || (httpStatus !== 200 && httpStatus !== 404)) return null;
+  return {
+    noise: Boolean(payload.noise),
+    riot: Boolean(payload.riot),
+    classification: str(payload.classification) || (httpStatus === 404 ? 'not-observed' : 'unknown'),
+    name: str(payload.name),
+    link: /^https:\/\//.test(str(payload.link)) ? str(payload.link) : '',
+    lastSeen: str(payload.last_seen),
+  };
 }
 
 // ── CISA KEV ─────────────────────────────────────────────────────────────────

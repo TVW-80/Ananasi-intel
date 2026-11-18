@@ -36,7 +36,7 @@ export const ATTACK_MAP_LAYER = Object.freeze({
   name: 'Attack Map',
   icon: '⌁',
   color: '#ff2b2b',
-  source: 'DShield · AbuseIPDB · blocklist.de · Cloudflare Radar · abuse.ch · OTX · Spamhaus · Tor · CISA KEV · FortiGuard',
+  source: 'DShield · AbuseIPDB · blocklist.de · Cloudflare Radar · abuse.ch · OTX · GreyNoise · Spamhaus · Tor · CISA KEV · FortiGuard',
   updateInterval: 10 * 60_000,
 });
 

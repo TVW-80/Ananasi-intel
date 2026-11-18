@@ -3098,5 +3098,6 @@
   "Weather Alerts": "Погодные оповещения",
   "News Events": "События в новостях",
   "Incidents": "Происшествия",
-  "F.A.N.G.S": "F.A.N.G.S"
+  "F.A.N.G.S": "F.A.N.G.S",
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "Метки «это реально?» на Карте атак: отличают массовые сканеры интернета от атакующих, которые могут выбирать цели. Работает без ключа; ключ (только для рабочих e-mail) повышает дневной лимит."
 }

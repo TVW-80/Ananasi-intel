@@ -3029,5 +3029,6 @@
   "Weather Alerts": "Alertas meteorológicas",
   "News Events": "Eventos en las noticias",
   "Incidents": "Incidentes",
-  "F.A.N.G.S": "F.A.N.G.S"
+  "F.A.N.G.S": "F.A.N.G.S",
+  "Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.": "Etiquetas «¿es real?» del Mapa de ataques: distingue escáneres masivos de atacantes que podrían elegir objetivos. Funciona sin clave; una clave (solo cuentas con correo de trabajo) amplía el límite diario."
 }

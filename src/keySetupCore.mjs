@@ -188,6 +188,16 @@ export const KEY_SETUP_KEYS = Object.freeze([
     tier: 'free',
   }),
   Object.freeze({
+    id: 'greynoise',
+    title: 'GREYNOISE', // i18n-ignore: provider product name
+    unlocks: msg(
+      'Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.',
+    ),
+    getUrl: 'https://viz.greynoise.io/account/api-key',
+    envVars: Object.freeze(['GREYNOISE_API_KEY']),
+    tier: 'optional',
+  }),
+  Object.freeze({
     id: 'github',
     title: 'GITHUB', // i18n-ignore: provider product name
     unlocks: msg(

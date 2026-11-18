@@ -148,6 +148,44 @@ export function familyExplained(name, threatType) {
   };
 }
 
+/** GreyNoise: "is this real?" */
+export function greyNoiseExplained(g) {
+  if (!g) return null;
+  if (g.riot) {
+    return {
+      label: `Known service: ${g.name || 'business infrastructure'}`,
+      plain: 'This is a well-known company’s server (like a cloud or security provider) — probably not an attacker.',
+      technical: `GreyNoise RIOT: common business service${g.name ? ` (${g.name})` : ''}.`,
+    };
+  }
+  if (g.noise && g.classification === 'benign') {
+    return {
+      label: 'Harmless scanner',
+      plain: 'A known “good” scanner (search engine or security researcher) that checks the whole internet.',
+      technical: `GreyNoise: noise=true, classification=benign${g.name ? ` (${g.name})` : ''}.`,
+    };
+  }
+  if (g.noise && g.classification === 'malicious') {
+    return {
+      label: 'Mass attacker (background noise)',
+      plain: 'It attacks everyone on the internet, not you specifically — like a burglar trying every door on every street.',
+      technical: 'GreyNoise: noise=true, classification=malicious (opportunistic mass exploitation).',
+    };
+  }
+  if (g.noise) {
+    return {
+      label: 'Mass scanner (intent unclear)',
+      plain: 'It scans the whole internet; GreyNoise hasn’t decided if it’s good or bad.',
+      technical: `GreyNoise: noise=true, classification=${g.classification || 'unknown'}.`,
+    };
+  }
+  return {
+    label: 'Not a mass scanner — possibly targeted',
+    plain: 'GreyNoise does not see this address spraying the internet. If it is attacking, it may be picking its targets.',
+    technical: 'GreyNoise: not observed as internet background noise (noise=false, riot=false).',
+  };
+}
+
 export const FLAGS = Object.freeze({
   tor: {
     label: 'Via Tor',

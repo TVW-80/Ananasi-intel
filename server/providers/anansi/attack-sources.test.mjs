@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   findRange,
   ipToInt,
+  normalizeGreyNoise,
   normalizeKev,
   normalizeOtx,
   normalizeRadarPairs,
@@ -12,7 +13,7 @@ import {
   parseDrop,
   parseIpList,
 } from './attack-sources.js';
-import { familyExplained, kevExplained, pulseExplained, SERVICES, SERVICE_ORDER } from './attack-glossary.js';
+import { familyExplained, greyNoiseExplained, kevExplained, pulseExplained, SERVICES, SERVICE_ORDER } from './attack-glossary.js';
 
 // Synthetic fixtures shaped like each API — documentation-range IPs only.
 test('IP lists skip comments and junk', () => {
@@ -68,6 +69,14 @@ test('OTX pulses and KEV entries become two-voice alerts', () => {
   assert.match(e.plain, /ransomware/);
   assert.match(e.plain, /2026-11-22/);
   assert.match(e.technical, /CVE-2000-0002/);
+});
+
+test('GreyNoise answers both "seen" and "not seen", and explains them', () => {
+  const seen = normalizeGreyNoise({ noise: true, riot: false, classification: 'malicious' }, 200);
+  assert.match(greyNoiseExplained(seen).plain, /everyone/);
+  const unseen = normalizeGreyNoise({ noise: false, riot: false, message: 'IP not observed' }, 404);
+  assert.match(greyNoiseExplained(unseen).label, /targeted/);
+  assert.equal(normalizeGreyNoise({ message: 'rate limited' }, 429), null);
 });
 
 test('every attack type and common malware family has both voices', () => {

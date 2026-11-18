@@ -148,6 +148,7 @@ test('with every source configured, the picture merges arcs, tags, malware and t
     if (url.includes('threatfox')) return json({ data: [{ ioc: '192.0.2.50:443', threat_type: 'botnet_cc', malware_printable: 'AsyncRAT' }] });
     if (url.includes('urlhaus')) return json({ urls: [{ url: 'http://192.0.2.60/x', url_status: 'online', tags: ['mirai'] }] });
     if (url.includes('otx.alienvault')) return json({ results: [{ id: 'p1', name: 'SAMPLE pulse', adversary: 'Sample Group', modified: '2026-11-01T10:00:00' }] });
+    if (url.includes('greynoise')) return json({ noise: true, riot: false, classification: 'malicious' });
     if (url.includes('drop_v4.json')) return text('{"cidr":"203.0.113.0/24","sblid":"SBL000009"}\n');
     if (url.includes('torbulkexitlist')) return text('203.0.113.9\n');
     if (url.includes('known_exploited')) return json({ vulnerabilities: [{ cveID: 'CVE-2000-0002', dateAdded: '2026-11-01', vendorProject: 'Sample', product: 'Router', vulnerabilityName: 'Sample RCE' }] });
@@ -168,12 +169,13 @@ test('with every source configured, the picture merges arcs, tags, malware and t
   assert.match(body.pairs[0].plain, /Belgium/);
   assert.equal(body.ddos.industries[0].name, 'Gambling');
 
-  // Tags on the Chinese DShield IP: SSH (blocklist.de), repeat offender.
+  // Tags on the Chinese DShield IP: SSH (blocklist.de), repeat offender, GreyNoise.
   const cn = body.sources.find((s) => s.country === 'CN');
   assert.equal(cn.dominantService, 'ssh');
   const lines = cn.ips[0].lines.map((l) => l.text).join(' | ');
   assert.match(lines, /SSH break-in attempts/);
   assert.match(lines, /Repeat offender/);
+  assert.match(lines, /GreyNoise: Mass attacker/);
   assert.ok(cn.ips[0].lines.every((l, i) => i === 0 || (l.plain && l.tech)), 'every tag line has both voices');
 
   // The Dutch IP is a Tor exit inside a DROP netblock.
@@ -192,7 +194,7 @@ test('with every source configured, the picture merges arcs, tags, malware and t
   // Keys go only where they belong.
   assert.equal(seen.find((r) => r.url.includes('threatfox')).init.headers['Auth-Key'], 'ac');
   assert.ok(seen.filter((r) => !r.url.includes('cloudflare')).every((r) => !String(r.init.headers?.Authorization || '').includes('cf')));
-  const original = ['dshield', 'radar', 'blocklist', 'threatfox', 'urlhaus', 'otx', 'drop', 'tor', 'kev', 'fortiguard'];
+  const original = ['dshield', 'radar', 'blocklist', 'threatfox', 'urlhaus', 'otx', 'drop', 'tor', 'kev', 'fortiguard', 'greynoise'];
   const notOk = body.feeds.filter((f) => f.status !== 'ok' && original.includes(f.id));
   assert.deepEqual(notOk, []);
 });
@@ -210,14 +212,36 @@ test('missing keys switch single ingredients off, never the map', async () => {
   assert.equal(body.status, 'ok');
   const status = Object.fromEntries(body.feeds.map((f) => [f.id, f.status]));
   for (const id of ['radar', 'threatfox', 'urlhaus', 'otx']) assert.equal(status[id], 'key-required', id);
+  assert.equal(status.greynoise, 'ok', 'GreyNoise works without a key');
 });
 
 test('every Attack Map key can be entered in POWER UP', async () => {
   const { KEY_SETUP_KEYS } = await import('../../../src/keySetupCore.mjs');
   const vars = new Set(KEY_SETUP_KEYS.filter((k) => !k.hidden).flatMap((k) => k.envVars));
-  for (const v of ['CLOUDFLARE_API_TOKEN', 'ABUSECH_AUTH_KEY', 'OTX_API_KEY', 'ABUSEIPDB_API_KEY']) {
+  for (const v of ['CLOUDFLARE_API_TOKEN', 'ABUSECH_AUTH_KEY', 'OTX_API_KEY', 'GREYNOISE_API_KEY', 'ABUSEIPDB_API_KEY']) {
     assert.ok(vars.has(v), `${v} missing from POWER UP`);
   }
+});
+
+test('GreyNoise is asked without a key when none is set, within a smaller daily cap', async () => {
+  const calls = [];
+  const base = fakeFetch([]);
+  const service = createAttackMapService({
+    fetchImpl: async (url, init = {}) => {
+      if (url.includes('greynoise')) {
+        calls.push(init.headers || {});
+        return { ok: true, status: 200, text: async () => JSON.stringify({ noise: true, riot: false, classification: 'malicious' }) };
+      }
+      return base(url);
+    },
+    envSource: {},
+    clock: () => 0,
+    sleep: async () => {},
+    threatIntel: () => null,
+  });
+  await service.get();
+  assert.ok(calls.length > 0);
+  assert.ok(calls.every((h) => !('key' in h)), 'no key header is sent');
 });
 
 test('world-wide extras: BGP hijacks, phishing, C2 toolkits, SSLBL, breaches, PoCs, ICS, EPSS and ATT&CK', async () => {
