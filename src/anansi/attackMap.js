@@ -473,8 +473,8 @@ function createHud() {
       // Two copies make the CSS marquee seamless.
       lane.replaceChildren(...nodes, ...nodes.map((n) => n.cloneNode(true)));
       // Medium, steady crawl: a fixed seconds-per-item keeps the speed constant
-      // whatever the alert count; ~18s/item reads comfortably without rushing.
-      lane.style.setProperty('--ticker-seconds', `${Math.max(90, items.length * 18)}s`);
+      // whatever the alert count; ~20s/item reads comfortably without rushing.
+      lane.style.setProperty('--ticker-seconds', `${Math.max(100, items.length * 20)}s`);
       renderBrief(body);
     },
   };

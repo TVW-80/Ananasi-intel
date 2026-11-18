@@ -69,6 +69,19 @@ test('normalizeItems flags recent items as new and boosts close-to-home headline
   assert.ok(home.priority > away.priority, 'the Virginia headline outranks the generic one');
 });
 
+test('cyberOnly keeps only cyber headlines from a general-interest feed', () => {
+  const parsed = parseFeed(rss([
+    { title: 'Ransomware gang leaks hospital data', link: 'https://x/a', desc: 'breach', date: ago(0.2) },
+    { title: 'Stock market rallies on jobs report', link: 'https://x/b', desc: 'markets up', date: ago(0.2) },
+    { title: 'Team wins the championship final', link: 'https://x/c', desc: 'sports', date: ago(0.2) },
+    { title: 'CISA warns of a new vulnerability', link: 'https://x/d', desc: 'patch now', date: ago(0.2) },
+  ]));
+  const filtered = normalizeItems('Newsweek', 'newsweek', parsed, { now: NOW, cyberOnly: true });
+  assert.deepEqual(filtered.map((i) => i.title).sort(), ['CISA warns of a new vulnerability', 'Ransomware gang leaks hospital data']);
+  // Without the gate, the same feed would pass everything through.
+  assert.equal(normalizeItems('Newsweek', 'newsweek', parsed, { now: NOW }).length, 4);
+});
+
 test('assembleCyberNews dedups by headline and ranks most-important-newest first', () => {
   const items = [
     { title: 'Big ransomware attack', url: 'https://a', dateMs: NOW - 3_600_000, priority: 76, tag: 'RANSOMWARE' },

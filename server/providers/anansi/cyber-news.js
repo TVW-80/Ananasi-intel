@@ -45,10 +45,10 @@ export function createCyberNewsMiddleware({
     return text;
   };
 
-  const SOURCES = CYBER_NEWS_SOURCES.map(({ id, label, url }) => ({
+  const SOURCES = CYBER_NEWS_SOURCES.map(({ id, label, url, filter }) => ({
     id,
     label,
-    fetch: async (now) => normalizeItems(label, id, parseFeed(await fetchBody(url)), { now }),
+    fetch: async (now) => normalizeItems(label, id, parseFeed(await fetchBody(url)), { now, cyberOnly: Boolean(filter) }),
   }));
 
   async function readDisk() {

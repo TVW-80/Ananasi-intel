@@ -29,6 +29,10 @@ export const CYBER_NEWS_SOURCES = Object.freeze([
   { id: 'reddit-cybersecurity', label: 'r/cybersecurity', url: 'https://www.reddit.com/r/cybersecurity/.rss' },
   { id: 'reddit-blueteamsec', label: 'r/blueteamsec', url: 'https://www.reddit.com/r/blueteamsec/.rss' },
   { id: 'reddit-crowdstrike', label: 'r/crowdstrike', url: 'https://www.reddit.com/r/crowdstrike/.rss' },
+  // Mainstream outlets — general feeds filtered to cyber items only (filter:true).
+  { id: 'newsweek', label: 'Newsweek', url: 'https://www.newsweek.com/rss', filter: true },
+  { id: 'bbc-tech', label: 'BBC Technology', url: 'https://feeds.bbci.co.uk/news/technology/rss.xml', filter: true },
+  { id: 'cnbc-tech', label: 'CNBC Technology', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910', filter: true },
 ]);
 
 export const RETAIN_DAYS = 10; // news is time-sensitive; drop anything older
@@ -78,6 +82,12 @@ const FALLBACK = { tag: 'NEWS', weight: 28, plain: '' };
 /** Extra weight for headlines close to home or to critical services. */
 const BOOST_RE = /\b(united\s+states|u\.?s\.?|america|federal|critical\s+infrastructure|hospital|power\s+grid|water|911|virginia|hampton\s+roads|norfolk)\b/i;
 
+// Cyber-relevance gate for general-interest feeds (Newsweek, BBC, CNBC …): only
+// items whose headline/summary clearly concern cyber-security pass through, so
+// a mainstream outlet never floods the wire with sports or markets.
+export const CYBER_RE =
+  /\b(cyber(?:\s?security|\s?attack|\s?crime|\s?espionage|\s?threat)?|hack(?:er|ers|ing|ed)?|breach|ransomware|malware|phish|ddos|exploit|vulnerabilit|CVE-\d|zero[-\s]day|data\s+(?:leak|breach)|threat\s+actor|nation[-\s]state|\bAPT\b|botnet|CISA|infosec|back\s?door|spyware|credential|extortion|leak\s+site|patch\s+tuesday|security\s+(?:flaw|researcher|firm|team|vulnerabilit)|infostealer|wiper|supply[-\s]chain\s+attack)\b/i;
+
 /** Classify a headline into { tag, plain, weight }. */
 export function categorize(title, summary = '', sourceId = '') {
   const text = `${title} ${summary}`;
@@ -103,7 +113,7 @@ const clip = (s, n) => {
  * than RETAIN_DAYS or undated.
  * @returns {Array<{title,summary,plain,source,sourceId,url,date,dateMs,tag,priority,isNew}>}
  */
-export function normalizeItems(label, sourceId, parsed, { now = Date.now() } = {}) {
+export function normalizeItems(label, sourceId, parsed, { now = Date.now(), cyberOnly = false } = {}) {
   const cutoff = now - RETAIN_DAYS * 86_400_000;
   const out = [];
   for (const item of parsed || []) {
@@ -111,6 +121,8 @@ export function normalizeItems(label, sourceId, parsed, { now = Date.now() } = {
     // parseFeed exposes the item URL as `link`.
     const url = item.url || item.link;
     if (!item.title || !url) continue;
+    // General-interest feeds: keep only clearly cyber-security items.
+    if (cyberOnly && !CYBER_RE.test(`${item.title} ${item.summary || ''}`)) continue;
     const title = clip(item.title, 160);
     const summary = clip(item.summary, 240);
     const cat = categorize(title, summary, sourceId);
