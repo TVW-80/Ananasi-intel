@@ -155,3 +155,22 @@ test('buildAttackerIps merges + dedupes feeds, ranks by corroboration, caps', ()
   assert.ok(buildAttackerIps({ cins: Array.from({ length: 50 }, (_, i) => `10.0.0.${i}`).join('\n') }, { limit: 10 }).length <= 10);
   assert.deepEqual(buildAttackerIps({}), []);
 });
+
+import { normalizeVirusTotalIp } from './attack-sources.js';
+
+test('VirusTotal v3 IP report → compact reputation; bad payloads → null', () => {
+  const vt = normalizeVirusTotalIp({
+    data: { attributes: {
+      last_analysis_stats: { malicious: 12, suspicious: 3, harmless: 40, undetected: 30, timeout: 1 },
+      reputation: -40, as_owner: 'EVIL-AS', country: 'ru',
+    } },
+  });
+  assert.equal(vt.malicious, 12);
+  assert.equal(vt.suspicious, 3);
+  assert.equal(vt.total, 86); // 12+3+40+30+1
+  assert.equal(vt.asOwner, 'EVIL-AS');
+  assert.equal(vt.country, 'RU');
+  assert.equal(vt.reputation, -40);
+  assert.equal(normalizeVirusTotalIp({}), null);
+  assert.equal(normalizeVirusTotalIp(null), null);
+});

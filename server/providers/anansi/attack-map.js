@@ -56,6 +56,7 @@ import {
   prettyCpe,
   parseFeodoIps,
   buildAttackerIps,
+  normalizeVirusTotalIp,
 } from './attack-sources.js';
 import { createIpGeo } from './ip-geo.js';
 import { resolve4 as dnsResolve4 } from 'node:dns/promises';
@@ -98,6 +99,8 @@ const EPSS_TTL = 24 * 60 * MIN;
 const BLOCKLIST_SAMPLE = 8; // IPs per blocklist.de service placed on the map
 const GREYNOISE_TTL = 7 * 24 * 60 * MIN;
 const GREYNOISE_PER_REFRESH = 5;
+const VT_TTL = 24 * 60 * MIN;
+const VT_PER_REFRESH = 4; // VirusTotal free public key: 4 lookups/minute
 
 /** Per-source refresh intervals. */
 const SOURCE_TTL = Object.freeze({
@@ -374,6 +377,18 @@ export function describeIp(ip) {
   if (ip.sslbl) lines.push({ text: `↳ ${SSLBL.label}`, plain: SSLBL.plain, tech: SSLBL.technical });
   const g = greyNoiseExplained(ip.greynoise);
   if (g) lines.push({ text: `↳ GreyNoise: ${g.label}`, plain: g.plain, tech: g.technical });
+  // VirusTotal: how many security vendors currently flag this address.
+  const vt = ip.virustotal;
+  if (vt && vt.total) {
+    const flagged = vt.malicious + vt.suspicious;
+    lines.push({
+      text: `↳ VirusTotal: ${flagged}/${vt.total} vendors flag it`,
+      plain: flagged
+        ? 'Multiple antivirus and security vendors list this address as malicious.'
+        : 'No security vendors currently flag this address — but it is still attacking.',
+      tech: `VirusTotal last_analysis_stats: ${vt.malicious} malicious, ${vt.suspicious} suspicious${vt.asOwner ? ` · ${vt.asOwner}` : ''}.`,
+    });
+  }
   // Shodan InternetDB (free, keyless): what the attacker's own box looks like.
   const idb = ip.internetdb;
   if (idb) {
@@ -537,6 +552,7 @@ export function createAttackMapService({
   const geoCache = new Map(); // ip -> { at, geo } for the worldwide scatter
   const gnBudget = { day: '', used: 0 };
   const idbCache = new Map(); // ip -> { at, info } (Shodan InternetDB)
+  const vtCache = new Map(); // ip -> { at, info } (VirusTotal reputation)
   const sources = new Map(); // id -> { at, ok, status, value, error }
   let snapshot = null; // { at, body }
   let inflight = null;
@@ -684,6 +700,58 @@ export function createAttackMapService({
         break;
       }
     }
+  }
+
+  /**
+   * Enrich the busiest attacking IPs with VirusTotal's reputation (how many
+   * security vendors flag the address). Key-gated: without VIRUSTOTAL_API_KEY it
+   * calls nothing and reports 'key-required'. Free public keys allow ~4/min, so
+   * only a handful are looked up per refresh and each is cached for a day.
+   */
+  async function virusTotal(ips, errors) {
+    const key = env('VIRUSTOTAL_API_KEY');
+    if (!key) return 'key-required';
+    let asked = 0;
+    let status = 'ok';
+    for (const ip of ips) {
+      const hit = vtCache.get(ip.ip);
+      if (hit && clock() - hit.at < VT_TTL) {
+        if (hit.info) ip.virustotal = hit.info;
+        continue;
+      }
+      if (asked >= VT_PER_REFRESH) continue;
+      asked += 1;
+      try {
+        const res = await request(URLS.virustotalIp(ip.ip), { headers: { 'x-apikey': key, Accept: 'application/json' } });
+        if (res.status === 429) {
+          errors.push('VirusTotal: rate limited');
+          try { await res.body?.cancel(); } catch { /* no-op */ }
+          break;
+        }
+        if (res.status === 401 || res.status === 403) {
+          errors.push(`VirusTotal: HTTP ${res.status} (check the key)`);
+          status = 'error';
+          break;
+        }
+        if (res.status === 404) {
+          vtCache.set(ip.ip, { at: clock(), info: null }); // unknown to VT — a real answer
+          continue;
+        }
+        if (!res.ok) {
+          errors.push(`VirusTotal: HTTP ${res.status}`);
+          status = 'error';
+          break;
+        }
+        const info = normalizeVirusTotalIp(JSON.parse((await res.text()) || '{}'));
+        vtCache.set(ip.ip, { at: clock(), info });
+        if (info) ip.virustotal = info;
+      } catch (err) {
+        errors.push(`VirusTotal: ${err.message}`);
+        status = 'error';
+        break;
+      }
+    }
+    return status;
   }
 
   /** Free Shodan exposure scoreboard: how many hosts expose each risky service. */
@@ -949,7 +1017,10 @@ export function createAttackMapService({
     });
     const gnStatus = await greyNoise(dsh.ips.slice(0, 10), errors);
     // Shodan InternetDB enrichment (keyless): the busiest sources first.
-    await internetDb([...dsh.ips].sort((a, b) => (b.reports || 0) - (a.reports || 0)).slice(0, INTERNETDB_PER_REFRESH), errors);
+    const bySize = [...dsh.ips].sort((a, b) => (b.reports || 0) - (a.reports || 0));
+    await internetDb(bySize.slice(0, INTERNETDB_PER_REFRESH), errors);
+    // VirusTotal reputation (key-gated): the busiest handful, respecting 4/min.
+    const vtStatus = await virusTotal(bySize.slice(0, 8), errors);
 
     const abusePoints = abuse && (abuse.status === 'ok' || abuse.status === 'stale') ? abuse.points || [] : [];
     const rows = buildSources(dsh.ips, abusePoints, blocklistIps);
@@ -1038,6 +1109,7 @@ export function createAttackMapService({
         { id: 'epss', label: 'FIRST EPSS', status: errors.some((e) => e.startsWith('EPSS')) ? 'error' : 'ok' },
         { id: 'greynoise', label: env('GREYNOISE_API_KEY') ? 'GreyNoise' : 'GreyNoise (no key, smaller daily allowance)', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
         { id: 'internetdb', label: 'Shodan InternetDB (keyless)', status: errors.some((e) => e.startsWith('InternetDB')) ? 'error' : 'ok' },
+        { id: 'virustotal', label: env('VIRUSTOTAL_API_KEY') ? 'VirusTotal (IP reputation)' : 'VirusTotal (add VIRUSTOTAL_API_KEY)', status: vtStatus, keyEnv: 'VIRUSTOTAL_API_KEY' },
       ],
       errors,
     };

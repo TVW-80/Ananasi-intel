@@ -12,6 +12,7 @@
 import { createAttackHeatmap } from './attackHeatmap.js';
 import { createVulnScorecard } from './vulnScorecard.js';
 import { createServiceBoard } from './serviceStatus.js';
+import { createPwnedCheck } from './pwnedCheck.js';
 
 const AI_SEC_ENDPOINT = '/api/ai-sec-intel';
 const CYBER_NEWS_ENDPOINT = '/api/cyber-news';
@@ -184,11 +185,12 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
   const heat = createAttackHeatmap(doc); // live ATT&CK heat map at the top
   const vulnScore = createVulnScorecard(doc); // CySA+ patch-priority queue
   const serviceBoard = createServiceBoard(doc); // "is it down right now" board
+  const pwnedCheck = createPwnedCheck(doc); // keyless k-anonymity password check
   const roll = el(doc, 'div', 'sitrep-roll');
   const track = el(doc, 'div', 'sitrep-track');
   roll.append(track);
   const empty = el(doc, 'p', 'sitrep-empty', 'Waiting for the first intel to roll in…');
-  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, roll, empty);
+  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, pwnedCheck.element, roll, empty);
 
   let attackBody = null;
   let aiSnapshot = null;

@@ -426,7 +426,7 @@ const NOT_UI = [
   /^src\/tools\//,
   // Anansi modules are English-only by design (regional ops tooling).
   /^src\/anansi\//,
-  /^src\/data\/(aiSecIntel|aiSecIntelFeed|analystFrames|attackTtp|cyberNews|flipperDetections|flipperDetectionsLayer|hamptonRoads757|hamptonRoadsMaritime|serviceStatus|vulnPriority)\.js$/,
+  /^src\/data\/(aiSecIntel|aiSecIntelFeed|analystFrames|attackTtp|cyberNews|flipperDetections|flipperDetectionsLayer|hamptonRoads757|hamptonRoadsMaritime|pwnedPasswords|serviceStatus|vulnPriority)\.js$/,
   /^src\/(cameraControl|hudFrame|graticule)\.js$/,
 ];
 

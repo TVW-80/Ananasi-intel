@@ -1654,3 +1654,36 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .svc-status-empty { font-size: 10px; color: var(--text-secondary); }
+
+/* FANGS Pwned Passwords checker (keyless k-anonymity; password never sent). */
+.pwned-check { padding: 8px 12px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+.pwned-head { display: flex; align-items: baseline; gap: 6px; }
+.pwned-headL { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.pwned-toggle {
+  flex: none; background: none; border: none; cursor: pointer; padding: 0 2px;
+  color: #f4cf5e; font-size: 9px; line-height: 1; font-family: var(--font-mono);
+  transition: transform 0.15s ease;
+}
+.pwned-toggle:hover { color: var(--text-primary); }
+.pwned-check.collapsed .pwned-toggle { transform: rotate(-90deg); }
+.pwned-check.collapsed .pwned-body { display: none; }
+.pwned-title { font-size: 9px; letter-spacing: 0.12em; color: #f4cf5e; }
+.pwned-body { margin-top: 6px; }
+.pwned-form { display: flex; gap: 6px; }
+.pwned-input {
+  flex: 1; min-width: 0; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(212, 175, 55, 0.4);
+  color: var(--text-primary); font-family: var(--font-mono); font-size: 11px; padding: 4px 6px; border-radius: 2px;
+}
+.pwned-input:focus { outline: none; border-color: rgba(212, 175, 55, 0.8); }
+.pwned-btn {
+  flex: none; background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.5);
+  color: #f4cf5e; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 2px; cursor: pointer;
+}
+.pwned-btn:hover { background: rgba(212, 175, 55, 0.28); }
+.pwned-btn:disabled { opacity: 0.5; cursor: default; }
+.pwned-result { margin: 6px 0 0; font-size: 11px; line-height: 1.35; }
+.pwned-result.pwned-bad { color: #ff5a5a; }
+.pwned-result.pwned-good { color: #8fd46b; }
+.pwned-result.pwned-neutral { color: var(--text-secondary); }
+.pwned-note { margin: 4px 0 0; font-size: 9px; color: var(--text-secondary); line-height: 1.3; }

@@ -45,6 +45,8 @@ export const URLS = Object.freeze({
   // Shodan InternetDB: keyless, free, no query credits — per-IP open ports,
   // detected software (CPEs), hostnames, tags and known vulnerabilities (CVEs).
   internetdb: (ip) => `https://internetdb.shodan.io/${ip}`,
+  // VirusTotal v3 IP reputation (free public key, x-apikey header, 4 req/min).
+  virustotalIp: (ip) => `https://www.virustotal.com/api/v3/ip_addresses/${ip}`,
   // Shodan free count API (facets): how many hosts expose a service, never
   // which hosts. No query credits.
   shodanCount: (key, query, facets) =>
@@ -182,6 +184,32 @@ export function buildAttackerIps(feeds = {}, { limit = 800 } = {}) {
   return [...byIp.values()]
     .sort((a, b) => b.sources.length - a.sources.length || a.ip.localeCompare(b.ip))
     .slice(0, limit);
+}
+
+/**
+ * VirusTotal v3 IP-address report → a compact reputation summary. Pure.
+ * @returns {{malicious, suspicious, harmless, undetected, total, reputation, asOwner, country}|null}
+ */
+export function normalizeVirusTotalIp(payload) {
+  const a = payload?.data?.attributes;
+  if (!a || typeof a !== 'object') return null;
+  const s = a.last_analysis_stats || {};
+  const n = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+  const malicious = n(s.malicious);
+  const suspicious = n(s.suspicious);
+  const harmless = n(s.harmless);
+  const undetected = n(s.undetected);
+  const total = malicious + suspicious + harmless + undetected + n(s.timeout);
+  return {
+    malicious,
+    suspicious,
+    harmless,
+    undetected,
+    total,
+    reputation: n(a.reputation),
+    asOwner: str(a.as_owner),
+    country: str(a.country).toUpperCase().slice(0, 2),
+  };
 }
 
 // ── Cloudflare Radar ─────────────────────────────────────────────────────────
