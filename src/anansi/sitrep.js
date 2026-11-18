@@ -187,12 +187,14 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
   const vulnScore = createVulnScorecard(doc); // CySA+ patch-priority queue
   const serviceBoard = createServiceBoard(doc); // "is it down right now" board
   const pwnedCheck = createPwnedCheck(doc); // keyless k-anonymity password check
-  const recon = createReconBoard(doc, { onReplay }); // event reconstruction (correlate/replay)
+  const recon = createReconBoard(doc, { onReplay, standalone: true }); // its own RECON panel
   const roll = el(doc, 'div', 'sitrep-roll');
   const track = el(doc, 'div', 'sitrep-track');
   roll.append(track);
   const empty = el(doc, 'p', 'sitrep-empty', 'Waiting for the first intel to roll in…');
-  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, recon.element, pwnedCheck.element, roll, empty);
+  // RECON lives in its own panel (mounted by the HUD via api.reconElement); the
+  // SITREP pane keeps the compact boards.
+  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, pwnedCheck.element, roll, empty);
 
   let attackBody = null;
   let aiSnapshot = null;
@@ -218,8 +220,6 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
     vulnScore.update(aiSnapshot?.vulns || []);
     // Providers' own status: what's degraded or down right now.
     serviceBoard.update(svcSnapshot);
-    // Reconstruct incidents from every live signal (correlate + replay).
-    recon.update({ attack: attackBody, cyber: cyberSnapshot, ai: aiSnapshot, service: svcSnapshot });
     empty.hidden = entries.length > 0;
     if (!entries.length) {
       track.replaceChildren();
@@ -229,11 +229,18 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
     track.replaceChildren(...entries.map((e) => card(doc, e)));
   }
 
+  // Feed the standalone RECON panel from every live signal, independent of
+  // whether the SITREP pane itself is open.
+  function feedRecon() {
+    recon.update({ attack: attackBody, cyber: cyberSnapshot, ai: aiSnapshot, service: svcSnapshot });
+  }
+
   async function pollAiSec() {
     try {
       const res = await fetchImpl(AI_SEC_ENDPOINT, { cache: 'no-store' });
       if (res.ok) {
         aiSnapshot = await res.json();
+        feedRecon();
         if (open) render();
       }
     } catch {
@@ -246,6 +253,7 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
       const res = await fetchImpl(CYBER_NEWS_ENDPOINT, { cache: 'no-store' });
       if (res.ok) {
         cyberSnapshot = await res.json();
+        feedRecon();
         if (open) render();
       }
     } catch {
@@ -258,6 +266,7 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
       const res = await fetchImpl(SERVICE_STATUS_ENDPOINT, { cache: 'no-store' });
       if (res.ok) {
         svcSnapshot = await res.json();
+        feedRecon();
         if (open) render();
       }
     } catch {
@@ -303,8 +312,10 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
 
   const api = {
     element: panel,
+    reconElement: recon.element,
     setAttack(body) {
       attackBody = body;
+      feedRecon();
       if (open) render();
     },
     setOpen(next) {

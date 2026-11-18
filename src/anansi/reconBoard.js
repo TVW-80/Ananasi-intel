@@ -35,8 +35,8 @@ function svg(doc, tag, attrs = {}) {
   return n;
 }
 
-export function createReconBoard(doc = document, { now = () => Date.now(), onReplay = null } = {}) {
-  const wrap = el(doc, 'section', 'recon collapsed');
+export function createReconBoard(doc = document, { now = () => Date.now(), onReplay = null, standalone = false } = {}) {
+  const wrap = el(doc, 'section', standalone ? 'recon recon-standalone' : 'recon collapsed');
   wrap.setAttribute('aria-label', 'Event reconstruction');
   const head = el(doc, 'div', 'recon-head');
   const headL = el(doc, 'div', 'recon-headL');
@@ -67,20 +67,25 @@ export function createReconBoard(doc = document, { now = () => Date.now(), onRep
   body.append(narrative, disclaimer, tlWrap, campaign, graphBox, list, empty);
   wrap.append(head, body);
 
-  // Collapse (remembered; collapsed by default — it is a heavy surface).
+  // Standalone (its own panel) is always open; the inline board collapses and
+  // remembers its state (it is a heavy surface).
   const STORE_KEY = 'ananzi.fangs.recon.collapsed';
-  let collapsed = true;
-  try { const v = globalThis.localStorage?.getItem(STORE_KEY); if (v != null) collapsed = v === '1'; } catch { /* private mode */ }
-  function applyCollapsed() {
-    wrap.classList.toggle('collapsed', collapsed);
-    toggle.setAttribute('aria-expanded', String(!collapsed));
-    toggle.title = collapsed ? 'Expand reconstruction' : 'Collapse reconstruction';
+  let collapsed = standalone ? false : true;
+  if (standalone) {
+    head.hidden = true; // the panel supplies its own header
+  } else {
+    try { const v = globalThis.localStorage?.getItem(STORE_KEY); if (v != null) collapsed = v === '1'; } catch { /* private mode */ }
+    const applyCollapsed = () => {
+      wrap.classList.toggle('collapsed', collapsed);
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.title = collapsed ? 'Expand reconstruction' : 'Collapse reconstruction';
+    };
+    const setCollapsed = (n) => { collapsed = n; try { globalThis.localStorage?.setItem(STORE_KEY, n ? '1' : '0'); } catch { /* ignore */ } applyCollapsed(); if (!n) renderDerived(); };
+    toggle.addEventListener('click', () => setCollapsed(!collapsed));
+    title.style.cursor = 'pointer';
+    title.addEventListener('click', () => setCollapsed(!collapsed));
+    applyCollapsed();
   }
-  const setCollapsed = (n) => { collapsed = n; try { globalThis.localStorage?.setItem(STORE_KEY, n ? '1' : '0'); } catch { /* ignore */ } applyCollapsed(); if (!n) renderDerived(); };
-  toggle.addEventListener('click', () => setCollapsed(!collapsed));
-  title.style.cursor = 'pointer';
-  title.addEventListener('click', () => setCollapsed(!collapsed));
-  applyCollapsed();
 
   let allEvents = [];
   let span = { start: 0, end: 0 };

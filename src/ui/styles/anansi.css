@@ -1744,3 +1744,30 @@ body:not(.ananzi-menu-open) #locale-picker { display: none !important; }
 .recon-copy { background: none; border: 1px solid rgba(212, 175, 55, 0.4); color: #f4cf5e; font-family: var(--font-mono); font-size: 8.5px; padding: 1px 6px; border-radius: 2px; cursor: pointer; white-space: nowrap; }
 .recon-copy:hover { background: rgba(212, 175, 55, 0.15); }
 .recon-empty { font-size: 10px; color: var(--text-secondary); }
+
+/* RECON standalone panel (its own menu, left of the SITREP pane). */
+.recon-panel {
+  position: fixed; z-index: 330; top: 82px; left: 16px;
+  width: min(400px, calc(100vw - 32px)); height: min(74vh, 720px);
+  display: flex; flex-direction: column;
+  background: rgba(10, 9, 8, 0.95); border: 1px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 26px rgba(212, 175, 55, 0.2), inset 0 0 40px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-mono); color: var(--text-primary); backdrop-filter: blur(12px);
+}
+.recon-panel[hidden] { display: none; }
+.recon-panel-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  font-size: 10px; letter-spacing: 0.14em; color: #f4cf5e;
+}
+.recon-panel-close {
+  width: 22px; height: 22px; line-height: 1; background: none;
+  border: 1px solid rgba(212, 175, 55, 0.4); color: var(--text-primary); cursor: pointer;
+}
+.recon-panel-body {
+  flex: 1; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: rgba(212, 175, 55, 0.5) transparent;
+}
+.recon-panel-body::-webkit-scrollbar { width: 8px; }
+.recon-panel-body::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.45); border-radius: 4px; }
+.recon-standalone { border-bottom: none; }

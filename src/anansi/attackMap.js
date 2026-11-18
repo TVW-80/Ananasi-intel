@@ -228,6 +228,10 @@ function createHud({ onReplay = null } = {}) {
   sitrepBtn.type = 'button';
   sitrepBtn.title = 'Open the rolling plain-English dashboard: attacks and AI-security intel, explained simply';
   sitrepBtn.setAttribute('aria-expanded', 'false');
+  const reconBtn = el('button', 'attack-map-brief-btn', 'RECON');
+  reconBtn.type = 'button';
+  reconBtn.title = 'Open RECON: correlated incidents, kill chains, a scrubbable timeline that replays on the globe, a link graph and case-file export';
+  reconBtn.setAttribute('aria-expanded', 'false');
   const brief = el('button', 'attack-map-brief-btn', 'BRIEF');
   brief.type = 'button';
   brief.title = 'Open the briefing: every alert in plain English and technical terms, a map legend and source status';
@@ -236,7 +240,7 @@ function createHud({ onReplay = null } = {}) {
   fold.type = 'button';
   fold.title = 'Minimize';
   fold.setAttribute('aria-label', 'Minimize attack map panel');
-  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'F.A.N.G.S'), sitrepBtn, brief, fold);
+  head.append(el('span', 'attack-map-live', '● LIVE'), el('span', 'attack-map-title', 'F.A.N.G.S'), sitrepBtn, reconBtn, brief, fold);
   head.title = 'Drag to move · double-click to re-dock';
   const counter = el('div', 'attack-map-counter', '—');
   const basis = el('div', 'attack-map-basis', 'waiting for DShield…');
@@ -274,6 +278,29 @@ function createHud({ onReplay = null } = {}) {
     sitrepBtn.setAttribute('aria-expanded', String(next));
     sitrepBtn.classList.toggle('active', next);
   });
+
+  // RECON — its own panel (its content is tall), fed by the SITREP pipeline.
+  const reconPanel = el('aside', 'recon-panel');
+  reconPanel.hidden = true;
+  reconPanel.setAttribute('role', 'dialog');
+  reconPanel.setAttribute('aria-label', 'Event reconstruction');
+  const reconHead = el('div', 'recon-panel-head');
+  const reconClose = el('button', 'recon-panel-close', '×');
+  reconClose.type = 'button';
+  reconClose.setAttribute('aria-label', 'Close RECON');
+  reconHead.append(el('span', null, 'RECON · event reconstruction'), reconClose);
+  const reconBody = el('div', 'recon-panel-body');
+  reconBody.append(sitrep.reconElement);
+  reconPanel.append(reconHead, reconBody);
+  document.body.append(reconPanel);
+  const setRecon = (next) => {
+    reconPanel.hidden = !next;
+    reconBtn.setAttribute('aria-expanded', String(next));
+    reconBtn.classList.toggle('active', next);
+  };
+  for (const type of ['pointerdown', 'dblclick']) reconBtn.addEventListener(type, (e) => e.stopPropagation());
+  reconBtn.addEventListener('click', (event) => { event.stopPropagation(); setRecon(reconPanel.hidden); });
+  reconClose.addEventListener('click', () => setRecon(false));
 
   const panel = el('div', 'attack-map-brief');
   panel.hidden = true;
@@ -431,6 +458,7 @@ function createHud({ onReplay = null } = {}) {
       clearInterval(rotateTimer);
       timer = rotateTimer = null;
       sitrep.dispose();
+      reconPanel.remove();
       hud.remove();
     },
     /** Open the one-pane rolling dashboard (attacks + AI-security + cyber news). */
