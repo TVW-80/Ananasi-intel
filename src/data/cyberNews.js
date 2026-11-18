@@ -22,6 +22,13 @@ export const CYBER_NEWS_SOURCES = Object.freeze([
   { id: 'securityweek', label: 'SecurityWeek', url: 'https://www.securityweek.com/feed/' },
   { id: 'cisa-advisories', label: 'CISA Advisories', url: 'https://www.cisa.gov/cybersecurity-advisories/all.xml' },
   { id: 'darkreading', label: 'Dark Reading', url: 'https://www.darkreading.com/rss.xml' },
+  { id: 'cyberscoop', label: 'CyberScoop', url: 'https://cyberscoop.com/feed/' },
+  { id: 'cybersecuritydive', label: 'Cybersecurity Dive', url: 'https://www.cybersecuritydive.com/feeds/news/' },
+  { id: 'cybersecurity-insiders', label: 'Cybersecurity Insiders', url: 'https://www.cybersecurity-insiders.com/feed/' },
+  { id: 'industrialcyber', label: 'Industrial Cyber (ICS/OT)', url: 'https://industrialcyber.co/feed/' },
+  { id: 'reddit-cybersecurity', label: 'r/cybersecurity', url: 'https://www.reddit.com/r/cybersecurity/.rss' },
+  { id: 'reddit-blueteamsec', label: 'r/blueteamsec', url: 'https://www.reddit.com/r/blueteamsec/.rss' },
+  { id: 'reddit-crowdstrike', label: 'r/crowdstrike', url: 'https://www.reddit.com/r/crowdstrike/.rss' },
 ]);
 
 export const RETAIN_DAYS = 10; // news is time-sensitive; drop anything older
