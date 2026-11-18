@@ -27,6 +27,7 @@ import { POINT_LIFT_M, attachThreatClick, detachThreatClick, forgetThreatPoint, 
 import { COLORS, renderLegend } from './legend.js';
 import { createSitrep } from './sitrep.js';
 import { glyphBillboard } from './markerIcons.js';
+import { buildReplay } from '../data/replayModel.js';
 
 // Distinct glyph per category (monochrome symbols; coloured by the SVG badge).
 const GLYPH = Object.freeze({ source: '⌖', malware: '☣', phishing: '✉', leak: '↻', hijack: '⇄' });
@@ -218,7 +219,7 @@ const ROTATING_VIEWS = Object.freeze([
   { id: 'exposure', title: 'EXPOSED WORLDWIDE' },
 ]);
 
-function createHud() {
+function createHud({ onReplay = null } = {}) {
   const hud = el('aside', 'attack-map-hud');
   hud.id = 'attack-map-hud';
   hud.setAttribute('aria-label', 'Attack map');
@@ -263,7 +264,7 @@ function createHud() {
   track.append(lane);
   ticker.append(tag, track);
 
-  const sitrep = createSitrep(document);
+  const sitrep = createSitrep(document, { onReplay });
   document.body.append(sitrep.element);
   for (const type of ['pointerdown', 'dblclick']) sitrepBtn.addEventListener(type, (e) => e.stopPropagation());
   sitrepBtn.addEventListener('click', (event) => {
@@ -276,7 +277,9 @@ function createHud() {
 
   const panel = el('div', 'attack-map-brief');
   panel.hidden = true;
-  hud.append(head, main, ticker, panel);
+  const replayBadge = el('div', 'attack-map-replay');
+  replayBadge.hidden = true;
+  hud.append(head, main, ticker, panel, replayBadge);
   wireHudChrome(hud, head, fold);
   for (const type of ['pointerdown', 'dblclick']) brief.addEventListener(type, (e) => e.stopPropagation());
   brief.addEventListener('click', (event) => {
@@ -436,6 +439,15 @@ function createHud() {
       sitrepBtn.setAttribute('aria-expanded', 'true');
       sitrepBtn.classList.add('active');
     },
+    /** Show/hide the on-map REPLAY badge (null hides it). */
+    setReplayBadge(text) {
+      if (text) {
+        replayBadge.textContent = text;
+        replayBadge.hidden = false;
+      } else {
+        replayBadge.hidden = true;
+      }
+    },
     update(body) {
       last = body || {};
       sitrep.setAttack(body);
@@ -491,12 +503,53 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
   let _lastUpdate = null;
   let _lastError = null;
   let _hud = null;
+  let _replay = null; // last RECON replay payload { live, playheadMs, events }
   const overlayId = `anansi-${def.id}`;
   const ownedIds = new Set();
+  const REPLAY_PREFIX = `${ID_PREFIX}replay:`;
 
   function clearOwned() {
     for (const id of ownedIds) forgetThreatPoint(id);
     ownedIds.clear();
+  }
+
+  /** Reconstruction replay: driven by the RECON timeline scrubber in the HUD.
+   *  Live → restore the aggregate arcs. Rewound → hide the (un-timed) aggregate
+   *  arcs and pulse country-level signals reported as-of the playhead. */
+  function applyReplay(payload) {
+    _replay = payload || null;
+    if (!_ds) return;
+    // Clear previous replay pulses.
+    for (const e of [..._ds.entities.values]) if (String(e.id).startsWith(REPLAY_PREFIX)) _ds.entities.remove(e);
+    const live = !payload || payload.live;
+    // Aggregate arcs/markers are a "now" snapshot with no per-arc time, so they
+    // hide during a rewound replay and come back when live.
+    for (const e of _ds.entities.values) {
+      const id = String(e.id);
+      if (id.includes('arc:') || id.includes('src:') || id.includes('head:')) e.show = live;
+    }
+    if (live) {
+      _hud?.setReplayBadge(null);
+      return;
+    }
+    const { pulses, offMap, playheadMs } = buildReplay(payload.events || [], { playheadMs: payload.playheadMs });
+    const maxCount = Math.max(1, ...pulses.map((p) => p.count));
+    for (const p of pulses) {
+      const color = Cesium.Color.fromCssColorString(p.color);
+      _ds.entities.add({
+        id: `${REPLAY_PREFIX}${p.country}`,
+        position: Cesium.Cartesian3.fromDegrees(p.lon, p.lat, POINT_LIFT_M.world),
+        point: {
+          pixelSize: 8 + Math.round((p.count / maxCount) * 16),
+          color: color.withAlpha(0.75),
+          outlineColor: color,
+          outlineWidth: 2,
+        },
+      });
+    }
+    const when = new Date(playheadMs).toISOString().slice(0, 16).replace('T', ' ');
+    _hud?.setReplayBadge(`⏴ REPLAY · as of ${when}Z · ${pulses.length} countr${pulses.length === 1 ? 'y' : 'ies'}${offMap ? ` · +${offMap} off-map` : ''}`);
+    governorRequestRender(`anansi:${def.id}`);
   }
 
   function addTarget(target) {
@@ -715,7 +768,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       overlayHost?.setVisible(overlayId, true);
       registerPickOwner(def.id, (id) => ownedIds.has(String(id)) || String(id).startsWith(ID_PREFIX));
       attachThreatClick(viewer || _viewer);
-      _hud = createHud();
+      _hud = createHud({ onReplay: applyReplay });
       _hud.mount();
       // One pane of glass: opening FANGS opens the unified cyber dashboard.
       _hud.openSitrep();
@@ -734,6 +787,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
       detachThreatClick();
       _hud?.unmount();
       _hud = null;
+      _replay = null;
       releaseContinuousRender(RENDER_HOLD);
     },
 
@@ -788,6 +842,8 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
           { cohortLimit: LABEL_LIMIT, collisionCapacity: LABEL_LIMIT, moving: false },
         );
         _hud?.update(body);
+        // A redraw wiped the entities; if a replay is rewound, re-apply it.
+        if (_replay && !_replay.live) applyReplay(_replay);
         _count = sources.length + pairs.filter((p) => !p.domestic).length + malware.length + phishing.length + hijacks.length;
         _lastUpdate = Date.now();
         _lastError = body.status === 'ok' ? null : body.errors?.[0] || null;

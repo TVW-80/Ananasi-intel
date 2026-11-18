@@ -35,7 +35,7 @@ function svg(doc, tag, attrs = {}) {
   return n;
 }
 
-export function createReconBoard(doc = document, { now = () => Date.now() } = {}) {
+export function createReconBoard(doc = document, { now = () => Date.now(), onReplay = null } = {}) {
   const wrap = el(doc, 'section', 'recon collapsed');
   wrap.setAttribute('aria-label', 'Event reconstruction');
   const head = el(doc, 'div', 'recon-head');
@@ -188,6 +188,8 @@ export function createReconBoard(doc = document, { now = () => Date.now() } = {}
     asOf.textContent = live ? 'Live' : `as of ${axisLabel(playMs)}`;
     asOf.classList.toggle('rewound', !live);
     const incidents = correlateIncidents(events, { now: now() });
+    // Drive the globe: replay country-level signal pulses as-of the playhead.
+    try { onReplay?.({ live, playheadMs: playMs, events: allEvents }); } catch { /* map not ready */ }
     tally.textContent = incidents.length ? `${incidents.length} incident${incidents.length === 1 ? '' : 's'}` : '';
     narrative.textContent = narrate(incidents, { now: now() });
     renderCampaign(events);

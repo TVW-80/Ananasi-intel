@@ -997,6 +997,12 @@ body.console-mode #command-dock.angular-panel {
 }
 .attack-map-brief[hidden] { display: none; }
 .attack-map-hud.folded .attack-map-brief { display: none; }
+.attack-map-replay {
+  margin-top: 6px; padding: 3px 8px; border: 1px solid #ff8a1f; border-radius: 2px;
+  background: rgba(255, 138, 31, 0.12); color: #ff8a1f;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-align: center;
+}
+.attack-map-replay[hidden] { display: none; }
 .attack-map-brief-section h4 {
   margin: 10px 0 5px;
   font-size: 9px;

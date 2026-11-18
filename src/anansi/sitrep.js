@@ -171,7 +171,7 @@ function card(doc, e) {
  * The rolling dashboard. `fetchImpl` is injectable for tests; the DOM pieces
  * are created lazily on first mount.
  */
-export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.fetch(...a) } = {}) {
+export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.fetch(...a), onReplay = null } = {}) {
   const panel = el(doc, 'aside', 'sitrep');
   panel.id = 'attack-sitrep';
   panel.hidden = true;
@@ -187,7 +187,7 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
   const vulnScore = createVulnScorecard(doc); // CySA+ patch-priority queue
   const serviceBoard = createServiceBoard(doc); // "is it down right now" board
   const pwnedCheck = createPwnedCheck(doc); // keyless k-anonymity password check
-  const recon = createReconBoard(doc); // event reconstruction (correlate/replay)
+  const recon = createReconBoard(doc, { onReplay }); // event reconstruction (correlate/replay)
   const roll = el(doc, 'div', 'sitrep-roll');
   const track = el(doc, 'div', 'sitrep-track');
   roll.append(track);
