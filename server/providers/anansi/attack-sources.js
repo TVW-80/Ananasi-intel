@@ -7,12 +7,9 @@
 //   blocklist.de       IPs that attacked its members' servers in 48h, per service
 //   abuse.ch           ThreatFox IOCs (malware family) + URLhaus malware URLs
 //   AlienVault OTX     community threat "pulses" (campaign reports)
-//   GreyNoise          mass scanner vs. targeted, per IP
-//   Shadowserver       honeypot-observed exploited vulnerabilities
 //   Spamhaus DROP      criminal / hijacked netblocks
 //   Tor Project        current Tor exit relays
 //   CISA KEV           vulnerabilities exploited in the wild
-import { createHmac } from 'node:crypto';
 
 export const URLS = Object.freeze({
   radar: 'https://api.cloudflare.com/client/v4/radar/attacks',
@@ -25,8 +22,6 @@ export const URLS = Object.freeze({
   threatfox: 'https://threatfox-api.abuse.ch/api/v1/',
   urlhaus: 'https://urlhaus-api.abuse.ch/v1/urls/recent/limit/200/',
   otx: 'https://otx.alienvault.com/api/v1/pulses/subscribed?limit=20&page=1',
-  greynoise: (ip) => `https://api.greynoise.io/v3/community/${ip}`,
-  shadowserver: 'https://transform.shadowserver.org/api2/honeypot/exploited-vulnerabilities',
   dropJson: 'https://www.spamhaus.org/drop/drop_v4.json',
   dropTxt: 'https://www.spamhaus.org/drop/drop.txt',
   tor: 'https://check.torproject.org/torbulkexitlist',
@@ -308,50 +303,6 @@ export function normalizeOtx(payload) {
       tags: Array.isArray(p.tags) ? p.tags.map(str) : [],
       time: str(p.modified || p.created),
     }));
-}
-
-// ── GreyNoise Community ──────────────────────────────────────────────────────
-/** 200 and 404 both answer the question ("not observed" is an answer). */
-export function normalizeGreyNoise(payload, httpStatus = 200) {
-  if (!payload || (httpStatus !== 200 && httpStatus !== 404)) return null;
-  return {
-    noise: Boolean(payload.noise),
-    riot: Boolean(payload.riot),
-    classification: str(payload.classification) || (httpStatus === 404 ? 'not-observed' : 'unknown'),
-    name: str(payload.name),
-    link: /^https:\/\//.test(str(payload.link)) ? str(payload.link) : '',
-    lastSeen: str(payload.last_seen),
-  };
-}
-
-// ── Shadowserver ─────────────────────────────────────────────────────────────
-/** Body + HMAC2 header, exactly as Shadowserver's own call-api.py signs requests. */
-export function shadowserverRequest(params, key, secret) {
-  const body = JSON.stringify({ ...params, apikey: key });
-  const hmac = createHmac('sha256', Buffer.from(secret, 'utf8')).update(Buffer.from(body, 'utf8')).digest('hex');
-  return { body, headers: { HMAC2: hmac, 'Content-Type': 'application/json' } };
-}
-
-export function parseJsonLines(text) {
-  const t = String(text || '').trim();
-  if (!t) return [];
-  if (t.startsWith('[')) {
-    try {
-      return JSON.parse(t);
-    } catch {
-      return [];
-    }
-  }
-  return t
-    .split(/\r?\n/)
-    .map((l) => {
-      try {
-        return JSON.parse(l);
-      } catch {
-        return null;
-      }
-    })
-    .filter((x) => x && typeof x === 'object');
 }
 
 // ── CISA KEV ─────────────────────────────────────────────────────────────────

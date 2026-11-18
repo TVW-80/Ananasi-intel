@@ -188,26 +188,6 @@ export const KEY_SETUP_KEYS = Object.freeze([
     tier: 'free',
   }),
   Object.freeze({
-    id: 'greynoise',
-    title: 'GREYNOISE', // i18n-ignore: provider product name
-    unlocks: msg(
-      'Attack Map “is this real?” tags: tells mass internet scanners apart from attackers that may be picking targets. Works without a key; a key (work-email accounts only) raises the daily limit.',
-    ),
-    getUrl: 'https://viz.greynoise.io/account/api-key',
-    envVars: Object.freeze(['GREYNOISE_API_KEY']),
-    tier: 'optional',
-  }),
-  Object.freeze({
-    id: 'shadowserver',
-    title: 'SHADOWSERVER', // i18n-ignore: provider product name
-    unlocks: msg(
-      'Attack Map alerts: vulnerabilities attackers are exploiting against Shadowserver’s decoy servers. Free, but you register and request API access.',
-    ),
-    getUrl: 'https://www.shadowserver.org/what-we-do/network-reporting/api-documentation/',
-    envVars: Object.freeze(['SHADOWSERVER_API_KEY', 'SHADOWSERVER_API_SECRET']),
-    tier: 'free',
-  }),
-  Object.freeze({
     id: 'github',
     title: 'GITHUB', // i18n-ignore: provider product name
     unlocks: msg(

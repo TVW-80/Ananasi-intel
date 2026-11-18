@@ -1,10 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHmac } from 'node:crypto';
 import {
   findRange,
   ipToInt,
-  normalizeGreyNoise,
   normalizeKev,
   normalizeOtx,
   normalizeRadarPairs,
@@ -13,10 +11,8 @@ import {
   normalizeUrlhaus,
   parseDrop,
   parseIpList,
-  parseJsonLines,
-  shadowserverRequest,
 } from './attack-sources.js';
-import { familyExplained, greyNoiseExplained, kevExplained, pulseExplained, SERVICES, SERVICE_ORDER } from './attack-glossary.js';
+import { familyExplained, kevExplained, pulseExplained, SERVICES, SERVICE_ORDER } from './attack-glossary.js';
 
 // Synthetic fixtures shaped like each API — documentation-range IPs only.
 test('IP lists skip comments and junk', () => {
@@ -72,21 +68,6 @@ test('OTX pulses and KEV entries become two-voice alerts', () => {
   assert.match(e.plain, /ransomware/);
   assert.match(e.plain, /2026-11-22/);
   assert.match(e.technical, /CVE-2000-0002/);
-});
-
-test('GreyNoise answers both "seen" and "not seen", and explains them', () => {
-  const seen = normalizeGreyNoise({ noise: true, riot: false, classification: 'malicious' }, 200);
-  assert.match(greyNoiseExplained(seen).plain, /everyone/);
-  const unseen = normalizeGreyNoise({ noise: false, riot: false, message: 'IP not observed' }, 404);
-  assert.match(greyNoiseExplained(unseen).label, /targeted/);
-  assert.equal(normalizeGreyNoise({ message: 'rate limited' }, 429), null);
-});
-
-test('Shadowserver requests are signed like call-api.py (HMAC-SHA256 of the body)', () => {
-  const { body, headers } = shadowserverRequest({ limit: 5 }, 'KEY', 'SECRET');
-  assert.deepEqual(JSON.parse(body), { limit: 5, apikey: 'KEY' });
-  assert.equal(headers.HMAC2, createHmac('sha256', 'SECRET').update(body).digest('hex'));
-  assert.equal(parseJsonLines('{"a":1}\n{"a":2}\nnot json').length, 2);
 });
 
 test('every attack type and common malware family has both voices', () => {

@@ -148,44 +148,6 @@ export function familyExplained(name, threatType) {
   };
 }
 
-/** GreyNoise: "is this real?" */
-export function greyNoiseExplained(g) {
-  if (!g) return null;
-  if (g.riot) {
-    return {
-      label: `Known service: ${g.name || 'business infrastructure'}`,
-      plain: 'This is a well-known company’s server (like a cloud or security provider) — probably not an attacker.',
-      technical: `GreyNoise RIOT: common business service${g.name ? ` (${g.name})` : ''}.`,
-    };
-  }
-  if (g.noise && g.classification === 'benign') {
-    return {
-      label: 'Harmless scanner',
-      plain: 'A known “good” scanner (search engine or security researcher) that checks the whole internet.',
-      technical: `GreyNoise: noise=true, classification=benign${g.name ? ` (${g.name})` : ''}.`,
-    };
-  }
-  if (g.noise && g.classification === 'malicious') {
-    return {
-      label: 'Mass attacker (background noise)',
-      plain: 'It attacks everyone on the internet, not you specifically — like a burglar trying every door on every street.',
-      technical: 'GreyNoise: noise=true, classification=malicious (opportunistic mass exploitation).',
-    };
-  }
-  if (g.noise) {
-    return {
-      label: 'Mass scanner (intent unclear)',
-      plain: 'It scans the whole internet; GreyNoise hasn’t decided if it’s good or bad.',
-      technical: `GreyNoise: noise=true, classification=${g.classification || 'unknown'}.`,
-    };
-  }
-  return {
-    label: 'Not a mass scanner — possibly targeted',
-    plain: 'GreyNoise does not see this address spraying the internet. If it is attacking, it may be picking its targets.',
-    technical: 'GreyNoise: not observed as internet background noise (noise=false, riot=false).',
-  };
-}
-
 export const FLAGS = Object.freeze({
   tor: {
     label: 'Via Tor',
@@ -224,17 +186,6 @@ export function kevExplained(v) {
     title: `Hackers are using a ${v.vendorProject || ''} ${v.product || ''} bug right now`.replace(/\s+/g, ' ').trim(),
     plain: `Criminals are actively exploiting a flaw in ${v.vendorProject} ${v.product}${ransomware ? ', including ransomware gangs' : ''}. The US government has ordered its agencies to fix it${v.dueDate ? ` by ${v.dueDate}` : ''}.`,
     technical: `CISA KEV: ${v.cveID} — ${v.vulnerabilityName}. ${String(v.shortDescription || '').slice(0, 220)}${ransomware ? ' Known ransomware use.' : ''}`,
-  };
-}
-
-/** Shadowserver honeypot exploited-vulnerability row → alert text. */
-export function exploitedExplained(r) {
-  const what = [r.vendor, r.product].filter(Boolean).join(' ');
-  const kind = String(r.class || 'device').replace(/-/g, ' ');
-  return {
-    title: `Decoy servers caught attacks on ${what || kind}`,
-    plain: `Shadowserver’s decoy servers (“honeypots”) saw attackers trying to break into ${what || 'a product'} — a ${kind}${r.iot === 'yes' ? ' (smart/IoT device)' : ''}.`,
-    technical: `${r.vulnerability}${r.vulnerability_score ? ` (CVSS ${r.vulnerability_score}${r.vulnerability_severity ? ` ${r.vulnerability_severity}` : ''})` : ''} · ${r.type || 'scan'} · ${r['1d'] || r.connections || '?'} sources/day${r.cisa_kev === 'yes' ? ' · in CISA KEV' : ''}.`,
   };
 }
 

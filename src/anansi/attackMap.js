@@ -11,7 +11,7 @@
  *   purple dots                    malware command servers (ThreatFox)
  *   HUD                            estimated counter, attack types, a rotating
  *                                  view (sources / ports / DDoS industries /
- *                                  DDoS targets / exploited now), alert ticker,
+ *                                  DDoS targets / exposed worldwide), alert ticker,
  *                                  and BRIEF: every alert in plain English AND
  *                                  technical terms, a legend, and source status
  *
@@ -36,7 +36,7 @@ export const ATTACK_MAP_LAYER = Object.freeze({
   name: 'Attack Map',
   icon: '⌁',
   color: '#ff2b2b',
-  source: 'DShield · AbuseIPDB · blocklist.de · Cloudflare Radar · abuse.ch · OTX · GreyNoise · Shadowserver · Spamhaus · Tor · CISA KEV · FortiGuard',
+  source: 'DShield · AbuseIPDB · blocklist.de · Cloudflare Radar · abuse.ch · OTX · Spamhaus · Tor · CISA KEV · FortiGuard',
   updateInterval: 10 * 60_000,
 });
 
@@ -215,7 +215,6 @@ const ROTATING_VIEWS = Object.freeze([
   { id: 'ports', title: 'TARGETED PORTS' },
   { id: 'industries', title: 'DDOS · HIT INDUSTRIES' },
   { id: 'targets', title: 'DDOS · TARGET COUNTRIES' },
-  { id: 'exploited', title: 'EXPLOITED NOW' },
   { id: 'exposure', title: 'EXPOSED WORLDWIDE' },
 ]);
 
@@ -331,7 +330,6 @@ function createHud() {
     if (id === 'ports') return (b.ports || []).map((p) => li(`${p.port}${p.service ? ` · ${p.service}` : ''}`, fmt(p.records), { tip: twoVoice(p.plain, p.technical) }));
     if (id === 'industries') return (b.ddos?.industries || []).map((i) => li(i.name, `${i.value.toFixed(1)}%`, { color: '#e0457b', tip: twoVoice(i.plain, i.technical) }));
     if (id === 'targets') return (b.ddos?.targets || []).map((t) => li(t.name, `${t.value.toFixed(1)}%`, { color: '#e0457b', tip: twoVoice(`${t.name} was on the receiving end of ${t.value.toFixed(1)}% of blocked web attacks.`, `Cloudflare Radar L7 top target locations (zone billing country), 24h.`) }));
-    if (id === 'exploited') return (b.exploited || []).map((x) => li(x.vulnerability || x.title, '', { color: '#ff8a1f', tip: twoVoice(x.plain, x.technical) }));
     if (id === 'exposure') return (b.exposure || []).map((e) => li(e.label, fmt(e.total), { color: '#d4af37', tip: twoVoice(e.plain, e.technical) }));
     return [];
   }

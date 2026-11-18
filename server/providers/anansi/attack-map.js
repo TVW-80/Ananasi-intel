@@ -13,10 +13,9 @@
 // Markers and tags:
 //   abuse.ch ThreatFox     malware command servers, labelled by family
 //   Spamhaus DROP, Tor     "criminal netblock" / "via Tor" flags on source IPs
-//   GreyNoise Community    mass scanner vs. possibly targeted, per top IP
 // Alerts (ticker + BRIEF), each in plain English AND technical terms:
-//   FortiGuard RSS, AlienVault OTX pulses, CISA KEV, Shadowserver honeypot
-//   exploited vulnerabilities, URLhaus and ThreatFox summaries.
+//   FortiGuard RSS, AlienVault OTX pulses, CISA KEV, URLhaus and ThreatFox
+//   summaries.
 //
 // Every source is cached on its own schedule and fails on its own: a missing
 // key or an outage removes one ingredient, never the map. Keys come from
@@ -26,7 +25,6 @@ import { sharedThreatIntel } from './threat-intel.js';
 import {
   URLS,
   findRange,
-  normalizeGreyNoise,
   normalizeKev,
   normalizeOtx,
   normalizeRadarPairs,
@@ -35,9 +33,7 @@ import {
   normalizeUrlhaus,
   parseDrop,
   parseIpList,
-  parseJsonLines,
   radarUrl,
-  shadowserverRequest,
   normalizeBgpHijacks,
   normalizeBgpLeaks,
   normalizeMalwareBazaar,
@@ -66,9 +62,7 @@ import {
   FORTIGUARD_KINDS,
   SERVICES as SERVICE_INFO,
   SERVICE_ORDER,
-  exploitedExplained,
   familyExplained,
-  greyNoiseExplained,
   kevExplained,
   portExplained,
   pulseExplained,
@@ -97,8 +91,6 @@ const C2INTEL_SAMPLE = 15;
 const SSLBL_SAMPLE = 10;
 const EPSS_TTL = 24 * 60 * MIN;
 const BLOCKLIST_SAMPLE = 8; // IPs per blocklist.de service placed on the map
-const GREYNOISE_TTL = 7 * 24 * 60 * MIN;
-const GREYNOISE_PER_REFRESH = 5;
 const VT_TTL = 24 * 60 * MIN;
 const VT_PER_REFRESH = 4; // VirusTotal free public key: 4 lookups/minute
 
@@ -109,7 +101,6 @@ const SOURCE_TTL = Object.freeze({
   threatfox: 30 * MIN,
   urlhaus: 30 * MIN,
   otx: 30 * MIN,
-  shadowserver: 6 * 60 * MIN,
   drop: 24 * 60 * MIN,
   tor: 6 * 60 * MIN,
   kev: 6 * 60 * MIN,
@@ -237,7 +228,7 @@ export function parseRssItems(xml, label) {
 /**
  * One row per source country (arcs into the vantage point): DShield top IPs,
  * AbuseIPDB country counts and geolocated blocklist.de samples, with each
- * IP's tags (attack services, Tor, DROP, GreyNoise, malware).
+ * IP's tags (attack services, Tor, DROP, malware).
  */
 export function buildSources(dshieldIps, abusePoints = [], blocklistIps = []) {
   const byCountry = new Map();
@@ -375,8 +366,6 @@ export function describeIp(ip) {
     }
   }
   if (ip.sslbl) lines.push({ text: `↳ ${SSLBL.label}`, plain: SSLBL.plain, tech: SSLBL.technical });
-  const g = greyNoiseExplained(ip.greynoise);
-  if (g) lines.push({ text: `↳ GreyNoise: ${g.label}`, plain: g.plain, tech: g.technical });
   // VirusTotal: how many security vendors currently flag this address.
   const vt = ip.virustotal;
   if (vt && vt.total) {
@@ -548,9 +537,7 @@ export function createAttackMapService({
   const ipCache = new Map(); // ip -> { at, info }
   const hostCache = new Map(); // phishing host -> { at, ip }
   const epssCache = new Map(); // CVE -> { at, value }
-  const gnCache = new Map(); // ip -> { at, info }
   const geoCache = new Map(); // ip -> { at, geo } for the worldwide scatter
-  const gnBudget = { day: '', used: 0 };
   const idbCache = new Map(); // ip -> { at, info } (Shodan InternetDB)
   const vtCache = new Map(); // ip -> { at, info } (VirusTotal reputation)
   const sources = new Map(); // id -> { at, ok, status, value, error }
@@ -622,45 +609,6 @@ export function createAttackMapService({
     }
   }
 
-  async function greyNoise(ips, errors) {
-    // The Community API also answers without a key (a smaller daily allowance),
-    // so a key is optional: GreyNoise only issues them to work-email accounts.
-    const key = env('GREYNOISE_API_KEY');
-    const today = new Date(clock()).toISOString().slice(0, 10);
-    if (gnBudget.day !== today) Object.assign(gnBudget, { day: today, used: 0 });
-    const dailyCap = Number(env('GREYNOISE_DAILY_LIMIT')) || (key ? 40 : 25);
-    let asked = 0;
-    for (const ip of ips) {
-      const hit = gnCache.get(ip.ip);
-      if (hit && clock() - hit.at < GREYNOISE_TTL) {
-        ip.greynoise = hit.info;
-        continue;
-      }
-      if (asked >= GREYNOISE_PER_REFRESH || gnBudget.used >= dailyCap) continue;
-      asked += 1;
-      gnBudget.used += 1;
-      try {
-        const res = await request(URLS.greynoise(ip.ip), { headers: key ? { key, Accept: 'application/json' } : { Accept: 'application/json' } });
-        if (res.status === 429) {
-          errors.push('GreyNoise: daily limit reached');
-          gnBudget.used = dailyCap;
-          break;
-        }
-        const info = normalizeGreyNoise(JSON.parse((await res.text()) || '{}'), res.status);
-        if (info) {
-          gnCache.set(ip.ip, { at: clock(), info });
-          ip.greynoise = info;
-        } else if (res.status === 401 || res.status === 403) {
-          errors.push(`GreyNoise: HTTP ${res.status} (check the key)`);
-          break;
-        }
-      } catch (err) {
-        errors.push(`GreyNoise: ${err.message}`);
-        break;
-      }
-    }
-    return 'ok';
-  }
 
   /** Enrich the top attacking IPs from Shodan InternetDB (keyless, free). */
   async function internetDb(ips, errors) {
@@ -846,13 +794,6 @@ export function createAttackMapService({
       if (!key) return KEY_REQUIRED;
       return normalizeOtx(await getJson(URLS.otx, { headers: { 'X-OTX-API-KEY': key, Accept: 'application/json' } }));
     },
-    shadowserver: async () => {
-      const key = env('SHADOWSERVER_API_KEY');
-      const secret = env('SHADOWSERVER_API_SECRET');
-      if (!key || !secret) return KEY_REQUIRED;
-      const req = shadowserverRequest({ limit: 12 }, key, secret);
-      return parseJsonLines(await getText(URLS.shadowserver, { method: 'POST', headers: req.headers, body: req.body }));
-    },
     drop: async () => {
       try {
         return parseDrop(await getText(URLS.dropJson));
@@ -1015,7 +956,6 @@ export function createAttackMapService({
       tag(ip);
       if (!ip.services.length) ip.services = own;
     });
-    const gnStatus = await greyNoise(dsh.ips.slice(0, 10), errors);
     // Shodan InternetDB enrichment (keyless): the busiest sources first.
     const bySize = [...dsh.ips].sort((a, b) => (b.reports || 0) - (a.reports || 0));
     await internetDb(bySize.slice(0, INTERNETDB_PER_REFRESH), errors);
@@ -1051,10 +991,9 @@ export function createAttackMapService({
       count: lists[s].length,
       ...SERVICE_INFO[s],
     }));
-    const exploited = (val('shadowserver') || []).slice(0, 8).map((r) => ({ ...exploitedExplained(r), vulnerability: r.vulnerability }));
     const pocs = val('poc') || [];
     const kev = val('kev') || [];
-    const epss = await epssFor([...kev.map((v) => v.cveID), ...exploited.map((e) => e.vulnerability), ...pocs.map((p) => p.cve)], errors);
+    const epss = await epssFor([...kev.map((v) => v.cveID), ...pocs.map((p) => p.cve)], errors);
     const dailyReports = dsh.ips.reduce((sum, ip) => sum + ip.reports, 0);
 
     const body = {
@@ -1076,7 +1015,6 @@ export function createAttackMapService({
         })),
         targets: radar.targets,
       },
-      exploited,
       exposure: val('exposure') || [],
       ports: dsh.ports.map((p) => ({ ...p, ...portExplained(p.port, p.service) })),
       rate: {
@@ -1087,7 +1025,6 @@ export function createAttackMapService({
         fortiguard: val('fortiguard') || [],
         otx: val('otx') || [],
         kev,
-        exploited,
         urlhaus: val('urlhaus'),
         iocs,
         epss,
@@ -1107,7 +1044,6 @@ export function createAttackMapService({
         { id: 'abuseipdb', label: 'AbuseIPDB', status: abuse?.status || 'off', keyEnv: 'ABUSEIPDB_API_KEY' },
         ...ids.map((id) => ({ id, label: FEED_LABELS[id], status: src[id].status, error: src[id].error, keyEnv: FEED_KEYS[id] || null })),
         { id: 'epss', label: 'FIRST EPSS', status: errors.some((e) => e.startsWith('EPSS')) ? 'error' : 'ok' },
-        { id: 'greynoise', label: env('GREYNOISE_API_KEY') ? 'GreyNoise' : 'GreyNoise (no key, smaller daily allowance)', status: gnStatus, keyEnv: 'GREYNOISE_API_KEY' },
         { id: 'internetdb', label: 'Shodan InternetDB (keyless)', status: errors.some((e) => e.startsWith('InternetDB')) ? 'error' : 'ok' },
         { id: 'virustotal', label: env('VIRUSTOTAL_API_KEY') ? 'VirusTotal (IP reputation)' : 'VirusTotal (add VIRUSTOTAL_API_KEY)', status: vtStatus, keyEnv: 'VIRUSTOTAL_API_KEY' },
       ],
@@ -1145,7 +1081,6 @@ const FEED_LABELS = Object.freeze({
   threatfox: 'abuse.ch ThreatFox',
   urlhaus: 'abuse.ch URLhaus',
   otx: 'AlienVault OTX',
-  shadowserver: 'Shadowserver',
   drop: 'Spamhaus DROP',
   tor: 'Tor exit list',
   kev: 'CISA KEV',
@@ -1170,7 +1105,6 @@ const FEED_KEYS = Object.freeze({
   threatfox: 'ABUSECH_AUTH_KEY',
   urlhaus: 'ABUSECH_AUTH_KEY',
   otx: 'OTX_API_KEY',
-  shadowserver: 'SHADOWSERVER_API_KEY',
   bgp: 'CLOUDFLARE_API_TOKEN',
   malwarebazaar: 'ABUSECH_AUTH_KEY',
   exposure: 'SHODAN_API_KEY',
@@ -1188,7 +1122,7 @@ function epssDetail(epss, cve) {
  * Newest first, sources interleaved so no one feed floods the ticker.
  */
 export function buildAlerts({
-  fortiguard = [], otx = [], kev = [], exploited = [], urlhaus = null, iocs = [], epss = new Map(),
+  fortiguard = [], otx = [], kev = [], urlhaus = null, iocs = [], epss = new Map(),
   hijacks = [], leaks = [], malwarebazaar = null, breaches = [], pocs = [], ics = [], phish = null, c2intel = [], malpedia = null,
 } = {}) {
   const lanes = [];
@@ -1219,7 +1153,6 @@ export function buildAlerts({
       details: epssDetail(epss, v.cveID),
     })),
   );
-  lanes.push(exploited.map((e) => ({ source: 'Shadowserver', title: e.title, plain: e.plain, technical: e.technical, link: '', time: null, details: epssDetail(epss, e.vulnerability) })));
   lanes.push(
     pocs.slice(0, 6).map((p) => ({
       source: 'PoC watch',
