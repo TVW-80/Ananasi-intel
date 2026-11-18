@@ -13,6 +13,7 @@ import { createAttackHeatmap } from './attackHeatmap.js';
 import { createVulnScorecard } from './vulnScorecard.js';
 import { createServiceBoard } from './serviceStatus.js';
 import { createPwnedCheck } from './pwnedCheck.js';
+import { createReconBoard } from './reconBoard.js';
 
 const AI_SEC_ENDPOINT = '/api/ai-sec-intel';
 const CYBER_NEWS_ENDPOINT = '/api/cyber-news';
@@ -186,11 +187,12 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
   const vulnScore = createVulnScorecard(doc); // CySA+ patch-priority queue
   const serviceBoard = createServiceBoard(doc); // "is it down right now" board
   const pwnedCheck = createPwnedCheck(doc); // keyless k-anonymity password check
+  const recon = createReconBoard(doc); // event reconstruction (correlate/replay)
   const roll = el(doc, 'div', 'sitrep-roll');
   const track = el(doc, 'div', 'sitrep-track');
   roll.append(track);
   const empty = el(doc, 'p', 'sitrep-empty', 'Waiting for the first intel to roll in…');
-  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, pwnedCheck.element, roll, empty);
+  panel.append(head, heat.element, vulnScore.element, serviceBoard.element, recon.element, pwnedCheck.element, roll, empty);
 
   let attackBody = null;
   let aiSnapshot = null;
@@ -216,6 +218,8 @@ export function createSitrep(doc = document, { fetchImpl = (...a) => globalThis.
     vulnScore.update(aiSnapshot?.vulns || []);
     // Providers' own status: what's degraded or down right now.
     serviceBoard.update(svcSnapshot);
+    // Reconstruct incidents from every live signal (correlate + replay).
+    recon.update({ attack: attackBody, cyber: cyberSnapshot, ai: aiSnapshot, service: svcSnapshot });
     empty.hidden = entries.length > 0;
     if (!entries.length) {
       track.replaceChildren();
