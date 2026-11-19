@@ -162,6 +162,8 @@
   }
   .figure figcaption { font-size: 11px; color: var(--text-dim); letter-spacing: 0.03em; margin-top: 9px; text-transform: uppercase; }
   .figure figcaption::before { content: "FIG — "; color: var(--red-bright); }
+  .figure.portrait video { max-width: 380px; margin: 0 auto; }
+  .figure.portrait figcaption { text-align: center; }
   .figrow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 620px) { .figrow { grid-template-columns: 1fr; } }
 
@@ -350,6 +352,10 @@
   <p>Opening F.A.N.G.S opens the SITREP: all of the cyber data in one scrollable pane, written so a
   tier-one help-desk tech can read it at a glance. It stacks several live boards over a plain-English
   card feed.</p>
+  <figure class="figure portrait">
+    <video src="media/sitrep.mp4" poster="media/sitrep-poster.jpg" autoplay muted loop playsinline controls preload="metadata"></video>
+    <figcaption>The SITREP pane in motion — the stacked live boards (ATT&amp;CK HEAT, PATCH PRIORITY, SERVICE STATUS, PASSWORD CHECK) over the rolling plain-English card feed</figcaption>
+  </figure>
   <ul class="debrief">
     <li><b>ATT&amp;CK HEAT</b> — a live MITRE ATT&amp;CK technique heat map; the techniques showing
     up across everything F.A.N.G.S sees, hottest first, each linking to attack.mitre.org.</li>
