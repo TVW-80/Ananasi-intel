@@ -33,6 +33,15 @@
     -webkit-font-smoothing: antialiased; overflow: hidden; position: relative;
   }
 
+  /* faint globe clip behind the console */
+  .bgvideo {
+    position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    z-index: -2; opacity: 0.3; filter: brightness(0.6) saturate(0.95); pointer-events: none;
+  }
+  .bgveil {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(62vmax 62vmax at 50% 45%, rgba(6,6,6,0.46), rgba(6,6,6,0.84));
+  }
   /* drifting gold/red aurora */
   body::after {
     content: ""; position: fixed; inset: -20vmax; z-index: 0; pointer-events: none;
@@ -166,6 +175,9 @@
 </style>
 </head>
 <body>
+
+<video class="bgvideo" src="media/fangs-globe.mp4" poster="media/fangs-globe-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+<div class="bgveil"></div>
 
 <div class="classtop">TOP SECRET // SI-TK // NOFORN — F.A.N.G.S OPERATIONAL</div>
 
