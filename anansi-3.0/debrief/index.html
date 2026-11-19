@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANANSI 3.0 — F.A.N.G.S Debrief</title>
+<meta name="description" content="Ananzi 3.0 — Regional OSINT globe and F.A.N.G.S cyber attack map. Operation debrief.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060606;
+    --red: #c81e1e;
+    --red-bright: #ff2b2b;
+    --gold: #d4af37;
+    --gold-bright: #f4cf5e;
+    --text: #eae7e2;
+    --text-dim: #8a8a8a;
+    --line: rgba(212,175,55,0.18);
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+
+    /* glass finish */
+    --glass: linear-gradient(158deg, rgba(255,255,255,0.055), rgba(255,255,255,0.016));
+    --glass-strong: linear-gradient(158deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
+    --glass-dark: linear-gradient(158deg, rgba(10,10,10,0.72), rgba(10,10,10,0.5));
+    --glass-border: 1px solid rgba(212,175,55,0.24);
+    --glass-shadow: 0 10px 34px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.015);
+    --blur: saturate(135%) blur(16px);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* drifting aurora behind the glass — gold + red blooms */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: -20vmax;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(42vmax 42vmax at 18% 8%, rgba(212,175,55,0.14), transparent 60%),
+      radial-gradient(46vmax 46vmax at 88% 22%, rgba(200,30,30,0.13), transparent 62%),
+      radial-gradient(40vmax 40vmax at 72% 92%, rgba(212,175,55,0.08), transparent 60%),
+      radial-gradient(38vmax 38vmax at 8% 86%, rgba(200,30,30,0.09), transparent 60%);
+    filter: blur(14px);
+    animation: drift 34s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    0%   { transform: translate3d(0,0,0) scale(1); }
+    50%  { transform: translate3d(2vmax,-2vmax,0) scale(1.06); }
+    100% { transform: translate3d(-2vmax,1vmax,0) scale(1.02); }
+  }
+
+  /* faint CLASSIFIED watermark */
+  body::before {
+    content: "F.A.N.G.S";
+    position: fixed;
+    top: 44%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-28deg);
+    font-family: var(--display);
+    font-size: 15vw;
+    font-weight: 700;
+    color: rgba(200,30,30,0.04);
+    letter-spacing: 0.12em;
+    pointer-events: none;
+    z-index: 0;
+    white-space: nowrap;
+  }
+
+  /* spinning cross-link badge → Spider Sense */
+  .crosslink { position: fixed; top: 16px; right: 16px; z-index: 60; width: 66px; height: 66px; display: block; border-radius: 50%; }
+  .crosslink img, .crosslink .ring {
+    width: 100%; height: 100%; display: block; border-radius: 50%;
+    border: 2px solid var(--gold); background: rgba(5,5,5,0.6);
+    box-shadow: 0 0 14px rgba(212,175,55,0.35);
+    animation: spin 9s linear infinite;
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  }
+  .crosslink .ring { display: grid; place-items: center; font-family: var(--display); font-weight: 700; color: var(--gold-bright); font-size: 20px; }
+  .crosslink:hover img, .crosslink:hover .ring { animation-duration: 2.2s; box-shadow: 0 0 20px rgba(212,175,55,0.6); }
+  .crosslink::after {
+    content: "SPIDER SENSE"; position: absolute; top: 50%; right: 78px; transform: translateY(-50%);
+    white-space: nowrap; font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: 0.14em;
+    color: var(--gold-bright); background: var(--glass-dark); border: var(--glass-border);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border-radius: 8px; padding: 5px 10px; opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .crosslink:hover::after { opacity: 1; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .crosslink img, .crosslink .ring { animation: none; }
+    body::after { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 440px) { .crosslink { width: 52px; height: 52px; } }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 22px 110px;
+  }
+
+  a { color: var(--gold-bright); text-decoration-color: rgba(212,175,55,0.4); }
+  img { max-width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); }
+
+  /* classification bar — glass */
+  .classbar {
+    position: sticky; top: 0; z-index: 50;
+    background: linear-gradient(180deg, rgba(200,30,30,0.86), rgba(150,20,20,0.78));
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    color: #120404;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-align: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,120,120,0.35);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  header.doc {
+    margin: 30px 0 30px;
+    padding: 30px 28px 26px;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border: var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+  }
+  .doc-meta {
+    display: flex; justify-content: space-between; flex-wrap: wrap;
+    gap: 10px; font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.04em; margin-bottom: 18px;
+  }
+  .doc-meta span { background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; }
+  .doc-meta span b { color: var(--gold-bright); font-weight: 500; }
+
+  h1.title {
+    font-family: var(--display);
+    font-size: clamp(27px, 5vw, 42px);
+    font-weight: 700; letter-spacing: 0.01em; line-height: 1.08;
+    color: var(--text); margin: 0 0 10px;
+  }
+  h1.title span { color: var(--red-bright); }
+  h1.title small {
+    display: inline-block; font-family: var(--mono); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.22em; color: var(--gold-bright);
+    border: 1px solid rgba(212,175,55,0.4); border-radius: 6px;
+    padding: 3px 9px; vertical-align: middle; margin-left: 10px; transform: translateY(-5px);
+  }
+  .subject-line { font-size: 13px; color: var(--text-dim); letter-spacing: 0.03em; }
+  .subject-line b { color: var(--text); font-weight: 500; }
+
+  .toc { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .toc a {
+    font-family: var(--display); font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    color: var(--text-dim); text-decoration: none;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 11px; transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .toc a:hover { color: var(--gold-bright); border-color: rgba(212,175,55,0.5); background: rgba(212,175,55,0.06); }
+
+  /* each section is a glass panel */
+  section {
+    margin: 22px 0;
+    padding: 26px 28px 28px;
+    background: var(--glass);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border: var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    scroll-margin-top: 54px;
+  }
+  .sec-tag {
+    display: inline-block; font-family: var(--display); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.16em; color: var(--gold-bright);
+    background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 6px; padding: 4px 10px; margin-bottom: 16px;
+  }
+  h2 {
+    font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--text);
+    margin: 0 0 14px; border-left: 3px solid var(--red); padding-left: 12px;
+  }
+  p { font-size: 14.5px; color: #cfcbc4; margin: 0 0 14px; }
+  strong { color: var(--gold-bright); font-weight: 600; }
+  em { color: #e4ddcf; }
+  code {
+    background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;
+    font-size: 13px; color: var(--gold-bright);
+  }
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; margin: 6px 0 0; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  thead th {
+    font-family: var(--display); font-size: 11px; letter-spacing: 0.08em; color: var(--gold-bright);
+    text-transform: uppercase; font-weight: 600;
+    background: rgba(212,175,55,0.06); border-bottom: 1px solid rgba(212,175,55,0.3);
+  }
+  tbody tr:hover td { background: rgba(255,255,255,0.025); }
+  td { color: #cfcbc4; }
+  td b, td strong { color: var(--gold-bright); }
+
+  /* field-log entries — inner glass cards */
+  .logentry {
+    position: relative;
+    margin: 16px 0;
+    padding: 16px 18px 6px 20px;
+    background: rgba(255,255,255,0.022);
+    border: 1px solid var(--line);
+    border-left: 2px solid rgba(200,30,30,0.7);
+    border-radius: 10px;
+  }
+  .logentry::before {
+    content: ""; position: absolute; left: -6px; top: 18px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--red-bright); box-shadow: 0 0 8px var(--red-bright);
+  }
+  .logentry h3 { font-family: var(--display); font-size: 15.5px; font-weight: 600; color: var(--text); margin: 0 0 6px; }
+  .logentry .tag {
+    font-size: 10px; color: var(--gold-bright); letter-spacing: 0.08em;
+    margin-bottom: 8px; display: inline-block;
+    background: rgba(212,175,55,0.07); border: 1px solid var(--line); border-radius: 5px; padding: 2px 7px;
+  }
+
+  ul.debrief { list-style: none; padding: 0; margin: 0; }
+  ul.debrief li { padding: 13px 0; border-bottom: 1px dashed var(--line); font-size: 14px; color: #cfcbc4; }
+  ul.debrief li:last-child { border-bottom: none; }
+  ul.debrief li b { color: var(--red-bright); }
+
+  pre.schematic {
+    background: var(--glass-dark);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px; font-size: 12px; color: var(--gold-bright);
+    overflow-x: auto; line-height: 1.5;
+  }
+
+  .stamp {
+    display: inline-block; border: 2px solid var(--red-bright); color: var(--red-bright);
+    font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: 0.1em;
+    padding: 7px 15px; border-radius: 8px; transform: rotate(-3deg); margin: 14px 0 0;
+    background: rgba(255,43,43,0.05); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  }
+
+  .credit-box {
+    border: 1px solid var(--line); border-radius: 10px;
+    background: rgba(255,255,255,0.025);
+    padding: 18px 20px; font-size: 13.5px; color: #cfcbc4;
+  }
+  .credit-box + .credit-box { margin-top: 14px; }
+  .credit-box b { color: var(--gold-bright); }
+
+  footer.doc {
+    margin: 36px 0 0; padding: 18px 22px;
+    background: var(--glass); border: var(--glass-border); border-radius: var(--radius);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  footer.doc a { color: var(--text-dim); }
+
+  @media (max-width: 560px) {
+    section, header.doc { padding-left: 18px; padding-right: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="crosslink" href="https://tvw-80.github.io/spider-sense/" target="_blank" rel="noopener" title="Spider Sense" aria-label="Go to Spider Sense">
+  <img src="../../images/spider-sense-logo.png" alt="Spider Sense logo" onerror="this.outerHTML='&lt;span class=&quot;ring&quot;&gt;◈&lt;/span&gt;'">
+</a>
+
+<div class="classbar">TOP SECRET // SI-TK // NOFORN — F.A.N.G.S OPERATIONAL — AUTHORIZED PERSONNEL ONLY</div>
+
+<div class="wrap">
+
+<header class="doc">
+  <div class="doc-meta">
+    <span>FILE: <b>OP-ANANSI-FANGS</b></span>
+    <span>VERSION: <b>3.0</b></span>
+    <span>CLASSIFICATION: <b>SI-TK // NOFORN</b></span>
+    <span>STATUS: <b>ACTIVE</b></span>
+  </div>
+  <h1 class="title">OPERATION <span>ANANSI</span> <small>v3.0</small></h1>
+  <div class="subject-line"><b>SUBJECT:</b> Regional OSINT globe &amp; <b>F.A.N.G.S</b> — Fast Adversary Network Graphing Suite. Hampton Roads / Historic Triangle (757 / 804), eyes on the whole planet.</div>
+  <nav class="toc">
+    <a href="#brief">01 · BRIEF</a>
+    <a href="#fangs">02 · F.A.N.G.S</a>
+    <a href="#sitrep">03 · SITREP</a>
+    <a href="#recon">04 · RECON</a>
+    <a href="#frameworks">05 · FRAMEWORKS</a>
+    <a href="#sources">06 · SOURCES</a>
+    <a href="#doctrine">07 · DOCTRINE</a>
+    <a href="#credit">08 · CREDIT</a>
+  </nav>
+</header>
+
+<section id="brief">
+  <div class="sec-tag">01 // MISSION BRIEF</div>
+  <h2>Overview</h2>
+  <p>Ananzi 3.0 is the 757 situational-awareness globe grown into a full cyber-intelligence
+  platform. It has two faces sharing one engine: the <strong>OSINT globe</strong> — a live CesiumJS
+  3D map of Hampton Roads with aircraft, ships, weather, local news and public cameras — and
+  <strong>F.A.N.G.S</strong> (Fast Adversary Network Graphing Suite), a live worldwide
+  <strong>attack map</strong> with a plain-English <strong>SITREP dashboard</strong> and a
+  <strong>RECON</strong> event-reconstruction panel.</p>
+  <p>The whole thing runs in a browser on a <strong>Vite provider-plugin backend</strong>: every
+  threat feed is proxied through its own keyless, cached <code>/api/*</code> endpoint, so the app
+  starts with no API keys and each source fails on its own without taking the map down. The guiding
+  rule throughout is <em>honesty by construction</em> — the display never draws precision the data
+  doesn't support.</p>
+
+  <h2 style="margin-top:28px;">Assets &amp; Methods</h2>
+  <table>
+    <thead><tr><th>Asset</th><th>Function</th></tr></thead>
+    <tbody>
+      <tr><td>Visualization platform</td><td>CesiumJS 3D globe (God's Eye View base, rebranded Anansi)</td></tr>
+      <tr><td>Backend</td><td>Vite provider-plugin — one cached, keyless <code>/api/*</code> proxy per feed</td></tr>
+      <tr><td>F.A.N.G.S attack map</td><td>Worldwide attack origins, DDoS &amp; BGP arcs, malware C2 and phishing markers</td></tr>
+      <tr><td>SITREP</td><td>One pane of glass: ATT&amp;CK heat, patch priority, service status, password check, rolling cards</td></tr>
+      <tr><td>RECON</td><td>Correlated incidents, kill-chain reconstruction, scrubbable timeline that replays on the globe, link graph, case-file export</td></tr>
+      <tr><td>Enrichment</td><td>GreyNoise, Shodan InternetDB, VirusTotal, Have I Been Pwned (k-anonymity)</td></tr>
+      <tr><td>Frameworks</td><td>MITRE ATT&amp;CK · Diamond Model · Cyber Kill Chain · Pyramid of Pain · CySA+ confidence</td></tr>
+      <tr><td>Resilience</td><td>Per-source degradation, last-good retained, disk-cached, ~9,000 automated tests</td></tr>
+      <tr><td>Cover identity</td><td>757 gold/red/black theme, original spider-mark, TOP SECRET flavor (cosmetic)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="fangs">
+  <div class="sec-tag">02 // ATTACK MAP</div>
+  <h2>F.A.N.G.S — the live globe</h2>
+  <p>F.A.N.G.S is the cyber layer: a live "pew-pew" attack map plus a dashboard. The core design
+  decision is an honest one — the map only draws a line when the feed actually names a victim.</p>
+
+  <div class="logentry">
+    <span class="tag">ENTRY 001 — ATTACK ORIGINS</span>
+    <h3>Worldwide origins, shown where the attacker is</h3>
+    <p>Big public blocklists (SANS ISC / DShield, AbuseIPDB, blocklist.de, CINS, Emerging Threats,
+    abuse.ch Feodo) are merged, de-duplicated, and each attacker address is geolocated — to a city
+    where a local MaxMind GeoLite2 database or the keyless ip-api.com can pin it, otherwise to its
+    country. Each origin draws as its <b>own glowing crosshair icon</b>, colored by the attack type
+    it sends most and sized by volume. These feeds name the attacker, not the victim, so there is
+    <b>no arc</b> funneling into Hampton Roads — drawing one would invent a target the data doesn't
+    contain.</p>
+  </div>
+
+  <div class="logentry">
+    <span class="tag">ENTRY 002 — REAL ARCS</span>
+    <h3>The arcs that do have a target</h3>
+    <p>The genuine attacker&rarr;victim arcs are drawn from feeds that actually carry a destination:
+    <b>Cloudflare Radar DDoS</b> pairs (attacker country &rarr; victim country, pink dashed arcs)
+    and <b>BGP hijacks &amp; leaks</b> (hijacker &rarr; victim, amber dotted arcs and rings). Those
+    keep their moving "missile" heads; the origin icons do not. Malware command-and-control servers
+    (abuse.ch ThreatFox, C2IntelFeeds, SSLBL) and phishing hosts (OpenPhish) sit as their own
+    markers where they are hosted.</p>
+  </div>
+
+  <div class="logentry">
+    <span class="tag">ENTRY 003 — CLICK-THROUGH</span>
+    <h3>Two-voice popups and per-address enrichment</h3>
+    <p>Every icon, dot and arc is clickable. Each popup explains itself twice — plain English first,
+    then the technical detail — and adds live lookups on that address: <b>GreyNoise</b> (mass
+    scanner vs. targeted), <b>Shodan InternetDB</b> (what's exposed on the attacker's own box), and
+    <b>VirusTotal</b> (how many vendors flag it; this one switches on with a free key). A heads-up
+    display carries a running counter, a color key, a rotating readout (top source countries, most-
+    attacked ports, hit industries, target countries, worldwide exposure) and a steady alert ticker
+    from FortiGuard, AlienVault OTX, CISA and others.</p>
+  </div>
+</section>
+
+<section id="sitrep">
+  <div class="sec-tag">03 // DASHBOARD</div>
+  <h2>SITREP — one pane of glass</h2>
+  <p>Opening F.A.N.G.S opens the SITREP: all of the cyber data in one scrollable pane, written so a
+  tier-one help-desk tech can read it at a glance. It stacks several live boards over a plain-English
+  card feed.</p>
+  <ul class="debrief">
+    <li><b>ATT&amp;CK HEAT</b> — a live MITRE ATT&amp;CK technique heat map; the techniques showing
+    up across everything F.A.N.G.S sees, hottest first, each linking to attack.mitre.org.</li>
+    <li><b>PATCH PRIORITY</b> — a CySA+ patch queue banded P1 / P2 / P3, where <i>active
+    exploitation beats raw severity</i>: a CISA-KEV item outranks an unexploited CVSS 9.8, and every
+    point of the score traces to a named factor. Collapsible.</li>
+    <li><b>SERVICE STATUS</b> — the honest Downdetector. It reads a dozen providers' own
+    statuspage.io feeds (Cloudflare, GitHub, Fastly, Discord, Zoom, Reddit, and more) — authoritative
+    up / degraded / down, not crowd complaints.</li>
+    <li><b>PASSWORD CHECK</b> — a Have I Been Pwned "Pwned Passwords" tool. It SHA-1s the password in
+    your browser and sends only the first five hex characters (k-anonymity), so the password and its
+    full hash never leave the device.</li>
+    <li><b>Rolling cards</b> — a steady feed fusing attack-map alerts, the cyber-news wire,
+    AI-security intel and newly exploited vulnerabilities into one plain-English stream.</li>
+  </ul>
+  <p style="margin-top:14px;">Click any threat and a worksheet opens on it: the Diamond Model, its
+  Cyber Kill Chain phase, its Pyramid-of-Pain level, and a Timeliness / Relevance / Accuracy
+  confidence score — the frameworks below, applied to that one event.</p>
+</section>
+
+<section id="recon">
+  <div class="sec-tag">04 // RECONSTRUCTION</div>
+  <h2>RECON — turning alerts into incidents</h2>
+  <p>RECON is its own panel (a button in the F.A.N.G.S header, beside SITREP and BRIEF). It does the
+  analyst's job of assembling scattered alerts into reconstructed <em>incidents</em> rather than
+  isolated pings.</p>
+  <ul class="debrief">
+    <li><b>Correlation</b> — signals are clustered by shared adversary + ATT&amp;CK tactic + time
+    window into incidents, each with a reconstructed kill chain, the techniques seen, a
+    Pyramid-of-Pain high-water mark, the infrastructure, and a confidence that <i>rises with
+    corroboration</i> from independent sources.</li>
+    <li><b>Narrative</b> — a plain-English brief of the whole incident set at the top of the panel.</li>
+    <li><b>Timeline replay on the globe</b> — a density strip with a draggable playhead. Rewind it
+    and the globe hides the aggregate arcs and pulses country centroids for the signals reported
+    <i>as of</i> that moment, growing as you scrub forward.</li>
+    <li><b>Link-analysis graph</b> — a node-link view (adversary &harr; technique &harr;
+    infrastructure &harr; malware &harr; CVE &harr; victim), the aggregate of the per-event Diamond
+    Model, so shared infrastructure across incidents is visible.</li>
+    <li><b>Case-file export</b> — a "copy case file" button puts a full Markdown reconstruction on
+    the clipboard.</li>
+    <li><b>Campaign detection</b> — a RISING row comparing the recent window to the prior one,
+    surfacing techniques trending sharply upward as a campaign forms.</li>
+  </ul>
+  <p style="margin-top:14px;">Honesty is built in: correlation is labeled a <i>hypothesis</i>
+  (co-occurrence, not confirmed attribution), the timeline is "as reported" rather than "as
+  happened," and replay pulses are country-level — signals with no country are counted as
+  "+N off-map" rather than invented onto the map.</p>
+</section>
+
+<section id="frameworks">
+  <div class="sec-tag">05 // TRADECRAFT</div>
+  <h2>Intelligence frameworks</h2>
+  <p>F.A.N.G.S maps every event onto the standard analyst frameworks — the same ones taught in
+  CompTIA CySA+ — so the display reads like tradecraft, not just a feed.</p>
+  <table>
+    <thead><tr><th>Framework</th><th>What it answers</th><th>Where it shows</th></tr></thead>
+    <tbody>
+      <tr><td>MITRE ATT&amp;CK</td><td>Which technique and tactic is this?</td><td>Heat map, technique chips, every event</td></tr>
+      <tr><td>Diamond Model</td><td>Adversary, capability, infrastructure, victim</td><td>Threat popover &amp; RECON link graph</td></tr>
+      <tr><td>Cyber Kill Chain</td><td>How far did the intrusion get (7 phases)?</td><td>Threat worksheet &amp; each RECON incident</td></tr>
+      <tr><td>Pyramid of Pain</td><td>How painful is this indicator for the adversary to change?</td><td>Threat worksheet, per event</td></tr>
+      <tr><td>CySA+ confidence</td><td>How much should I trust this intel?</td><td>Worksheet; lifted by corroboration</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="sources">
+  <div class="sec-tag">06 // COLLECTION</div>
+  <h2>Data sources &amp; keys</h2>
+  <p>Everything is public threat intelligence, mostly keyless. Keys are optional, handled through a
+  POWER UP wizard, kept server-side in environment variables, and never committed — a key simply
+  switches one ingredient on.</p>
+  <table>
+    <thead><tr><th>Group</th><th>Feeds</th><th>Key?</th></tr></thead>
+    <tbody>
+      <tr><td>Attacker IPs &amp; arcs</td><td>DShield, CINS, Emerging Threats, blocklist.de, Feodo, Spamhaus DROP, Tor, AbuseIPDB, Cloudflare Radar (DDoS + BGP)</td><td>Keyless except AbuseIPDB, Cloudflare</td></tr>
+      <tr><td>Malware, C2 &amp; phishing</td><td>abuse.ch ThreatFox / MalwareBazaar / SSLBL, C2IntelFeeds, OpenPhish, URLhaus, Malpedia</td><td>Mostly keyless</td></tr>
+      <tr><td>Vulns &amp; advisories</td><td>CISA KEV, FIRST EPSS, GitHub PoC watch, FortiGuard, CISA ICS, Have I Been Pwned</td><td>Keyless</td></tr>
+      <tr><td>Per-IP enrichment</td><td>GreyNoise, Shodan InternetDB, VirusTotal, MaxMind GeoLite2 / ip-api.com</td><td>VirusTotal needs a free key</td></tr>
+      <tr><td>Cyber-news wire</td><td>17 sources — Hacker News, BleepingComputer, Krebs, The Record, CyberScoop, Dark Reading, subreddits, filtered mainstream</td><td>Keyless</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:14px; font-size:13px; color:var(--text-dim);">Reuters and Downdetector are
+  deliberately absent — neither offers a free public feed, and the project won't scrape.</p>
+</section>
+
+<section id="doctrine">
+  <div class="sec-tag">07 // DESIGN DOCTRINE</div>
+  <h2>Four rules that run through the build</h2>
+  <ul class="debrief">
+    <li><b>Honesty by construction.</b> The tool never fabricates precision. Replay is country-level,
+    not fake per-IP history; correlation is a labeled hypothesis; the timeline is "as reported." It
+    won't invent an EPSS score a feed didn't give, won't scrape sources that forbid it, and won't
+    impersonate.</li>
+    <li><b>Keyless-first.</b> It works out of the box with public data; keys are optional,
+    server-side, and only ever add an ingredient.</li>
+    <li><b>Graceful degradation.</b> Every source fails on its own — per-source error handling,
+    last-good retained, disk-cached, stale served when needed. A missing key or an outage removes one
+    ingredient, never the map.</li>
+    <li><b>Built to last.</b> English-only data modules with an i18n allowlist, enforced package
+    boundaries, a theme guard, and a large automated test suite (9,000+ tests) that every change runs
+    green before it ships.</li>
+  </ul>
+
+  <h2 style="margin-top:26px;">System architecture</h2>
+  <pre class="schematic">BROWSER  ─ CesiumJS 3D globe ───────────────────────────────┐
+                                                            │
+  OSINT layers   aircraft · ships · weather · news · CCTV   │
+  F.A.N.G.S      attack map · SITREP · RECON                │
+                                                            ▼
+VITE PROVIDER-PLUGIN BACKEND  (one cached /api/* proxy per feed)
+  ├── attack origins   DShield · CINS · ET · blocklist.de · Feodo ─┐
+  ├── arcs             Cloudflare Radar (DDoS + BGP)               │
+  ├── malware / C2     abuse.ch · C2IntelFeeds · OpenPhish         ├─ geolocate + enrich
+  ├── vulns            CISA KEV · EPSS · PoC watch · FortiGuard     │   (GeoLite2 / ip-api,
+  ├── status           statuspage.io × 12                          │    GreyNoise, Shodan,
+  └── news             17 RSS/Atom sources                        ─┘    VirusTotal, HIBP)
+                                                            │
+       honest degradation: last-good · disk cache · per-source status
+                                                            ▼
+            SITREP boards + RECON incidents + two-voice popups</pre>
+</section>
+
+<section id="credit">
+  <div class="sec-tag">08 // SOURCE ATTRIBUTION</div>
+  <h2>Credit</h2>
+  <div class="credit-box">
+    Ananzi is built directly on top of <b>God's Eye View</b>
+    (<a href="https://github.com/bilawalsidhu/gods-eye-view" target="_blank" rel="noopener">github.com/bilawalsidhu/gods-eye-view</a>),
+    an open-source CesiumJS geospatial platform created by <b>Bilawal Sidhu</b>
+    (<a href="https://github.com/bilawalsidhu" target="_blank" rel="noopener">github.com/bilawalsidhu</a>).
+    The underlying 3D globe engine, layer architecture, and original concept are his. Ananzi 3.0
+    extends that base with the F.A.N.G.S cyber suite, a keyless provider-plugin backend, and a full
+    regional rebrand. Full credit for the foundation.
+  </div>
+  <div class="credit-box">
+    All threat intelligence is public and credited in-app and in <code>DATA_SOURCES.md</code> — SANS
+    ISC, abuse.ch, Cloudflare Radar, CISA, FIRST, Spamhaus, GreyNoise, Shodan, VirusTotal, Have I
+    Been Pwned and the cyber-news outlets listed above. F.A.N.G.S presents their data; it does not
+    claim it.
+  </div>
+  <div class="credit-box">
+    <b>On the use of AI.</b> Claude (Anthropic) was used as a pair-programming and research assistant
+    throughout — building the provider plugins, the attack-map renderer, the RECON models and the
+    test suite. Architecture decisions, testing, and every commit were driven by hand. Being upfront
+    about that split is more honest than presenting it as solo work.
+  </div>
+  <div class="stamp" style="border-color:var(--gold-bright); color:var(--gold-bright); background:rgba(244,207,94,0.06);">F.A.N.G.S OPERATIONAL</div>
+</section>
+
+<footer class="doc">
+  <span>END OF FILE — OP-ANANSI-FANGS · v3.0</span>
+  <a href="../../anansi/">← v1.0 debrief</a>
+  <a href="../">← OPENING</a>
+  <a href="../../">← ENTRY POINT</a>
+</footer>
+
+</div>
+
+</body>
+</html>
