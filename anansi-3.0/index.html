@@ -118,7 +118,7 @@
     box-shadow: 0 0 44px 8px rgba(200,30,30,0.22); animation: pulseGlow 2.6s ease-in-out infinite;
   }
   @keyframes pulseGlow { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
-  svg.mark { position: relative; width: 100%; height: 100%; }
+  .mark { position: relative; width: 100%; height: 100%; display: block; border-radius: 50%; object-fit: cover; }
 
   .wordmark { font-size: 36px; font-weight: 700; letter-spacing: 0.14em; margin: 0 0 6px; color: var(--text); }
   .wordmark span { color: var(--gold-bright); }
@@ -179,64 +179,7 @@
   <div class="logo-wrap">
     <div class="logo-pulse"></div>
     <div class="logo-ring"></div>
-    <svg class="mark" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anansi spider mark">
-      <defs>
-        <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#2e2e2e"/>
-          <stop offset="55%" stop-color="#0a0a0a"/>
-          <stop offset="100%" stop-color="#000000"/>
-        </linearGradient>
-      </defs>
-      <circle cx="160" cy="160" r="150" fill="#020202" stroke="#7a0f0f" stroke-width="2"/>
-      <g transform="translate(160,160)">
-        <g fill="none" stroke-linecap="round" stroke-linejoin="miter">
-          <path stroke="#c81e1e" stroke-width="6" d="M -12 -16 L -38 -26 L -50 -60 L -92 -90"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M -12 -16 L -38 -26 L -50 -60 L -92 -90"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M -16 -2 L -48 -6 L -80 -4 L -122 -14"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M -16 -2 L -48 -6 L -80 -4 L -122 -14"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M -14 14 L -40 24 L -66 40 L -112 58"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M -14 14 L -40 24 L -66 40 L -112 58"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M -8 30 L -22 52 L -28 84 L -58 122"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M -8 30 L -22 52 L -28 84 L -58 122"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M 12 -16 L 38 -26 L 50 -60 L 92 -90"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M 12 -16 L 38 -26 L 50 -60 L 92 -90"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M 16 -2 L 48 -6 L 80 -4 L 122 -14"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M 16 -2 L 48 -6 L 80 -4 L 122 -14"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M 14 14 L 40 24 L 66 40 L 112 58"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M 14 14 L 40 24 L 66 40 L 112 58"/>
-          <path stroke="#c81e1e" stroke-width="6" d="M 8 30 L 22 52 L 28 84 L 58 122"/>
-          <path stroke="#0a0a0a" stroke-width="3.5" d="M 8 30 L 22 52 L 28 84 L 58 122"/>
-        </g>
-        <g fill="#e83030">
-          <path d="M -92 -90 L -110 -108 L -98 -80 Z"/>
-          <path d="M -122 -14 L -144 -18 L -116 -2 Z"/>
-          <path d="M -112 58 L -132 70 L -104 66 Z"/>
-          <path d="M -58 122 L -70 144 L -46 122 Z"/>
-          <path d="M 92 -90 L 110 -108 L 98 -80 Z"/>
-          <path d="M 122 -14 L 144 -18 L 116 -2 Z"/>
-          <path d="M 112 58 L 132 70 L 104 66 Z"/>
-          <path d="M 58 122 L 70 144 L 46 122 Z"/>
-        </g>
-        <path fill="url(#bodyGrad)" stroke="#e83030" stroke-width="1.2"
-          d="M 0 -40 L 18 -32 L 24 -14 L 19 0 L 26 13 L 21 30 L 12 43 L 17 56 L 6 66 L -6 66 L -17 56 L -12 43 L -21 30 L -26 13 L -19 0 L -24 -14 L -18 -32 Z"/>
-        <g fill="none" stroke="#e83030" stroke-width="1" stroke-linecap="round" opacity="0.9">
-          <path d="M 0 -15 L 0 9"/>
-          <path d="M -15 0 L 15 0"/>
-          <path d="M 0 9 L -9 24 M 0 9 L 9 24"/>
-          <path d="M -9 24 L -7 40 M 9 24 L 7 40"/>
-        </g>
-        <g fill="none" stroke="#c81e1e" stroke-width="2.5" stroke-linecap="round" opacity="0.4">
-          <path d="M -9 24 L -7 40"/>
-          <path d="M 9 24 L 7 40"/>
-        </g>
-        <circle cx="-8" cy="-25" r="4.5" fill="#ff2020"/>
-        <circle cx="8" cy="-25" r="4.5" fill="#ff2020"/>
-        <circle cx="-8" cy="-25" r="8" fill="none" stroke="#c81e1e" stroke-width="2.5" opacity="0.4"/>
-        <circle cx="8" cy="-25" r="8" fill="none" stroke="#c81e1e" stroke-width="2.5" opacity="0.4"/>
-        <circle cx="-13" cy="-18" r="2" fill="#8b0000"/>
-        <circle cx="13" cy="-18" r="2" fill="#8b0000"/>
-      </g>
-    </svg>
+    <img class="mark" src="logo.svg" alt="Anansi 3.0 logo">
   </div>
 
   <h1 class="wordmark">ANAN<span>SI</span></h1>
