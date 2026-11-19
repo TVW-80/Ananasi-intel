@@ -1,8 +1,10 @@
 /**
  * Ananzi Attack Map. Data: /api/attackmap (server/providers/anansi/attack-map.js).
  *
- *   crosshair + glowing arc        an attacking country, arc into Hampton Roads,
- *                                  coloured by the attack type it sends most
+ *   glowing crosshair icon         a place attacks come from (country, or a city we
+ *                                  could pin to the attacker's address), coloured by the
+ *                                  attack type it sends most — drawn where the attacker
+ *                                  is, with NO arc, because these feeds carry no victim
  *   biohazard glyph                malware control servers (ThreatFox / C2 / SSLBL)
  *   envelope glyph                 phishing sites (OpenPhish)
  *   amber dotted arcs / rings      internet route hijacks / leaks (Cloudflare BGP)
@@ -622,44 +624,50 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
     registerThreatPoint(entityId, def, point);
   }
 
-  function addArc(source, target, index, attackTypes) {
+  /**
+   * Reported attack origin: a glowing crosshair icon placed where the attacker
+   * is. No arc and no missiles — these feeds (DShield, AbuseIPDB, blocklist.de
+   * and the per-IP geolocated attacker lists) name the attacker, not the victim,
+   * so we draw only what the data supports rather than funneling into a vantage
+   * point. The genuine attacker→victim arcs are the DDoS pairs and BGP hijacks.
+   */
+  function addSourceMarker(source, attackTypes) {
     const key = source.key || source.country;
-    const positions = liftedArc(source, target, POINT_LIFT_M.world, POINT_LIFT_M.local);
     const css = sourceColor(source, attackTypes);
     const color = Cesium.Color.fromCssColorString(css);
     const w = source.weight || 0;
-    const arcId = `${ID_PREFIX}arc:${key}`;
+    const srcPos = Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world);
+    // Soft glow halo behind the icon so the origin reads as "live" without an arc.
     _ds.entities.add({
-      id: arcId,
-      polyline: {
-        positions,
-        width: 2 + w * 5,
-        arcType: Cesium.ArcType.NONE,
-        material: new Cesium.PolylineGlowMaterialProperty({ glowPower: 0.22, taperPower: 0.9, color: color.withAlpha(0.35 + w * 0.45) }),
+      id: `${ID_PREFIX}src:glow:${key}`,
+      position: srcPos,
+      point: {
+        pixelSize: 12 + w * 20,
+        color: color.withAlpha(0.14),
+        outlineColor: color.withAlpha(0.5),
+        outlineWidth: 1.5,
       },
     });
-    addHeads(key, positions, color, w, index);
+    // The attacker's own icon (the legend's ⌖ crosshair), sized by volume.
     const markerId = `${ID_PREFIX}src:${key}`;
     _ds.entities.add({
       id: markerId,
-      position: Cesium.Cartesian3.fromDegrees(source.lon, source.lat, POINT_LIFT_M.world),
+      position: srcPos,
       billboard: glyphBillboard(Cesium, GLYPH.source, css, { scale: 0.9 + w * 0.8 }),
     });
-    const point = sourcePopup(source, attackTypes, target);
-    clickable(markerId, point);
-    clickable(arcId, point);
-    return { id: key, position: positions[0], title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
+    clickable(markerId, sourcePopup(source, attackTypes));
+    return { id: key, position: srcPos, title: `${def.icon} ${source.name}`, accent: css, priority: Math.round(w * 1000) };
   }
 
-  /** Popup for an attack-source country (shared by WORLD hotspots and 757 arcs). */
-  function sourcePopup(source, attackTypes, target) {
+  /** Popup for a reported attack origin (country-level or geolocated city). */
+  function sourcePopup(source, attackTypes) {
     const dominant = attackTypes.find((t) => t.service === source.dominantService);
     const flagLines = [];
     if (source.flags?.tor) flagLines.push({ text: `${source.flags.tor} via Tor`, plain: 'Some of these came through Tor, an anonymity network — the real attacker could be anywhere.', tech: 'Source IPs match the Tor Project bulk exit list.' });
     if (source.flags?.drop) flagLines.push({ text: `${source.flags.drop} from criminal netblocks`, plain: 'Some addresses belong to blocks of the internet run by criminals or stolen from their owners.', tech: 'Source IPs fall inside Spamhaus DROP netblocks.' });
     return {
       title: source.name,
-      place: target ? `→ ${target.name}` : 'attack source (WORLD view)',
+      place: 'reported attack origin',
       count: 0,
       time: null,
       approximate: true,
@@ -669,7 +677,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         ...(source.abuse ? [{ text: `AbuseIPDB: ${fmt(source.abuse)} reported attacker IPs`, plain: 'Addresses other server owners reported for attacks.', tech: 'AbuseIPDB blacklist, confidence 100, grouped by country.' }] : []),
         ...flagLines,
         ...source.ips.flatMap((ip) => ip.lines || [{ text: ip.ip }]),
-        ...(target ? [{ text: 'The arc ends at your vantage point; the sensors are worldwide.' }] : []),
+        { text: 'Shown where the attacker is. These feeds don’t name a victim, so no arc is drawn.' },
       ],
     };
   }
@@ -831,8 +839,9 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         if (request.signal.aborted || !_enabled) return false;
         clearOwned();
         _ds.entities.removeAll();
-        // One fused view: the whole world's sources arc into Hampton Roads,
-        // with every DDoS pair, hijack, leak, malware server and phishing host.
+        // One fused view: attack origins shown where they actually are (their own
+        // glowing crosshair icon, no arc), plus the genuine attacker→victim arcs —
+        // DDoS pairs and BGP hijacks/leaks — and malware servers and phishing hosts.
         const target = body.target || { lat: 36.8508, lon: -76.2859, name: 'Hampton Roads' };
         const attackTypes = body.attackTypes || [];
         addTarget(target);
@@ -842,7 +851,7 @@ export function createAttackMapLayer({ overlayHost, fetchImpl = (...a) => global
         const leaks = body.leaks || [];
         const malware = body.malware || [];
         const phishing = body.phishing || [];
-        const labels = sources.map((src, i) => addArc(src, target, i, attackTypes));
+        const labels = sources.map((src) => addSourceMarker(src, attackTypes));
         const maxPair = Math.max(0, ...pairs.filter((p) => !p.domestic).map((p) => p.value));
         pairs.forEach((p, i) => addPair(p, i, maxPair));
         hijacks.forEach((h, i) => addHijack(h, i));
