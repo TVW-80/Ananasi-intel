@@ -21,7 +21,6 @@
     --mono: 'IBM Plex Mono', monospace;
     --display: 'Space Grotesk', sans-serif;
 
-    /* glass finish */
     --glass: linear-gradient(158deg, rgba(255,255,255,0.055), rgba(255,255,255,0.016));
     --glass-strong: linear-gradient(158deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
     --glass-dark: linear-gradient(158deg, rgba(10,10,10,0.72), rgba(10,10,10,0.5));
@@ -32,59 +31,37 @@
   }
 
   * { box-sizing: border-box; }
-
   html { scroll-behavior: smooth; }
 
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-    position: relative;
-    overflow-x: hidden;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--mono); line-height: 1.7;
+    -webkit-font-smoothing: antialiased; position: relative; overflow-x: hidden;
   }
 
-  /* drifting aurora behind the glass — gold + red blooms */
   body::after {
-    content: "";
-    position: fixed;
-    inset: -20vmax;
-    z-index: 0;
-    pointer-events: none;
+    content: ""; position: fixed; inset: -20vmax; z-index: 0; pointer-events: none;
     background:
       radial-gradient(42vmax 42vmax at 18% 8%, rgba(212,175,55,0.14), transparent 60%),
       radial-gradient(46vmax 46vmax at 88% 22%, rgba(200,30,30,0.13), transparent 62%),
       radial-gradient(40vmax 40vmax at 72% 92%, rgba(212,175,55,0.08), transparent 60%),
       radial-gradient(38vmax 38vmax at 8% 86%, rgba(200,30,30,0.09), transparent 60%);
-    filter: blur(14px);
-    animation: drift 34s ease-in-out infinite alternate;
+    filter: blur(14px); animation: drift 34s ease-in-out infinite alternate;
   }
   @keyframes drift {
-    0%   { transform: translate3d(0,0,0) scale(1); }
-    50%  { transform: translate3d(2vmax,-2vmax,0) scale(1.06); }
+    0% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(2vmax,-2vmax,0) scale(1.06); }
     100% { transform: translate3d(-2vmax,1vmax,0) scale(1.02); }
   }
 
-  /* faint CLASSIFIED watermark */
   body::before {
-    content: "F.A.N.G.S";
-    position: fixed;
-    top: 44%;
-    left: 50%;
+    content: "F.A.N.G.S"; position: fixed; top: 44%; left: 50%;
     transform: translate(-50%, -50%) rotate(-28deg);
-    font-family: var(--display);
-    font-size: 15vw;
-    font-weight: 700;
-    color: rgba(200,30,30,0.04);
-    letter-spacing: 0.12em;
-    pointer-events: none;
-    z-index: 0;
-    white-space: nowrap;
+    font-family: var(--display); font-size: 15vw; font-weight: 700;
+    color: rgba(200,30,30,0.04); letter-spacing: 0.12em;
+    pointer-events: none; z-index: 0; white-space: nowrap;
   }
 
-  /* spinning cross-link badge → Spider Sense */
   .crosslink { position: fixed; top: 16px; right: 16px; z-index: 60; width: 66px; height: 66px; display: block; border-radius: 50%; }
   .crosslink img, .crosslink .ring {
     width: 100%; height: 100%; display: block; border-radius: 50%;
@@ -111,31 +88,18 @@
   }
   @media (max-width: 440px) { .crosslink { width: 52px; height: 52px; } }
 
-  .wrap {
-    position: relative;
-    z-index: 1;
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 0 22px 110px;
-  }
+  .wrap { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 0 22px 110px; }
 
   a { color: var(--gold-bright); text-decoration-color: rgba(212,175,55,0.4); }
   img { max-width: 100%; display: block; border-radius: 10px; border: 1px solid var(--line); }
 
-  /* classification bar — glass */
   .classbar {
     position: sticky; top: 0; z-index: 50;
     background: linear-gradient(180deg, rgba(200,30,30,0.86), rgba(150,20,20,0.78));
     backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    color: #120404;
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.18em;
-    text-align: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,120,120,0.35);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    color: #120404; font-family: var(--display); font-weight: 700; font-size: 12px;
+    letter-spacing: 0.18em; text-align: center; padding: 8px 0;
+    border-bottom: 1px solid rgba(255,120,120,0.35); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   }
 
   .doc-logo {
@@ -145,33 +109,19 @@
   }
   @media (max-width: 440px) { .doc-logo { width: 56px; height: 56px; } }
   header.doc {
-    margin: 30px 0 30px;
-    padding: 30px 28px 26px;
-    background: var(--glass-strong);
-    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border: var(--glass-border);
-    border-radius: var(--radius);
-    box-shadow: var(--glass-shadow);
+    margin: 30px 0 22px; padding: 30px 28px 26px;
+    background: var(--glass-strong); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border: var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow);
   }
-  .doc-meta {
-    display: flex; justify-content: space-between; flex-wrap: wrap;
-    gap: 10px; font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.04em; margin-bottom: 18px;
-  }
+  .doc-meta { display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 10px; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; margin-bottom: 18px; }
   .doc-meta span { background: rgba(0,0,0,0.25); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; }
   .doc-meta span b { color: var(--gold-bright); font-weight: 500; }
 
-  h1.title {
-    font-family: var(--display);
-    font-size: clamp(27px, 5vw, 42px);
-    font-weight: 700; letter-spacing: 0.01em; line-height: 1.08;
-    color: var(--text); margin: 0 0 10px;
-  }
+  h1.title { font-family: var(--display); font-size: clamp(27px, 5vw, 42px); font-weight: 700; letter-spacing: 0.01em; line-height: 1.08; color: var(--text); margin: 0 0 10px; }
   h1.title span { color: var(--red-bright); }
   h1.title small {
-    display: inline-block; font-family: var(--mono); font-size: 13px; font-weight: 500;
-    letter-spacing: 0.22em; color: var(--gold-bright);
-    border: 1px solid rgba(212,175,55,0.4); border-radius: 6px;
+    display: inline-block; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.22em;
+    color: var(--gold-bright); border: 1px solid rgba(212,175,55,0.4); border-radius: 6px;
     padding: 3px 9px; vertical-align: middle; margin-left: 10px; transform: translateY(-5px);
   }
   .subject-line { font-size: 13px; color: var(--text-dim); letter-spacing: 0.03em; }
@@ -186,67 +136,50 @@
   }
   .toc a:hover { color: var(--gold-bright); border-color: rgba(212,175,55,0.5); background: rgba(212,175,55,0.06); }
 
-  /* each section is a glass panel */
   section {
-    margin: 22px 0;
-    padding: 26px 28px 28px;
-    background: var(--glass);
-    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border: var(--glass-border);
-    border-radius: var(--radius);
-    box-shadow: var(--glass-shadow);
+    margin: 18px 0; padding: 26px 28px 28px;
+    background: var(--glass); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border: var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow);
     scroll-margin-top: 54px;
   }
   .sec-tag {
-    display: inline-block; font-family: var(--display); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.16em; color: var(--gold-bright);
-    background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.4);
+    display: inline-block; font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
+    color: var(--gold-bright); background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.4);
     border-radius: 6px; padding: 4px 10px; margin-bottom: 16px;
   }
-  h2 {
-    font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--text);
-    margin: 0 0 14px; border-left: 3px solid var(--red); padding-left: 12px;
-  }
+  h2 { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--text); margin: 0 0 14px; border-left: 3px solid var(--red); padding-left: 12px; }
   p { font-size: 14.5px; color: #cfcbc4; margin: 0 0 14px; }
   strong { color: var(--gold-bright); font-weight: 600; }
   em { color: #e4ddcf; }
-  code {
-    background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;
-    font-size: 13px; color: var(--gold-bright);
+  code { background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px; font-size: 13px; color: var(--gold-bright); }
+
+  /* figures — glass-framed media */
+  .figure { margin: 18px 0 6px; }
+  .figure.hero { margin: 0 0 22px; }
+  .figure img, .figure video {
+    width: 100%; display: block; border-radius: 12px; border: 1px solid var(--line);
+    box-shadow: 0 12px 34px rgba(0,0,0,0.55); background: rgba(0,0,0,0.35);
   }
+  .figure figcaption { font-size: 11px; color: var(--text-dim); letter-spacing: 0.03em; margin-top: 9px; text-transform: uppercase; }
+  .figure figcaption::before { content: "FIG — "; color: var(--red-bright); }
+  .figrow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 620px) { .figrow { grid-template-columns: 1fr; } }
 
   table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; margin: 6px 0 0; }
   th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
-  thead th {
-    font-family: var(--display); font-size: 11px; letter-spacing: 0.08em; color: var(--gold-bright);
-    text-transform: uppercase; font-weight: 600;
-    background: rgba(212,175,55,0.06); border-bottom: 1px solid rgba(212,175,55,0.3);
-  }
+  thead th { font-family: var(--display); font-size: 11px; letter-spacing: 0.08em; color: var(--gold-bright); text-transform: uppercase; font-weight: 600; background: rgba(212,175,55,0.06); border-bottom: 1px solid rgba(212,175,55,0.3); }
   tbody tr:hover td { background: rgba(255,255,255,0.025); }
   td { color: #cfcbc4; }
   td b, td strong { color: var(--gold-bright); }
 
-  /* field-log entries — inner glass cards */
   .logentry {
-    position: relative;
-    margin: 16px 0;
-    padding: 16px 18px 6px 20px;
-    background: rgba(255,255,255,0.022);
-    border: 1px solid var(--line);
-    border-left: 2px solid rgba(200,30,30,0.7);
-    border-radius: 10px;
+    position: relative; margin: 16px 0; padding: 16px 18px 6px 20px;
+    background: rgba(255,255,255,0.022); border: 1px solid var(--line);
+    border-left: 2px solid rgba(200,30,30,0.7); border-radius: 10px;
   }
-  .logentry::before {
-    content: ""; position: absolute; left: -6px; top: 18px;
-    width: 9px; height: 9px; border-radius: 50%;
-    background: var(--red-bright); box-shadow: 0 0 8px var(--red-bright);
-  }
+  .logentry::before { content: ""; position: absolute; left: -6px; top: 18px; width: 9px; height: 9px; border-radius: 50%; background: var(--red-bright); box-shadow: 0 0 8px var(--red-bright); }
   .logentry h3 { font-family: var(--display); font-size: 15.5px; font-weight: 600; color: var(--text); margin: 0 0 6px; }
-  .logentry .tag {
-    font-size: 10px; color: var(--gold-bright); letter-spacing: 0.08em;
-    margin-bottom: 8px; display: inline-block;
-    background: rgba(212,175,55,0.07); border: 1px solid var(--line); border-radius: 5px; padding: 2px 7px;
-  }
+  .logentry .tag { font-size: 10px; color: var(--gold-bright); letter-spacing: 0.08em; margin-bottom: 8px; display: inline-block; background: rgba(212,175,55,0.07); border: 1px solid var(--line); border-radius: 5px; padding: 2px 7px; }
 
   ul.debrief { list-style: none; padding: 0; margin: 0; }
   ul.debrief li { padding: 13px 0; border-bottom: 1px dashed var(--line); font-size: 14px; color: #cfcbc4; }
@@ -254,11 +187,8 @@
   ul.debrief li b { color: var(--red-bright); }
 
   pre.schematic {
-    background: var(--glass-dark);
-    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border: 1px solid var(--line); border-radius: 10px;
-    padding: 20px; font-size: 12px; color: var(--gold-bright);
-    overflow-x: auto; line-height: 1.5;
+    background: var(--glass-dark); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--line); border-radius: 10px; padding: 20px; font-size: 12px; color: var(--gold-bright); overflow-x: auto; line-height: 1.5;
   }
 
   .stamp {
@@ -268,11 +198,7 @@
     background: rgba(255,43,43,0.05); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
   }
 
-  .credit-box {
-    border: 1px solid var(--line); border-radius: 10px;
-    background: rgba(255,255,255,0.025);
-    padding: 18px 20px; font-size: 13.5px; color: #cfcbc4;
-  }
+  .credit-box { border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.025); padding: 18px 20px; font-size: 13.5px; color: #cfcbc4; }
   .credit-box + .credit-box { margin-top: 14px; }
   .credit-box b { color: var(--gold-bright); }
 
@@ -285,9 +211,7 @@
   }
   footer.doc a { color: var(--text-dim); }
 
-  @media (max-width: 560px) {
-    section, header.doc { padding-left: 18px; padding-right: 18px; }
-  }
+  @media (max-width: 560px) { section, header.doc { padding-left: 18px; padding-right: 18px; } }
 </style>
 </head>
 <body>
@@ -322,20 +246,22 @@
   </nav>
 </header>
 
+<figure class="figure hero">
+  <video src="media/fangs-globe.mp4" poster="media/fangs-globe-poster.jpg" autoplay muted loop playsinline controls preload="metadata"></video>
+  <figcaption>F.A.N.G.S live — attack origins, arcs and the SITREP dashboard over the globe (screen capture)</figcaption>
+</figure>
+
 <section id="brief">
   <div class="sec-tag">01 // MISSION BRIEF</div>
   <h2>Overview</h2>
-  <p>Ananzi 3.0 is the 757 situational-awareness globe grown into a full cyber-intelligence
-  platform. It has two faces sharing one engine: the <strong>OSINT globe</strong> — a live CesiumJS
-  3D map of Hampton Roads with aircraft, ships, weather, local news and public cameras — and
-  <strong>F.A.N.G.S</strong> (Fast Adversary Network Graphing Suite), a live worldwide
-  <strong>attack map</strong> with a plain-English <strong>SITREP dashboard</strong> and a
-  <strong>RECON</strong> event-reconstruction panel.</p>
-  <p>The whole thing runs in a browser on a <strong>Vite provider-plugin backend</strong>: every
-  threat feed is proxied through its own keyless, cached <code>/api/*</code> endpoint, so the app
-  starts with no API keys and each source fails on its own without taking the map down. The guiding
-  rule throughout is <em>honesty by construction</em> — the display never draws precision the data
-  doesn't support.</p>
+  <p>Ananzi 3.0 is a private map of the world that runs in a web browser. Its OSINT side is a live
+  CesiumJS 3D globe over Hampton Roads — aircraft, ships, weather, local news and public cameras —
+  and its cyber side is <strong>F.A.N.G.S</strong> (Fast Adversary Network Graphing Suite): a live
+  "attack map" plus a dashboard that explains, in plain English, what's happening online right now.</p>
+  <p>The whole thing runs on a <strong>Vite provider-plugin backend</strong> — every threat feed is
+  proxied through its own keyless, cached <code>/api/*</code> endpoint, so the app starts with no API
+  keys and each source fails on its own without taking the map down. The rule throughout is
+  <em>honesty by construction</em>: the display never draws precision the data doesn't support.</p>
 
   <h2 style="margin-top:28px;">Assets &amp; Methods</h2>
   <table>
@@ -345,7 +271,7 @@
       <tr><td>Backend</td><td>Vite provider-plugin — one cached, keyless <code>/api/*</code> proxy per feed</td></tr>
       <tr><td>F.A.N.G.S attack map</td><td>Worldwide attack origins, DDoS &amp; BGP arcs, malware C2 and phishing markers</td></tr>
       <tr><td>SITREP</td><td>One pane of glass: ATT&amp;CK heat, patch priority, service status, password check, rolling cards</td></tr>
-      <tr><td>RECON</td><td>Correlated incidents, kill-chain reconstruction, scrubbable timeline that replays on the globe, link graph, case-file export</td></tr>
+      <tr><td>RECON</td><td>Correlated incidents, kill-chain reconstruction, a scrubbable timeline that replays on the globe, link graph, case-file export</td></tr>
       <tr><td>Enrichment</td><td>GreyNoise, Shodan InternetDB, VirusTotal, Have I Been Pwned (k-anonymity)</td></tr>
       <tr><td>Frameworks</td><td>MITRE ATT&amp;CK · Diamond Model · Cyber Kill Chain · Pyramid of Pain · CySA+ confidence</td></tr>
       <tr><td>Resilience</td><td>Per-source degradation, last-good retained, disk-cached, ~9,000 automated tests</td></tr>
@@ -357,8 +283,10 @@
 <section id="fangs">
   <div class="sec-tag">02 // ATTACK MAP</div>
   <h2>F.A.N.G.S — the live globe</h2>
-  <p>F.A.N.G.S is the cyber layer: a live "pew-pew" attack map plus a dashboard. The core design
-  decision is an honest one — the map only draws a line when the feed actually names a victim.</p>
+  <p>F.A.N.G.S is the cyber layer: a live "pew-pew" attack map, like the ones on TV, plus a
+  dashboard. The core design decision is an honest one — the map only draws a line when the feed
+  actually names a victim. Every icon, dot and arc is clickable, and each popup explains itself
+  twice: plain English first, then the technical detail.</p>
 
   <div class="logentry">
     <span class="tag">ENTRY 001 — ATTACK ORIGINS</span>
@@ -369,8 +297,13 @@
     country. Each origin draws as its <b>own glowing crosshair icon</b>, colored by the attack type
     it sends most and sized by volume. These feeds name the attacker, not the victim, so there is
     <b>no arc</b> funneling into Hampton Roads — drawing one would invent a target the data doesn't
-    contain.</p>
+    contain. Click one and it runs through the Diamond Model, ATT&amp;CK, and the kill chain on the
+    spot.</p>
   </div>
+  <figure class="figure">
+    <img src="media/shot-attackers.png" alt="Reported attackers popup over Algeria with Diamond Model reconnaissance">
+    <figcaption>A reported-attacker origin (Algeria): the listed IPs, a Diamond Model built for Reconnaissance, ATT&amp;CK T1595 Active Scanning, and the kill-chain phase</figcaption>
+  </figure>
 
   <div class="logentry">
     <span class="tag">ENTRY 002 — REAL ARCS</span>
@@ -382,17 +315,26 @@
     (abuse.ch ThreatFox, C2IntelFeeds, SSLBL) and phishing hosts (OpenPhish) sit as their own
     markers where they are hosted.</p>
   </div>
+  <div class="figrow">
+    <figure class="figure">
+      <img src="media/shot-ddos.png" alt="Mexico to United States DDoS popup">
+      <figcaption>A DDoS arc with a real target — Mexico &rarr; United States, 1.49% of blocked traffic, mapped to ATT&amp;CK T1498 Network Denial of Service</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="media/shot-c2.png" alt="Command-and-control servers popup over the United States">
+      <figcaption>Malware command-and-control servers (QakBot, Emotet) from abuse.ch Feodo Tracker, with a Diamond Model for Command &amp; Control and a confidence read-out</figcaption>
+    </figure>
+  </div>
 
   <div class="logentry">
     <span class="tag">ENTRY 003 — CLICK-THROUGH</span>
     <h3>Two-voice popups and per-address enrichment</h3>
-    <p>Every icon, dot and arc is clickable. Each popup explains itself twice — plain English first,
-    then the technical detail — and adds live lookups on that address: <b>GreyNoise</b> (mass
-    scanner vs. targeted), <b>Shodan InternetDB</b> (what's exposed on the attacker's own box), and
-    <b>VirusTotal</b> (how many vendors flag it; this one switches on with a free key). A heads-up
-    display carries a running counter, a color key, a rotating readout (top source countries, most-
-    attacked ports, hit industries, target countries, worldwide exposure) and a steady alert ticker
-    from FortiGuard, AlienVault OTX, CISA and others.</p>
+    <p>Every popup adds live lookups on that address: <b>GreyNoise</b> (mass scanner vs. targeted),
+    <b>Shodan InternetDB</b> (what's exposed on the attacker's own box), and <b>VirusTotal</b> (how
+    many vendors flag it; this one switches on with a free key). A heads-up display carries a running
+    counter, a color key, a rotating readout (top source countries, most-attacked ports, hit
+    industries, target countries, worldwide exposure) and a steady alert ticker from FortiGuard,
+    AlienVault OTX, CISA and others.</p>
   </div>
 </section>
 
@@ -402,6 +344,10 @@
   <p>Opening F.A.N.G.S opens the SITREP: all of the cyber data in one scrollable pane, written so a
   tier-one help-desk tech can read it at a glance. It stacks several live boards over a plain-English
   card feed.</p>
+  <figure class="figure">
+    <img src="media/shot-sitrep.png" alt="SITREP dashboard with live counter, attack types, top sources and the alert feed">
+    <figcaption>The SITREP — a live attack counter, 48-hour attack types, top source countries, the INTEL ticker, and alerts shown in plain English and technical terms</figcaption>
+  </figure>
   <ul class="debrief">
     <li><b>ATT&amp;CK HEAT</b> — a live MITRE ATT&amp;CK technique heat map; the techniques showing
     up across everything F.A.N.G.S sees, hottest first, each linking to attack.mitre.org.</li>
@@ -420,6 +366,19 @@
   <p style="margin-top:14px;">Click any threat and a worksheet opens on it: the Diamond Model, its
   Cyber Kill Chain phase, its Pyramid-of-Pain level, and a Timeliness / Relevance / Accuracy
   confidence score — the frameworks below, applied to that one event.</p>
+
+  <div class="logentry">
+    <span class="tag">ENTRY 00A — WELCOME BACK</span>
+    <h3>"Since you left" — a catch-up on what you missed</h3>
+    <p>Step away and come back and F.A.N.G.S greets you with a <b>WELCOME BACK</b> panel: a short,
+    plain-English list of what changed since your last visit — new attack warnings on the map, fresh
+    threat signals, BGP leaks and hijacks — each as a card you can read or dismiss, so you re-orient
+    in seconds instead of scrolling the whole feed.</p>
+  </div>
+  <figure class="figure">
+    <img src="media/shot-welcome.png" alt="Welcome back since-you-left catch-up panel">
+    <figcaption>The WELCOME BACK catch-up — "here's what you missed," with a FortiGuard threat signal and several BGP leaks surfaced as cards</figcaption>
+  </figure>
 </section>
 
 <section id="recon">
@@ -455,7 +414,9 @@
   <div class="sec-tag">05 // TRADECRAFT</div>
   <h2>Intelligence frameworks</h2>
   <p>F.A.N.G.S maps every event onto the standard analyst frameworks — the same ones taught in
-  CompTIA CySA+ — so the display reads like tradecraft, not just a feed.</p>
+  CompTIA CySA+ — so the display reads like tradecraft, not just a feed. You can see them at work in
+  every popup above: the Diamond Model diagram, the ATT&amp;CK technique chip, the kill-chain bar,
+  the Pyramid-of-Pain level, and the confidence line.</p>
   <table>
     <thead><tr><th>Framework</th><th>What it answers</th><th>Where it shows</th></tr></thead>
     <tbody>
@@ -495,7 +456,7 @@
     <li><b>Honesty by construction.</b> The tool never fabricates precision. Replay is country-level,
     not fake per-IP history; correlation is a labeled hypothesis; the timeline is "as reported." It
     won't invent an EPSS score a feed didn't give, won't scrape sources that forbid it, and won't
-    impersonate.</li>
+    impersonate. Where a signal can't be placed or timed, it's counted honestly rather than drawn.</li>
     <li><b>Keyless-first.</b> It works out of the box with public data; keys are optional,
     server-side, and only ever add an ingredient.</li>
     <li><b>Graceful degradation.</b> Every source fails on its own — per-source error handling,
@@ -554,9 +515,9 @@ VITE PROVIDER-PLUGIN BACKEND  (one cached /api/* proxy per feed)
 
 <footer class="doc">
   <span>END OF FILE — OP-ANANSI-FANGS · v3.0</span>
-  <a href="../../anansi/">← v1.0 debrief</a>
   <a href="../">← OPENING</a>
   <a href="../../">← ENTRY POINT</a>
+  <a href="../../anansi/">← v1.0 debrief</a>
 </footer>
 
 </div>
